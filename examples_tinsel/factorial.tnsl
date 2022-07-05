@@ -1,0 +1,16 @@
+program factorial
+
+fun fctrl(n: int): int {
+    if (n <= 0) { return 0 }
+    if (n == 1) { return 1 }
+    return n * fctrl(n-1)
+}
+
+main {
+    var x: int
+    print "Enter an Integer between 1 and 25: "
+    read x
+    println x, "! = ", fctrl(x)
+}
+
+endprogram
