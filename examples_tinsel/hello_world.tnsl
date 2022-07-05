@@ -1,0 +1,14 @@
+program hello_world
+
+var s: string(20), s1: string(20), s2: string(20)
+
+main {
+    s1 = "Hello"
+    print "please enter your name (or Enter to continue): "
+    read s2
+    if (s2 == "") { s2 = "World" }
+    s = s1 + ", " + s2
+    println s, "!"
+}
+
+endprogram

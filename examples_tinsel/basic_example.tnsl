@@ -1,0 +1,31 @@
+/*--
+ My First TINSEL program
+ demonstrates the basic capabilities of the language
+ Accepts an integer n as input
+ and prints the squares of all the integers from 1 to n
+ */
+program tinselExample
+
+//-- variables declarations
+var i = 0, n
+
+/*--
+ calculate the square of i
+ only for positive i
+ */
+fun i_square() {
+    if (i <= 0) { return -1 }
+    return i * i;
+}
+
+// main entry point
+main {
+    read n;
+    //-- main loop
+    repeat {
+        i = i + 1
+        print i_square();
+    } until (i >= n)
+}
+
+endprogram

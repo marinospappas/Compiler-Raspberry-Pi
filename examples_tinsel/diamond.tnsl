@@ -1,0 +1,61 @@
+/*--
+ for loop demo program
+ draws a diamond shape on screen
+*/
+program diamond
+
+var n: int, k: int
+var name: string(40)
+
+fun print_line(): void {
+    for (j=0 to n-k) {
+        print "   "
+    }
+    for (j=k down to 2) {
+        print j, " "
+        if (j < 10) { print " " }
+    }
+    for (j=1 to k) {
+        print j, " "
+        if (j < 9) { print " " }
+    }
+    println;
+    return
+}
+
+main {
+    //--read user name
+    print "enter your name: "
+    read name
+    if (name == "Q" || name == "q") {
+        println "exiting program..."
+        exit
+    }
+    //--read the upper limit
+    while(1) {
+        print "enter limit 1-20 (0 to quit program): "
+        read n
+        if (n == 0) { exit }
+        if (n <= 20) {
+            println "Hello, ", name
+            for (i=1 to n) {
+                k = i
+                print_line()
+            }
+            for (i=1 to n) {
+                print "<< "
+            }
+            print "x "
+            for (i=1 to n) {
+                print ">> "
+            }
+            println;
+            for (i=n down to 1) {
+                k = i
+                print_line()
+            }
+        }
+    }
+}
+
+endprogram
