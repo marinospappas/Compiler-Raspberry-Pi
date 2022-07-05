@@ -47,9 +47,9 @@ class ForParser {
             abort("line ${inp.currentLineNumber}: identifier $controlVarName already declared")
         inp.match(Kwd.equalsOp)
         // allocate space in the stack for the ctrl var
-        ctrlVarOffs = code.allocateStackVar(INT_SIZE)
+        ctrlVarOffs = code.allocateStackVar(code.INT_SIZE)
         identifiersMap[controlVarName] = IdentifierDecl(
-            TokType.variable, DataType.int, initialised = true, size = INT_SIZE,
+            TokType.variable, DataType.int, initialised = true, size = code.INT_SIZE,
             isStackVar = true, stackOffset = ctrlVarOffs, canAssign = false
         )
         // set the ctrl var to FROM
@@ -71,7 +71,7 @@ class ForParser {
     private fun parseTo() {
         // get TO value and store in the stack
         inp.match(Kwd.toToken)
-        toOffs = code.allocateStackVar(INT_SIZE)
+        toOffs = code.allocateStackVar(code.INT_SIZE)
         val expType = parseExpression()
         if (expType != DataType.int)
             abort("line ${inp.currentLineNumber}: expected integer expression found $expType")
@@ -84,7 +84,7 @@ class ForParser {
             inp.match()
             hasStep = true
             // allocate space in the stack and save step value
-            stepOffs = code.allocateStackVar(INT_SIZE)
+            stepOffs = code.allocateStackVar(code.INT_SIZE)
             val expType = parseExpression()
             if (expType != DataType.int)
                 abort("line ${inp.currentLineNumber}: expected integer expression found $expType")
@@ -137,8 +137,8 @@ class ForParser {
     /** release stack variables */
     private fun cleanUpStack() {
         if (hasStep)
-            code.releaseStackVar(INT_SIZE)
+            code.releaseStackVar(code.INT_SIZE)
         identifiersMap.remove(controlVarName)
-        code.releaseStackVar(2* INT_SIZE)
+        code.releaseStackVar(2* code.INT_SIZE)
     }
 }

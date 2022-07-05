@@ -12,10 +12,6 @@ enum class VarScope { global, local }
 class IdentifierDecl(var fv: TokType, var type: DataType, var initialised: Boolean = false, var size: Int = 0,
                      var isStackVar: Boolean = false, var stackOffset: Int = 0, var canAssign: Boolean = true)
 
-// sizes of various types
-val INT_SIZE = 8    // 64-bit integers
-val STRPTR_SIZE = 8     // string pointer 64 bit
-
 // the identifiers space map
 val identifiersMap = mutableMapOf<String, IdentifierDecl>()
 
@@ -69,11 +65,11 @@ fun declareLocalVar(name: String, type: DataType, initValue: String, length: Int
     val lengthRoundedTo64bits = (length / 8 + 1) * 8
     when (type) {
         DataType.int -> {
-            stackOffset = code.allocateStackVar(INT_SIZE)
+            stackOffset = code.allocateStackVar(code.INT_SIZE)
             initLocalIntVar(stackOffset, initValue)
         }
         DataType.string -> {
-            stackOffset = code.allocateStackVar(STRPTR_SIZE)
+            stackOffset = code.allocateStackVar(code.STRPTR_SIZE)
             initLocalStringVar(name, stackOffset, initValue, lengthRoundedTo64bits)
         }
         else -> return
