@@ -24,7 +24,7 @@ interface CodeModule {
     fun outputLabel(s: String)
 
     /** initialisation code for assembler */
-    fun progInit(progName: String, noMsg: Boolean)
+    fun progInit(progName: String)
     /** declare int variable */
     fun declareInt(varName: String, initValue: String)
     /** initial code for functions */
@@ -40,7 +40,7 @@ interface CodeModule {
     /** restore a function input param register */
     fun restoreFunTempParamReg(paramIndx: Int)
     /** initial code for main */
-    fun mainInit(noMsg: Boolean)
+    fun mainInit()
     /** termination code for assembler */
     fun mainEnd()
     /** allocate variable space in the stack - returns the new stack offset for this new variable */

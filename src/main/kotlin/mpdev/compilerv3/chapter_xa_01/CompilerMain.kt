@@ -11,11 +11,10 @@ import kotlin.system.measureTimeMillis
  * Version 3.0 05.07.2022
  */
 
-const val USAGE = "usage: CompilerMain [-debug] [-nomsg] [-maxstring nnnn] [-x86 | -arm] [-o output_file] input_file"
+const val USAGE = "usage: CompilerMain [-debug] [-maxstring nnnn] [-x86 | -arm] [-o output_file] input_file"
 
 // compiler flags set by cmd line options
 var debugMode = false
-var noCopyrightMsg = false
 
 // the input and output files
 var inFile = ""
@@ -60,7 +59,6 @@ fun processCmdLineArgs(args: Array<String>) {
             when (arg) {
                 "-?", "-h", "-H" -> exit(USAGE)
                 "-debug" -> debugMode = true
-                "-nomsg" -> noCopyrightMsg = true
                 "-maxstring" -> { STR_BUF_SIZE = getNextArg(args, ++argIndx, "max_string").toInt(); continue }
                 "-o", "-O" -> { outFile = getNextArg(args, ++argIndx, "output_file"); continue }
                 "-x86" -> cpuArchitecture = CPUArch.x86

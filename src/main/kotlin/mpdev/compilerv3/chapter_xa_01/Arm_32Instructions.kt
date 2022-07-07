@@ -28,6 +28,15 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override val INT_SIZE = 4    // 64-bit integers
     override val STRPTR_SIZE = 4     // string pointer 64 bit
 
+    // global vars list - need for entering the global var addresses in the .text section
+    private val globalVarsList = mutableListOf<String>()
+    private val GLOBAL_VARS_ADDR_SUFFIX = "_addr"
+
+    // various string constants
+    val TINSEL_MSG = "tinsel_msg"
+    val NEWLINE = "newline"
+    val INT_FMT = "int_fmt"
+
     /** initialisation code - class InputProgramScanner */
     init {
         if (outFile != "") {
@@ -71,18 +80,18 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun outputLabel(s: String) = outputCodeNl("$s:")
 
     /** initialisation code for assembler */
-    override fun progInit(progName: String, noMsg: Boolean) {
+    override fun progInit(progName: String) {
         outputCommentNl(CODE_ID)
         outputCommentNl("program $progName")
         outputCommentNl("compiled on ${Date()}")
         outputCodeNl(".data")
         outputCodeNl(".align 2")
-        if (!noMsg) {
-            // copyright message
-            outputCodeTabNl("tinsel_msg_: .asciz \"TINSEL version 3.0 for Arm-32 (Raspberry Pi) July 2022 (c) M.Pappas\\n\"")
-            // newline string
-            outputCodeTabNl("newline_: .asciz \"\\n\"")
-        }
+        // copyright message
+        outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 3.0 for Arm-32 (Raspberry Pi) July 2022 (c) M.Pappas\\n\"")
+        // newline string
+        outputCodeTabNl("$NEWLINE: .asciz \"\\n\"")
+        // int format for printf
+        outputCodeTabNl("$INT_FMT: .asciz \"%d\"")
     }
 
     /** declare int variable (32bit) */
@@ -91,6 +100,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
             outputCodeTabNl("$varName:\t.word 0")       // uninitialised global int vars default to 0
         else
             outputCodeTabNl("$varName:\t.word $initValue")
+        globalVarsList.add(varName)      // add var to the list
     }
 
     /** initial code for functions */
@@ -104,6 +114,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /** declare function */
     override fun declareAsmFun(name: String) {
         outputCodeNl()
+        outputCodeNl(".type $name %function")
         outputCommentNl("function $name")
         outputLabel(name)
         outputCodeTab("push\t{fp, lr}\t\t")
@@ -144,7 +155,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     /** initial code for main */
-    override fun mainInit(noMsg: Boolean) {
+    override fun mainInit() {
         outputCodeNl()
         outputCodeNl(".type $MAIN_ENTRYPOINT %function")
         outputCommentNl("main program")
@@ -152,11 +163,9 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTab("push\t{fp, lr}\t\t")
         outputCommentNl("save registers")
         //newStackFrame()
-        if (!noMsg) {
-            outputCommentNl("print hello message")
-            outputCodeTabNl("ldr\tr0, =tinsel_msg_")
-            outputCodeTabNl("bl\tprintf")
-        }
+        outputCommentNl("print hello message")
+        outputCodeTabNl("ldr\tr0, ${TINSEL_MSG}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("bl\tprintf")
         outputCodeNl()
     }
 
@@ -170,6 +179,19 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("exit code 0")
         outputCodeTabNl("pop\t{fp, lr}")
         outputCodeTabNl("bx\tlr")
+        setGlobalVarAddresses()
+    }
+
+    /** set the addresses of the global vars in the .text section */
+    private fun setGlobalVarAddresses() {
+        val globalVarNamesList = globalVarsList + stringConstants.keys +
+                listOf(TINSEL_MSG, NEWLINE, INT_FMT)
+        outputCodeNl("")
+        outputCodeNl(".align 2")
+        outputCommentNl("global var addresses go here")
+        globalVarNamesList.forEach{ varname ->
+            outputCodeNl("${varname}${GLOBAL_VARS_ADDR_SUFFIX}:\t.word $varname")
+        }
     }
 
     /** set new stack frame */
@@ -203,7 +225,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         stackVarOffset += size
     }
 
-    /** initiliase an int stack var */
+    /** initialise an int stack var */
     override fun initStackVarInt(stackOffset : Int, initValue: String) {
         outputCodeTab("movq\t$$initValue, ")
         if (stackOffset != 0)
@@ -219,7 +241,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to a value */
     override fun setAccumulator(value: String) {
-        outputCodeTabNl("movq\tr3, #${value}")
+        outputCodeTabNl("mov\tr3, #${value}")
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
@@ -267,8 +289,9 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to variable */
     override fun setAccumulatorToVar(identifier: String) {
-        outputCodeTabNl("movq\t${identifier}(%rip), %rax")
-        outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("ldr\tr3, [r2]")
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
     /** set accumulator to local variable */
@@ -289,7 +312,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     /** set variable to accumulator */
-    override fun assignment(identifier: String) = outputCodeTabNl("movq\t%rax, ${identifier}(%rip)")
+    override fun assignment(identifier: String) {
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("str\tr3, [r2]")
+    }
 
     /** set stack variable to accumulator */
     override fun assignmentLocalVar(offset: Int) {
@@ -376,14 +402,16 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** print a newline */
     override fun printNewline() {
-        outputCodeTabNl("ldr\tr0, =newline_")
+        outputCodeTabNl("ldr\tr0, ${NEWLINE}${GLOBAL_VARS_ADDR_SUFFIX}")
         outputCodeTabNl("bl\tprintf")
     }
 
     /** print accumulator as integer */
     override fun printInt() {
-        outputCodeTabNl("movq\t%rax, %rdi\t\t# value to be printed in rdi")
-        outputCodeTabNl("call\twrite_i_")
+        outputCodeTabNl("ldr\tr0, ${INT_FMT}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTab("mov\tr1, r3\t\t")
+        outputCommentNl("integer to be printed in r1")
+        outputCodeTabNl("bl\tprintf")
     }
 
     /** read global int var into variable */
@@ -415,6 +443,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
             outputCodeTabNl("$varName:\t.asciz \"$initValue\"")
         else
             outputCodeTabNl("$varName:\t.space $length") // uninitialised string vars must have length
+        globalVarsList.add(varName)      // add var to the list
     }
 
     /** initialise a str stack var */
@@ -431,7 +460,9 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     /** get address of string variable in accumulator */
-    override fun getStringVarAddress(identifier: String) = outputCodeTabNl("ldr\tr3, =$identifier")
+    override fun getStringVarAddress(identifier: String) {
+        outputCodeTabNl("ldr\tr3, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+    }
 
     /** save acc string to buffer and address in stack - acc is pointer */
     override fun saveString() {

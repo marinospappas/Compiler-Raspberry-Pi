@@ -71,18 +71,16 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override fun outputLabel(s: String) = outputCodeNl("$s:")
 
     /** initialisation code for assembler */
-    override fun progInit(progName: String, noMsg: Boolean) {
+    override fun progInit(progName: String) {
         outputCommentNl(CODE_ID)
         outputCommentNl("program $progName")
         outputCommentNl("compiled on ${Date()}")
         outputCodeNl(".data")
         outputCodeNl(".align 8")
-        if (!noMsg) {
-            // copyright message
-            outputCodeTabNl("tinsel_msg_: .string \"TINSEL version 2.1 for x86-84 (Linux) May 2022 (c) M.Pappas\\n\"")
-            // newline string
-            outputCodeTabNl("newline_: .string \"\\n\"")
-        }
+        // copyright message
+        outputCodeTabNl("tinsel_msg_: .string \"TINSEL version 2.1 for x86-84 (Linux) May 2022 (c) M.Pappas\\n\"")
+        // newline string
+        outputCodeTabNl("newline_: .string \"\\n\"")
     }
 
     /** declare int variable (64bit) */
@@ -144,18 +142,16 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     }
 
     /** initial code for main */
-    override fun mainInit(noMsg: Boolean) {
+    override fun mainInit() {
         outputCodeNl()
         outputCommentNl("main program")
         outputLabel(MAIN_ENTRYPOINT)
         outputCodeTab("pushq\t%rbx\t\t")
         outputCommentNl("save \"callee\"-save registers")
         newStackFrame()
-        if (!noMsg) {
-            outputCommentNl("print hello message")
-            outputCodeTabNl("lea\ttinsel_msg_(%rip), %rdi")
-            outputCodeTabNl("call\twrite_s_")
-        }
+        outputCommentNl("print hello message")
+        outputCodeTabNl("lea\ttinsel_msg_(%rip), %rdi")
+        outputCodeTabNl("call\twrite_s_")
         outputCodeNl()
     }
 

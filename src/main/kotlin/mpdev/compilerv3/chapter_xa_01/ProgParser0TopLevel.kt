@@ -27,7 +27,7 @@ fun parseProgram() {
  */
 fun parseProgHeader() {
     inp.match(Kwd.startOfProgram)
-    code.progInit(inp.match(Kwd.identifier).value, noCopyrightMsg)
+    code.progInit(inp.match(Kwd.identifier).value)
 }
 
 /**
@@ -199,7 +199,7 @@ fun parseMainBlock() {
     labelPrefix = MAIN_BLOCK        // set label prefix and label index
     labelIndx = 0
     inp.match(Kwd.mainToken)
-    code.mainInit(noCopyrightMsg)
+    code.mainInit()
     parseBlock()
     code.mainEnd()
 }
