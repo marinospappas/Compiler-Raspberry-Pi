@@ -7,11 +7,11 @@ import java.lang.System.out
 import java.util.Date
 
 /** this class implements all the instructions for the target machine */
-class X86_64Instructions(outFile: String = ""): CodeModule {
+class Arm_32Instructions(outFile: String = ""): CodeModule {
 
-    private val CODE_ID = "x86-64 Assembly Code - AT&T format"
-    override val COMMENT = "#"
-    private val MAIN_ENTRYPOINT = "_start"
+    private val CODE_ID = "Arm-32 Assembly Code - Raspberry Pi"
+    override val COMMENT = "@"
+    private val MAIN_ENTRYPOINT = "main"
     private val MAIN_EXITPOINT = "${MAIN_BLOCK}_exit_"
 
     private var outStream: PrintStream = out
@@ -25,8 +25,17 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override var includeStringBuffer = false
 
     // sizes of various types
-    override val INT_SIZE = 8    // 64-bit integers
-    override val STRPTR_SIZE = 8     // string pointer 64 bit
+    override val INT_SIZE = 4    // 64-bit integers
+    override val STRPTR_SIZE = 4     // string pointer 64 bit
+
+    // global vars list - need for entering the global var addresses in the .text section
+    private val globalVarsList = mutableListOf<String>()
+    private val GLOBAL_VARS_ADDR_SUFFIX = "_addr"
+
+    // various string constants
+    val TINSEL_MSG = "tinsel_msg"
+    val NEWLINE = "newline"
+    val INT_FMT = "int_fmt"
 
     /** initialisation code - class InputProgramScanner */
     init {
@@ -40,13 +49,13 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         }
     }
 
-    /** register names for the function params - in order 1-6 (x86-64 architecture specific) */
+    /** register names for the function params - in order 1-4 (arm architecture specific) */
     // these registers hold the fun params at the time of the call
-    override val funInpParamsCpuRegisters = arrayOf("%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9")
+    override val funInpParamsCpuRegisters = arrayOf("r0", "r1", "r2", "r3")
     // during the assignment of the parameters, their values are saved temporarily here,
     // so that they are not corrupted by function calls executed during the assignment of the parameters
-    override val funTempParamsCpuRegisters = arrayOf("%rbx", "%r12", "%r13", "%r14", "%r15", "%rax")
-    // 6 params maximum allowed
+    override val funTempParamsCpuRegisters = arrayOf("r4", "r5", "r6", "r7")
+    // 4 params maximum allowed
     override val MAX_FUN_PARAMS = funInpParamsCpuRegisters.size
 
     /** output lines */
@@ -76,36 +85,40 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("program $progName")
         outputCommentNl("compiled on ${Date()}")
         outputCodeNl(".data")
-        outputCodeNl(".align 8")
+        outputCodeNl(".align 2")
         // copyright message
-        outputCodeTabNl("tinsel_msg_: .string \"TINSEL version 2.1 for x86-84 (Linux) May 2022 (c) M.Pappas\\n\"")
+        outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 3.0 for Arm-32 (Raspberry Pi) July 2022 (c) M.Pappas\\n\"")
         // newline string
-        outputCodeTabNl("newline_: .string \"\\n\"")
+        outputCodeTabNl("$NEWLINE: .asciz \"\\n\"")
+        // int format for printf
+        outputCodeTabNl("$INT_FMT: .asciz \"%d\"")
     }
 
-    /** declare int variable (64bit) */
+    /** declare int variable (32bit) */
     override fun declareInt(varName: String, initValue: String) {
         if (initValue == "")
-            outputCodeTabNl("$varName:\t.quad 0")       // uninitialised global int vars default to 0
+            outputCodeTabNl("$varName:\t.word 0")       // uninitialised global int vars default to 0
         else
-            outputCodeTabNl("$varName:\t.quad $initValue")
+            outputCodeTabNl("$varName:\t.word $initValue")
+        globalVarsList.add(varName)      // add var to the list
     }
 
     /** initial code for functions */
     override fun funInit() {
         outputCodeNl()
         outputCodeNl(".text")
-        outputCodeNl(".align 8")
+        outputCodeNl(".align 2")
         outputCodeNl(".global $MAIN_ENTRYPOINT")
     }
 
     /** declare function */
     override fun declareAsmFun(name: String) {
         outputCodeNl()
+        outputCodeNl(".type $name %function")
         outputCommentNl("function $name")
         outputLabel(name)
-        outputCodeTab("pushq\t%rbx\t\t")
-        outputCommentNl("save \"callee\"-save registers")
+        outputCodeTab("push\t{fp, lr}\t\t")
+        outputCommentNl("save registers")
         newStackFrame()
     }
 
@@ -117,8 +130,8 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     /** end of function - tidy up stack */
     private fun funEnd() {
         restoreStackFrame()
-        outputCodeTab("popq\t%rbx\t\t")
-        outputCommentNl("restore \"callee\"-save registers")
+        outputCodeTab("pop\t{fp, pc}\t\t")
+        outputCommentNl("restore registers - lr goes into pc to return to caller")
     }
 
     /** set a temporary function param register to the value of %rax (the result of the last expression) */
@@ -134,7 +147,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("movq\t${funTempParamsCpuRegisters[paramIndx]}, ${funInpParamsCpuRegisters[paramIndx]}")
     }
 
-    /** restore a funciton input param register */
+    /** restore a function input param register */
     override fun restoreFunTempParamReg(paramIndx: Int) {
         if (funTempParamsCpuRegisters[paramIndx] == "%rax")
             return
@@ -144,14 +157,15 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     /** initial code for main */
     override fun mainInit() {
         outputCodeNl()
+        outputCodeNl(".type $MAIN_ENTRYPOINT %function")
         outputCommentNl("main program")
         outputLabel(MAIN_ENTRYPOINT)
-        outputCodeTab("pushq\t%rbx\t\t")
-        outputCommentNl("save \"callee\"-save registers")
-        newStackFrame()
+        outputCodeTab("push\t{fp, lr}\t\t")
+        outputCommentNl("save registers")
+        //newStackFrame()
         outputCommentNl("print hello message")
-        outputCodeTabNl("lea\ttinsel_msg_(%rip), %rdi")
-        outputCodeTabNl("call\twrite_s_")
+        outputCodeTabNl("ldr\tr0, ${TINSEL_MSG}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("bl\tprintf")
         outputCodeNl()
     }
 
@@ -160,14 +174,24 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeNl()
         outputCommentNl("end of main")
         outputLabel(MAIN_EXITPOINT)
-        restoreStackFrame()
-        outputCodeTab("popq\t%rbx\t\t")
-        outputCommentNl("restore \"callee\"-save registers")
-        outputCodeTab("movq\t$60, %rax\t\t")
-        outputCommentNl("exit system call")
-        outputCodeTab("xorq\t%rdi, %rdi\t\t")
+        //restoreStackFrame()
+        outputCodeTab("mov\tr0, #0\t\t")
         outputCommentNl("exit code 0")
-        outputCodeTabNl("syscall")
+        outputCodeTabNl("pop\t{fp, lr}")
+        outputCodeTabNl("bx\tlr")
+        setGlobalVarAddresses()
+    }
+
+    /** set the addresses of the global vars in the .text section */
+    private fun setGlobalVarAddresses() {
+        val globalVarNamesList = globalVarsList + stringConstants.keys +
+                listOf(TINSEL_MSG, NEWLINE, INT_FMT)
+        outputCodeNl("")
+        outputCodeNl(".align 2")
+        outputCommentNl("global var addresses go here")
+        globalVarNamesList.forEach{ varname ->
+            outputCodeNl("${varname}${GLOBAL_VARS_ADDR_SUFFIX}:\t.word $varname")
+        }
     }
 
     /** set new stack frame */
@@ -201,7 +225,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         stackVarOffset += size
     }
 
-    /** initiliase an int stack var */
+    /** initialise an int stack var */
     override fun initStackVarInt(stackOffset : Int, initValue: String) {
         outputCodeTab("movq\t$$initValue, ")
         if (stackOffset != 0)
@@ -217,37 +241,36 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to a value */
     override fun setAccumulator(value: String) {
-        outputCodeTabNl("movq\t$${value}, %rax")
-        outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
+        outputCodeTabNl("mov\tr3, #${value}")
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
     /** clear accumulator */
-    override fun clearAccumulator() = outputCodeTabNl("xorq\t%rax, %rax")
+    override fun clearAccumulator() = outputCodeTabNl("xor\tr3, r3")
 
     /** increment accumulator */
-    override fun incAccumulator() = outputCodeTabNl("incq\t%rax")
+    override fun incAccumulator() = outputCodeTabNl("add\tr3, r3, #1")
 
     /** decrement accumulator */
-    override fun decAccumulator() = outputCodeTabNl("decq\t%rax")
+    override fun decAccumulator() = outputCodeTabNl("sub\tr3, r3, #1")
 
     /** push accumulator to the stack */
-    override fun saveAccumulator() = outputCodeTabNl("pushq\t%rax")
+    override fun saveAccumulator() = outputCodeTabNl("push\t{r3}")
 
     /** add top of stack to accumulator */
     override fun addToAccumulator() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("addq\t%rbx, %rax")
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("add\tr3, r3, r2")
     }
 
     /** subtract top of stack from accumulator */
     override fun subFromAccumulator() {
-        outputCodeTabNl("movq\t%rax, %rbx")
-        outputCodeTabNl("popq\t%rax")
-        outputCodeTabNl("subq\t%rbx, %rax")
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("sub\tr3, r3, r2")
     }
 
     /** negate accumulator */
-    override fun negateAccumulator() = outputCodeTabNl("negq\t%rax")
+    override fun negateAccumulator() = outputCodeTabNl("sub\tr3, #0, r3")
 
     /** multiply accumulator by top of stack */
     override fun multiplyAccumulator() {
@@ -266,8 +289,9 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to variable */
     override fun setAccumulatorToVar(identifier: String) {
-        outputCodeTabNl("movq\t${identifier}(%rip), %rax")
-        outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("ldr\tr3, [r2]")
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
     /** set accumulator to local variable */
@@ -280,16 +304,18 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     }
 
     /** call a function */
-    override fun callFunction(subroutine: String) = outputCodeTabNl("call\t${subroutine}")
+    override fun callFunction(subroutine: String) = outputCodeTabNl("bl\t${subroutine}")
 
     /** return from function */
     override fun returnFromCall() {
         funEnd()
-        outputCodeTabNl("ret")
     }
 
     /** set variable to accumulator */
-    override fun assignment(identifier: String) = outputCodeTabNl("movq\t%rax, ${identifier}(%rip)")
+    override fun assignment(identifier: String) {
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("str\tr3, [r2]")
+    }
 
     /** set stack variable to accumulator */
     override fun assignmentLocalVar(offset: Int) {
@@ -303,7 +329,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override fun jumpIfFalse(label: String) = outputCodeTabNl("jz\t$label")    // Z flag set = FALSE
 
     /** branch */
-    override fun jump(label: String) = outputCodeTabNl("jmp\t$label")
+    override fun jump(label: String) = outputCodeTabNl("b\t$label")
 
     /** boolean not accumulator */
     override fun booleanNotAccumulator() = outputCodeTabNl("xorq\t$1, %rax")
@@ -376,14 +402,16 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     /** print a newline */
     override fun printNewline() {
-        outputCodeTabNl("lea\tnewline_(%rip), %rdi")
-        outputCodeTabNl("call\twrite_s_")
+        outputCodeTabNl("ldr\tr0, ${NEWLINE}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("bl\tprintf")
     }
 
     /** print accumulator as integer */
     override fun printInt() {
-        outputCodeTabNl("movq\t%rax, %rdi\t\t# value to be printed in rdi")
-        outputCodeTabNl("call\twrite_i_")
+        outputCodeTabNl("ldr\tr0, ${INT_FMT}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTab("mov\tr1, r3\t\t")
+        outputCommentNl("integer to be printed in r1")
+        outputCodeTabNl("bl\tprintf")
     }
 
     /** read global int var into variable */
@@ -412,9 +440,10 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     /** declare string global variable */
     override fun declareString(varName: String, initValue: String, length: Int) {
         if (length == 0 || initValue != "")
-            outputCodeTabNl("$varName:\t.string \"$initValue\"")
+            outputCodeTabNl("$varName:\t.asciz \"$initValue\"")
         else
             outputCodeTabNl("$varName:\t.space $length") // uninitialised string vars must have length
+        globalVarsList.add(varName)      // add var to the list
     }
 
     /** initialise a str stack var */
@@ -431,7 +460,9 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     }
 
     /** get address of string variable in accumulator */
-    override fun getStringVarAddress(identifier: String) = outputCodeTabNl("lea\t${identifier}(%rip), %rax")
+    override fun getStringVarAddress(identifier: String) {
+        outputCodeTabNl("ldr\tr3, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+    }
 
     /** save acc string to buffer and address in stack - acc is pointer */
     override fun saveString() {
@@ -472,8 +503,9 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     /** print string - address in accumulator */
     override fun printStr() {
-        outputCodeTabNl("movq\t%rax, %rdi\t\t# string pointer to be printed in rdi")
-        outputCodeTabNl("call\twrite_s_")
+        outputCodeTab("mov\tr0, r3\t\t")
+        outputCommentNl("string pointer to be printed in r0")
+        outputCodeTabNl("bl\tprintf")
     }
 
     /** read string into global variable - address in accumulator*/
@@ -515,7 +547,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override fun stringConstantsDataSpace() {
         code.outputCodeNl()
         code.outputCodeNl(".data")
-        code.outputCodeTabNl(".align 8")
+        code.outputCodeTabNl(".align 2")
         if (includeStringBuffer) {
             code.outputCommentNl("buffer for string operations - max str length limit")
             code.outputCodeTabNl("$STRING_BUFFER:\t.space $STR_BUF_SIZE")

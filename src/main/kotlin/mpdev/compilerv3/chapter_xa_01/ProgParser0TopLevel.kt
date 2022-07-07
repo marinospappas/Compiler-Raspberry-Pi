@@ -27,7 +27,7 @@ fun parseProgram() {
  */
 fun parseProgHeader() {
     inp.match(Kwd.startOfProgram)
-    code.progInit(inp.match(Kwd.identifier).value, noCopyrightMsg)
+    code.progInit(inp.match(Kwd.identifier).value)
 }
 
 /**
@@ -67,7 +67,7 @@ fun parseOneIntDecl(varName: String, scope: VarScope) {
         inp.match()
         initValue = initIntVar()
     }
-    declareVar(varName, DataType.int, initValue, INT_SIZE, scope)
+    declareVar(varName, DataType.int, initValue, code.INT_SIZE, scope)
 }
 
 /** parse one string var declaration */
@@ -172,9 +172,9 @@ fun parseOneFunParam(): FunctionParameter {
 fun storeParamsToStack(functionName: String) {
     val paramsList = funParamsMap[functionName] ?: listOf()
     for (i in paramsList.indices) {
-        val paramVarOffs = code.allocateStackVar(INT_SIZE)
+        val paramVarOffs = code.allocateStackVar(code.INT_SIZE)
         identifiersMap[paramsList[i].name] = IdentifierDecl(
-            TokType.variable, paramsList[i].type, initialised = true, size = INT_SIZE,
+            TokType.variable, paramsList[i].type, initialised = true, size = code.INT_SIZE,
             isStackVar = true, stackOffset = paramVarOffs, canAssign = false
         )
         code.storeFunParamToStack(i, paramVarOffs)
@@ -199,7 +199,7 @@ fun parseMainBlock() {
     labelPrefix = MAIN_BLOCK        // set label prefix and label index
     labelIndx = 0
     inp.match(Kwd.mainToken)
-    code.mainInit(noCopyrightMsg)
+    code.mainInit()
     parseBlock()
     code.mainEnd()
 }
@@ -223,7 +223,7 @@ fun parseStringConstants() {
     for (s in stringConstants.keys) {
         stringConstants[s]?.let {
             if (it.isNotEmpty() && it[0] >= ' ')
-                code.declareString(s, it)
+                code.declareString(s, it, 0)
             else
                 code.declareString(s, "", it.length)
         }

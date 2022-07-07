@@ -11,11 +11,10 @@ import kotlin.system.measureTimeMillis
  * Version 3.0 05.07.2022
  */
 
-const val USAGE = "usage: CompilerMain [-debug] [-nomsg] [-maxstring nnnn] [-o output_file] input_file"
+const val USAGE = "usage: CompilerMain [-debug] [-maxstring nnnn] [-x86 | -arm] [-o output_file] input_file"
 
 // compiler flags set by cmd line options
 var debugMode = false
-var noCopyrightMsg = false
 
 // the input and output files
 var inFile = ""
@@ -23,8 +22,11 @@ var outFile = ""
 
 // the input program scanner
 lateinit var inp: InputProgramScanner
-// the x86-64 instruction set (AT&T format)
-lateinit var code: X86_64Instructions
+// the code module
+lateinit var code: CodeModule
+// the target cpu architecture
+var cpuArchitecture = CPUArch.x86
+enum class CPUArch {x86, arm}
 
 /** report an error */
 fun error(errMsg: String) {
@@ -57,9 +59,10 @@ fun processCmdLineArgs(args: Array<String>) {
             when (arg) {
                 "-?", "-h", "-H" -> exit(USAGE)
                 "-debug" -> debugMode = true
-                "-nomsg" -> noCopyrightMsg = true
                 "-maxstring" -> { STR_BUF_SIZE = getNextArg(args, ++argIndx, "max_string").toInt(); continue }
                 "-o", "-O" -> { outFile = getNextArg(args, ++argIndx, "output_file"); continue }
+                "-x86" -> cpuArchitecture = CPUArch.x86
+                "-arm" -> cpuArchitecture = CPUArch.arm
                 else -> exit("invalid option [$arg]\n$USAGE")
             }
         else
@@ -73,7 +76,10 @@ fun processCmdLineArgs(args: Array<String>) {
 fun initCompiler(args: Array<String>) {
     processCmdLineArgs(args)
     // initialise the code module
-    code = X86_64Instructions(outFile)
+    code = when (cpuArchitecture) {
+        CPUArch.x86 -> `X86_64Instructions`(outFile)
+        CPUArch.arm -> Arm_32Instructions(outFile)
+    }
     // initialise the scanner module
     inp = InputProgramScanner(inFile)
 }
@@ -96,8 +102,9 @@ fun debugCompiler() {
 
 /** main function */
 fun main(args: Array<String>) {
-    println("TINSEL(c) compiler v2.1 May 2022, Copyright M.Pappas\n")
+    println("TINSEL(c) compiler v3.0 July 2022, Copyright M.Pappas")
     initCompiler(args)
+    println("Target architecture: ${if (cpuArchitecture==CPUArch.x86) "x86-64" else "Arm-32"}\n")
     if (debugMode) {
         debugCompiler()
         exit("end of debug run")
