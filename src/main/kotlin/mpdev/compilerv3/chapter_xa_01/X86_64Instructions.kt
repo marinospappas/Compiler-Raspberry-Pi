@@ -22,7 +22,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override var stackVarOffset = 0
 
     // flag to include the string buffer in the assembly code
-    override var includeStringBuffer = false
+    var includeStringBuffer = false
 
     // sizes of various types
     override val INT_SIZE = 8    // 64-bit integers

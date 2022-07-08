@@ -4,7 +4,6 @@ package mpdev.compilerv3.chapter_xa_01
 interface CodeModule {
     val COMMENT: String
     var stackVarOffset: Int
-    var includeStringBuffer: Boolean
 
     val funInpParamsCpuRegisters: Array<String>
     val funTempParamsCpuRegisters: Array<String>
