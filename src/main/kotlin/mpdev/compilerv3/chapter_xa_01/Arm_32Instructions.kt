@@ -21,9 +21,6 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     // the offset from base pointer for the next local variable (in the stack)
     override var stackVarOffset = 0
 
-    // flag to include the string buffer in the assembly code
-    override var includeStringBuffer = false
-
     // sizes of various types
     override val INT_SIZE = 4    // 64-bit integers
     override val STRPTR_SIZE = 4     // string pointer 64 bit
@@ -79,11 +76,19 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /** output a label */
     override fun outputLabel(s: String) = outputCodeNl("$s:")
 
+    /////////////////////////// initialisation and termination //////////////////////////////7
+
     /** initialisation code for assembler */
     override fun progInit(progName: String) {
         outputCommentNl(CODE_ID)
         outputCommentNl("program $progName")
         outputCommentNl("compiled on ${Date()}")
+        outputCodeNl("")
+        outputCommentNl("define the Raspberry Pi CPU")
+        outputCodeNl(".cpu\tcortex-a53")
+        outputCodeNl(".fpu\tneon-fp-armv8")
+        outputCodeNl(".syntax\tunified")
+        outputCodeNl("")
         outputCodeNl(".data")
         outputCodeNl(".align 2")
         // copyright message
@@ -185,7 +190,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /** set the addresses of the global vars in the .text section */
     private fun setGlobalVarAddresses() {
         val globalVarNamesList = globalVarsList + stringConstants.keys +
-                listOf(TINSEL_MSG, NEWLINE, INT_FMT)
+                listOf(TINSEL_MSG, NEWLINE, INT_FMT, STRING_BUFFER)
         outputCodeNl("")
         outputCodeNl(".align 2")
         outputCommentNl("global var addresses go here")
@@ -237,7 +242,14 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun exitProgram() {
         jump(MAIN_EXITPOINT)
     }
-    //////////////////////////////////////////////////////////////
+
+    /** end of program */
+    override fun progEnd() {
+        outputCodeNl()
+        outputCommentNl("end program")
+    }
+
+    /////////////////////////// integer assignments and arithmetic //////////////////////////////7
 
     /** set accumulator to a value */
     override fun setAccumulator(value: String) {
@@ -246,13 +258,13 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     /** clear accumulator */
-    override fun clearAccumulator() = outputCodeTabNl("xor\tr3, r3")
+    override fun clearAccumulator() = outputCodeTabNl("eor\tr3, r3, r3")
 
     /** increment accumulator */
-    override fun incAccumulator() = outputCodeTabNl("add\tr3, r3, #1")
+    override fun incAccumulator() = outputCodeTabNl("adds\tr3, r3, #1")
 
     /** decrement accumulator */
-    override fun decAccumulator() = outputCodeTabNl("sub\tr3, r3, #1")
+    override fun decAccumulator() = outputCodeTabNl("subs\tr3, r3, #1")
 
     /** push accumulator to the stack */
     override fun saveAccumulator() = outputCodeTabNl("push\t{r3}")
@@ -260,31 +272,30 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /** add top of stack to accumulator */
     override fun addToAccumulator() {
         outputCodeTabNl("pop\t{r2}")
-        outputCodeTabNl("add\tr3, r3, r2")
+        outputCodeTabNl("adds\tr3, r3, r2")
     }
 
     /** subtract top of stack from accumulator */
     override fun subFromAccumulator() {
         outputCodeTabNl("pop\t{r2}")
-        outputCodeTabNl("sub\tr3, r3, r2")
+        outputCodeTabNl("subs\tr3, r2, r3")
     }
 
     /** negate accumulator */
-    override fun negateAccumulator() = outputCodeTabNl("sub\tr3, #0, r3")
+    override fun negateAccumulator() = outputCodeTabNl("rsb\tr3, r3, #0")
 
     /** multiply accumulator by top of stack */
     override fun multiplyAccumulator() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("imulq\t%rbx, %rax")
+        //TODO: ensure the Z flag is set after every numeric or logical operation or any other instruction
+        // that changes the r3 - see above adds, subs instructions and also ands in the comparisons
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("mul\tr3, r3, r2")
     }
 
     /** divide accumulator by top of stack */
     override fun divideAccumulator() {
-        outputCodeTabNl("movq\t%rax, %rbx")
-        outputCodeTabNl("popq\t%rax")
-        outputCodeTab("cqto\t\t")
-        outputCommentNl("sign extend to rdx")
-        outputCodeTabNl("idivq\t%rbx, %rax")
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("sdiv\tr3, r2, r3")
     }
 
     /** set accumulator to variable */
@@ -303,14 +314,6 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
     }
 
-    /** call a function */
-    override fun callFunction(subroutine: String) = outputCodeTabNl("bl\t${subroutine}")
-
-    /** return from function */
-    override fun returnFromCall() {
-        funEnd()
-    }
-
     /** set variable to accumulator */
     override fun assignment(identifier: String) {
         outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
@@ -325,80 +328,104 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeNl("(%rbp)")
     }
 
+    //////////////////////////////////// function calls ///////////////////////////////////
+
+    /** call a function */
+    override fun callFunction(subroutine: String) = outputCodeTabNl("bl\t${subroutine}")
+
+    /** return from function */
+    override fun returnFromCall() {
+        funEnd()
+    }
+
+    //////////////////////////////////// branch ///////////////////////////////////
+
     /** branch if false */
-    override fun jumpIfFalse(label: String) = outputCodeTabNl("jz\t$label")    // Z flag set = FALSE
+    override fun jumpIfFalse(label: String) = outputCodeTabNl("beq\t$label")    // Z flag set = FALSE
 
     /** branch */
     override fun jump(label: String) = outputCodeTabNl("b\t$label")
 
+    //////////////////////////////////// boolean arithmetic ///////////////////////////////////
+
     /** boolean not accumulator */
-    override fun booleanNotAccumulator() = outputCodeTabNl("xorq\t$1, %rax")
+    override fun booleanNotAccumulator() = outputCodeTabNl("eor\tr3, r3, #1")
 
     /** or top of stack with accumulator */
     override fun orAccumulator() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("orq\t%rbx, %rax")
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("orr\tr3, r2, r3")
     }
 
     /** exclusive or top of stack with accumulator */
     override fun xorAccumulator() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("xorq\t%rbx, %rax")
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("eor\tr3, r2, r3")
     }
 
     /** and top of stack with accumulator */
     override fun andAccumulator() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("andq\t%rbx, %rax")
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("and\tr3, r2, r3")
     }
+
+    //////////////////////////////////// comparisons ///////////////////////////////////
 
     /** compare and set accumulator and flags - is equal to */
     override fun compareEquals() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("cmp\t%rax, %rbx")
-        outputCodeTabNl("sete\t%al")        // set AL to 1 if comparison is ==
-        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("cmp\tr2, r3")
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("moveq\tr3, #1")     // set r3 to 1 if comparison is ==
+        outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
 
     /** compare and set accumulator and flags - is not equal to */
     override fun compareNotEquals() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("cmp\t%rax, %rbx")
-        outputCodeTabNl("setne\t%al")       // set AL to 1 if comparison is !=
-        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("cmp\tr2, r3")
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("movne\tr3, #1")      // set r3 to 1 if comparison is !=
+        outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
 
     /** compare and set accumulator and flags - is less than */
     override fun compareLess() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("cmp\t%rax, %rbx")
-        outputCodeTabNl("setl\t%al")        // set AL to 1 if comparison is rbx < rax
-        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("cmp\tr2, r3")
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("movlt\tr3, #1")        // set r3 to 1 if comparison is r2 < r3
+        outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
 
     /** compare and set accumulator and flags - is less than */
     override fun compareLessEqual() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("cmp\t%rax, %rbx")
-        outputCodeTabNl("setle\t%al")       // set AL to 1 if comparison is <=
-        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("cmp\tr2, r3")
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("movle\tr3, #1")        // set r3 to 1 if comparison is <=
+        outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
 
     /** compare and set accumulator and flags - is greater than */
     override fun compareGreater() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("cmp\t%rax, %rbx")
-        outputCodeTabNl("setg\t%al")       // set AL to 1 if comparison is >
-        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("cmp\tr2, r3")
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("movgt\tr3, #1")        // set r3 to 1 if comparison is >
+        outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
 
     /** compare and set accumulator and flags - is greater than */
     override fun compareGreaterEqual() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("cmp\t%rax, %rbx")
-        outputCodeTabNl("setge\t%al")       // set AL to 1 if comparison is >=
-        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("cmp\tr2, r3")
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("movge\tr3, #1")        // set r3 to 1 if comparison is >=
+        outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
+
+    //////////////////////////////////// read and print integer ///////////////////////////////////
 
     /** print a newline */
     override fun printNewline() {
@@ -412,12 +439,21 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTab("mov\tr1, r3\t\t")
         outputCommentNl("integer to be printed in r1")
         outputCodeTabNl("bl\tprintf")
+        outputCodeTabNl("mov\tr0, #0")
+        outputCodeTabNl("bl\tfflush")
     }
 
     /** read global int var into variable */
     override fun readInt(identifier: String) {
-        outputCodeTabNl("lea\t$identifier(%rip), %rdi\t\t# address of the variable to be read")
-        outputCodeTabNl("call\tread_i_")
+        outputCodeTab("mov\tr0, #0\t\t")
+        outputCommentNl("read string")
+        outputCodeTabNl("ldr\tr1, ${STRING_BUFFER}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("mov\tr2, #${STR_BUF_SIZE}\t\t")
+        outputCodeTabNl("bl\tread")
+        outputCodeTabNl("ldr\tr0, ${STRING_BUFFER}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTab("bl\tatoi\t\t")
+        outputCommentNl("convert to int")
+        outputCodeTabNl("mov\tr3, r0")
     }
 
     /** read local int var into variable */
@@ -429,13 +465,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("call\tread_i_")
     }
 
-    /** end of program */
-    override fun progEnd() {
-        outputCodeNl()
-        outputCommentNl("end program")
-    }
-
-    ////////// string operations ///////////////////////
+    ///////////////////////////// string operations ///////////////////////
 
     /** declare string global variable */
     override fun declareString(varName: String, initValue: String, length: Int) {
@@ -466,28 +496,29 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** save acc string to buffer and address in stack - acc is pointer */
     override fun saveString() {
-        outputCodeTab("movq\t%rax, %rsi\t\t")
-        outputCommentNl("save string - strcpy_(string_buffer, %rax)")
-        outputCodeTabNl("lea\t$STRING_BUFFER(%rip), %rdi")
-        outputCodeTabNl("call\tstrcpy_")
-        outputCodeTabNl("pushq\t%rax")
-        includeStringBuffer = true
+        outputCodeTab("mov\tr1, r3\t\t")
+        outputCommentNl("save string - strcpy(string_buffer, r3)")
+        outputCodeTabNl("ldr\tr0, ${STRING_BUFFER}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("bl\tstrcpy")
+        outputCodeTabNl("mov\tr3, r0")
+        outputCodeTabNl("push\tr3")
     }
 
     /** add acc string to buf string - both are pointers*/
     override fun addString() {
-        outputCodeTab("popq\t%rdi\t\t")
-        outputCommentNl("add string - strcat_(top-of-stack, %rax)")
-        outputCodeTabNl("movq\t%rax, %rsi")
-        outputCodeTabNl("call\tstrcat_")
+        outputCodeTab("pop\t{r0}\t\t")
+        outputCommentNl("add string - strcat(top-of-stack, r3)")
+        outputCodeTabNl("mov\tr1, r3")
+        outputCodeTabNl("bl\tstrcat")
+        outputCodeTabNl("mov\tr3, r0")
     }
 
     /** set string variable from accumulator (var and acc are pointers */
     override fun assignmentString(identifier: String) {
-        outputCodeTab("movq\t%rax, %rsi\t\t")
-        outputCommentNl("assign string - strcpy_(identifier, %rax)")
-        outputCodeTabNl("lea\t${identifier}(%rip), %rdi")
-        outputCodeTabNl("call\tstrcpy_")
+        outputCodeTab("mov\t, r1, r3\t\t")
+        outputCommentNl("assign string - strcpy(identifier, r3)")
+        outputCodeTabNl("ldr\tr0, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("bl\tstrcpy")
     }
 
     /** set string variable from accumulator (var and acc are pointers */
@@ -506,13 +537,25 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTab("mov\tr0, r3\t\t")
         outputCommentNl("string pointer to be printed in r0")
         outputCodeTabNl("bl\tprintf")
+        outputCodeTabNl("mov\tr0, #0")
+        outputCodeTabNl("bl\tfflush")
     }
 
     /** read string into global variable - address in accumulator*/
     override fun readString(identifier: String, length: Int) {
-        outputCodeTabNl("lea\t$identifier(%rip), %rdi\t\t# address of the string to be read")
-        outputCodeTabNl("movq\t$${length}, %rsi\t\t# max number of bytes to read")
-        outputCodeTabNl("call\tread_s_")
+        outputCodeTab("mov\tr0, #0\t\t")
+        outputCommentNl("stdin")
+        outputCodeTab("ldr\tr1, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}\t\t")
+        outputCommentNl("address of the string to be read")
+        outputCodeTab("mov\tr2, #${length}\t\t")
+        outputCommentNl("max number of bytes to read")
+        outputCodeTabNl("bl\tread")
+        outputCodeTab("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}\t\t")
+        outputCommentNl("get rid of the newline at the end of the string")
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("sub\tr0, r0, #1")
+        outputCodeTabNl("str\tr3, [r2, r0]")
+        outputCodeTabNl("mov\tr3, r0")
     }
 
     /** read string into local variable - address in accumulator*/
@@ -527,20 +570,21 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** compare 2 strings for equality */
     override fun compareStringEquals() {
-        outputCodeTab("popq\t%rdi\t\t")
-        outputCommentNl("compare strings - streq_(top-of-stack, %rax)")
-        outputCodeTabNl("movq\t%rax, %rsi")
-        outputCodeTabNl("call\tstreq_")
-        outputCodeTabNl("andq\t$1, %rax")   // set flags - Z flag set = FALSE
+        outputCodeTab("pop\t{r0}\t\t")
+        outputCommentNl("compare strings - strcmp(top-of-stack, r3)")
+        outputCodeTabNl("mov\tr1, r3")
+        outputCodeTabNl("bl\tstrcmp")
+        outputCodeTabNl("and\tr3, r0, #1")
+        outputCodeTabNl("eor\tr3, r3, #1")   // boolean not rax and set flags - Z flag set = FALSE
     }
 
     /** compare 2 strings for non-equality */
     override fun compareStringNotEquals() {
-        outputCodeTab("popq\t%rdi\t\t")
-        outputCommentNl("compare strings - streq_(top-of-stack, %rax)")
-        outputCodeTabNl("movq\t%rax, %rsi")
-        outputCodeTabNl("call\tstreq_")
-        outputCodeTabNl("xorq\t$1, %rax")   // boolean not rax and set flags - Z flag set = FALSE
+        outputCodeTab("pop\t{r0}\t\t")
+        outputCommentNl("compare strings - strcmp(top-of-stack, r3)")
+        outputCodeTabNl("mov\tr1, r3")
+        outputCodeTabNl("bl\tstrcmp")
+        outputCodeTabNl("and\tr3, r0, #1")   // Z flag set = FALSE
     }
 
     /** string constants */
@@ -548,13 +592,12 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         code.outputCodeNl()
         code.outputCodeNl(".data")
         code.outputCodeTabNl(".align 2")
-        if (includeStringBuffer) {
-            code.outputCommentNl("buffer for string operations - max str length limit")
-            code.outputCodeTabNl("$STRING_BUFFER:\t.space $STR_BUF_SIZE")
-        }
+        code.outputCommentNl("buffer for string operations - max str length limit")
+        code.outputCodeTabNl("$STRING_BUFFER:\t.space $STR_BUF_SIZE")
     }
 
-    //////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
+
     /** dummy instruction */
     override fun dummyInstr(cmd: String) = outputCodeTabNl(cmd)
 
