@@ -258,7 +258,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     /** clear accumulator */
-    override fun clearAccumulator() = outputCodeTabNl("eor\tr3, r3, r3")
+    override fun clearAccumulator() = outputCodeTabNl("eors\tr3, r3, r3")
 
     /** increment accumulator */
     override fun incAccumulator() = outputCodeTabNl("adds\tr3, r3, #1")
@@ -286,16 +286,15 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** multiply accumulator by top of stack */
     override fun multiplyAccumulator() {
-        //TODO: ensure the Z flag is set after every numeric or logical operation or any other instruction
-        // that changes the r3 - see above adds, subs instructions and also ands in the comparisons
         outputCodeTabNl("pop\t{r2}")
-        outputCodeTabNl("mul\tr3, r3, r2")
+        outputCodeTabNl("muls\tr3, r3, r2")
     }
 
     /** divide accumulator by top of stack */
     override fun divideAccumulator() {
         outputCodeTabNl("pop\t{r2}")
         outputCodeTabNl("sdiv\tr3, r2, r3")
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
     /** set accumulator to variable */
@@ -349,24 +348,24 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     //////////////////////////////////// boolean arithmetic ///////////////////////////////////
 
     /** boolean not accumulator */
-    override fun booleanNotAccumulator() = outputCodeTabNl("eor\tr3, r3, #1")
+    override fun booleanNotAccumulator() = outputCodeTabNl("eors\tr3, r3, #1")
 
     /** or top of stack with accumulator */
     override fun orAccumulator() {
         outputCodeTabNl("pop\t{r2}")
-        outputCodeTabNl("orr\tr3, r2, r3")
+        outputCodeTabNl("orrs\tr3, r2, r3")
     }
 
     /** exclusive or top of stack with accumulator */
     override fun xorAccumulator() {
         outputCodeTabNl("pop\t{r2}")
-        outputCodeTabNl("eor\tr3, r2, r3")
+        outputCodeTabNl("eors\tr3, r2, r3")
     }
 
     /** and top of stack with accumulator */
     override fun andAccumulator() {
         outputCodeTabNl("pop\t{r2}")
-        outputCodeTabNl("and\tr3, r2, r3")
+        outputCodeTabNl("ands\tr3, r2, r3")
     }
 
     //////////////////////////////////// comparisons ///////////////////////////////////
@@ -454,6 +453,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTab("bl\tatoi\t\t")
         outputCommentNl("convert to int")
         outputCodeTabNl("mov\tr3, r0")
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
     /** read local int var into variable */
@@ -461,7 +461,8 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTab("movq\t")
         if (stackOffset != 0)
             outputCode("$stackOffset")
-        outputCodeNl("(%rbp), %rdi\t\t# address of the variable to be read")
+        outputCode("(%rbp), %rdi\t\t")
+        outputCommentNl("address of the variable to be read")
         outputCodeTabNl("call\tread_i_")
     }
 
@@ -564,7 +565,8 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         if (stackOffset != 0)
             outputCode("$stackOffset")
         outputCodeNl("(%rbp), %rdi\t\t# address of the string to be read")
-        outputCodeTabNl("movq\t$${length}, %rsi\t\t# max number of bytes to read")
+        outputCodeTab("movq\t$${length}, %rsi\t\t")
+        outputCommentNl("max number of bytes to read")
         outputCodeTabNl("call\tread_s_")
     }
 
@@ -575,7 +577,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("mov\tr1, r3")
         outputCodeTabNl("bl\tstrcmp")
         outputCodeTabNl("and\tr3, r0, #1")
-        outputCodeTabNl("eor\tr3, r3, #1")   // boolean not rax and set flags - Z flag set = FALSE
+        outputCodeTabNl("eors\tr3, r3, #1")   // boolean not r3 and set flags - Z flag set = FALSE
     }
 
     /** compare 2 strings for non-equality */
@@ -584,7 +586,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("compare strings - strcmp(top-of-stack, r3)")
         outputCodeTabNl("mov\tr1, r3")
         outputCodeTabNl("bl\tstrcmp")
-        outputCodeTabNl("and\tr3, r0, #1")   // Z flag set = FALSE
+        outputCodeTabNl("ands\tr3, r0, #1")   // Z flag set = FALSE
     }
 
     /** string constants */
