@@ -24,9 +24,12 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     // flag to include the string buffer in the assembly code
     var includeStringBuffer = false
 
+    // architecture word size
+    override val WORD_SIZE = 8  // 64-bit architecture
+
     // sizes of various types
-    override val INT_SIZE = 8    // 64-bit integers
-    override val STRPTR_SIZE = 8     // string pointer 64 bit
+    override val INT_SIZE = WORD_SIZE    // 64-bit integers
+    override val STRPTR_SIZE = WORD_SIZE    // string pointer 64 bit
 
     /** initialisation code - class InputProgramScanner */
     init {

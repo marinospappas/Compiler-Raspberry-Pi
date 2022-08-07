@@ -18,12 +18,15 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     private var outputLines = 0
 
-    // the offset from base pointer for the next local variable (in the stack)
-    override var stackVarOffset = 0
+    // the offset from frame pointer for the next local variable (in the stack)
+    override var stackVarOffset = -4
+
+    // architecture word size
+    override val WORD_SIZE = 4  // 32-bit architecture
 
     // sizes of various types
-    override val INT_SIZE = 4    // 64-bit integers
-    override val STRPTR_SIZE = 4     // string pointer 64 bit
+    override val INT_SIZE = WORD_SIZE   // 32-bit integers
+    override val STRPTR_SIZE = WORD_SIZE     // string pointer 32 bit
 
     // global vars list - need for entering the global var addresses in the .text section
     private val globalVarsList = mutableListOf<String>()
@@ -33,6 +36,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     val TINSEL_MSG = "tinsel_msg"
     val NEWLINE = "newline"
     val INT_FMT = "int_fmt"
+
+    // need a map of int constants due to limitation in loading const value to register
+    val intConstants = mutableMapOf<String,String>()
+    val INT_CONST_NAME = "INTCONST_"
 
     /** initialisation code - class InputProgramScanner */
     init {
@@ -122,41 +129,40 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeNl(".type $name %function")
         outputCommentNl("function $name")
         outputLabel(name)
-        outputCodeTab("push\t{fp, lr}\t\t")
+        outputCodeTab("stmdb\tsp!, {fp, lr}\t\t")
         outputCommentNl("save registers")
         newStackFrame()
     }
 
     /** transfer a function parameter to stack variable */
     override fun storeFunParamToStack(paramIndx: Int, stackOffset: Int) {
-        outputCodeTabNl("movq\t${funInpParamsCpuRegisters[paramIndx]}, $stackOffset(%rbp)")
+        outputCodeTabNl("str\t${funInpParamsCpuRegisters[paramIndx]}, [fp, #$stackOffset]")
     }
 
     /** end of function - tidy up stack */
     private fun funEnd() {
-        restoreStackFrame()
-        outputCodeTab("pop\t{fp, pc}\t\t")
+        outputCodeTab("sub\tsp, fp, #4\t\t")
+        outputCommentNl("restore stack pointer")
+        outputCodeTab("ldmia\tsp!, {fp, pc}\t\t")
         outputCommentNl("restore registers - lr goes into pc to return to caller")
     }
 
-    /** set a temporary function param register to the value of %rax (the result of the last expression) */
+    /** set a temporary function param register to the value of r3 (the result of the last expression) */
     override fun setIntTempFunParam(paramIndx: Int) {
-        if (funTempParamsCpuRegisters[paramIndx] == "%rax")
-            return
-        outputCodeTabNl("pushq\t${funTempParamsCpuRegisters[paramIndx]}")
-        outputCodeTabNl("movq\t%rax, ${funTempParamsCpuRegisters[paramIndx]}")
+        outputCodeTabNl("str\t${funTempParamsCpuRegisters[paramIndx]}, [sp, #-4]!")
+        outputCodeTabNl("mov\t${funTempParamsCpuRegisters[paramIndx]}, r3")
     }
 
     /** set a function input param register from the temporary register */
     override fun setFunParamReg(paramIndx: Int) {
-        outputCodeTabNl("movq\t${funTempParamsCpuRegisters[paramIndx]}, ${funInpParamsCpuRegisters[paramIndx]}")
+        if (funInpParamsCpuRegisters[paramIndx] == "r3")
+            return
+        outputCodeTabNl("mov\t${funInpParamsCpuRegisters[paramIndx]}, ${funTempParamsCpuRegisters[paramIndx]}")
     }
 
     /** restore a function input param register */
     override fun restoreFunTempParamReg(paramIndx: Int) {
-        if (funTempParamsCpuRegisters[paramIndx] == "%rax")
-            return
-        outputCodeTabNl("popq\t${funTempParamsCpuRegisters[paramIndx]}")
+        outputCodeTabNl("ldr\t${funTempParamsCpuRegisters[paramIndx]}, [sp], #4")
     }
 
     /** initial code for main */
@@ -165,9 +171,9 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeNl(".type $MAIN_ENTRYPOINT %function")
         outputCommentNl("main program")
         outputLabel(MAIN_ENTRYPOINT)
-        outputCodeTab("push\t{fp, lr}\t\t")
+        outputCodeTab("stmdb\tsp!, {fp, lr}\t\t")
         outputCommentNl("save registers")
-        //newStackFrame()
+        newStackFrame()
         outputCommentNl("print hello message")
         outputCodeTabNl("ldr\tr0, ${TINSEL_MSG}${GLOBAL_VARS_ADDR_SUFFIX}")
         outputCodeTabNl("bl\tprintf")
@@ -179,12 +185,14 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeNl()
         outputCommentNl("end of main")
         outputLabel(MAIN_EXITPOINT)
-        //restoreStackFrame()
         outputCodeTab("mov\tr0, #0\t\t")
         outputCommentNl("exit code 0")
-        outputCodeTabNl("pop\t{fp, lr}")
+        outputCodeTab("sub\tsp, fp, #4\t\t")
+        outputCommentNl("restore stack pointer")
+        outputCodeTabNl("ldmia\tsp!, {fp, lr}")
         outputCodeTabNl("bx\tlr")
         setGlobalVarAddresses()
+        setIntConstants()
     }
 
     /** set the addresses of the global vars in the .text section */
@@ -199,19 +207,18 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         }
     }
 
-    /** set new stack frame */
-    private fun newStackFrame() {
-        outputCodeTab("pushq\t%rbp\t\t")
-        outputCommentNl("new stack frame")
-        outputCodeTabNl("movq\t%rsp, %rbp")
-        stackVarOffset = 0  // reset the offset for stack vars in this new frame
+    /** set the values of the int constants */
+    private fun setIntConstants() {
+        intConstants.forEach{ constName, value ->
+            outputCodeNl("${constName}:\t.word $value")
+        }
     }
 
-    /** restore stack frame */
-    private fun restoreStackFrame() {
-        outputCodeTab("movq\t%rbp, %rsp\t\t")
-        outputCommentNl("restore stack frame")
-        outputCodeTabNl("popq\t%rbp")
+    /** set new stack frame */
+    private fun newStackFrame() {
+        outputCodeTab("add\tfp, sp, #4\t\t")
+        outputCommentNl("new stack frame")
+        stackVarOffset = -4  // reset the offset for stack vars in this new frame
     }
 
     /**
@@ -219,23 +226,22 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
      * returns the new stack offset for this new variable
      */
     override fun allocateStackVar(size: Int): Int {
-        outputCodeTabNl("subq\t$${size}, %rsp")
+        outputCodeTabNl("sub\tsp, sp, ${size}")
         stackVarOffset -= size
         return stackVarOffset
     }
 
     /** release variable space in the stack */
     override fun releaseStackVar(size: Int) {
-        outputCodeTabNl("addq\t$${size}, %rsp")
+        outputCodeTabNl("add\tsp, sp, $${size}")
         stackVarOffset += size
     }
 
     /** initialise an int stack var */
     override fun initStackVarInt(stackOffset : Int, initValue: String) {
-        outputCodeTab("movq\t$$initValue, ")
-        if (stackOffset != 0)
-            outputCode("$stackOffset")
-        outputCodeNl("(%rbp)")
+        val intConstantAddr = createIntConst(initValue)
+        outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
+        outputCodeTabNl("str\tr3, [fp, #${stackOffset}]")
     }
 
     /** exit the program */
@@ -253,8 +259,20 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to a value */
     override fun setAccumulator(value: String) {
-        outputCodeTabNl("mov\tr3, #${value}")
+        val intConstantAddr = createIntConst(value)
+        outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
+    }
+
+    private fun createIntConst(value: String): String {
+        val key = INT_CONST_NAME +
+                if (value.toInt() >= 0)
+                    value
+                else
+                    "_" + value.substring(1)
+        if (intConstants[key] == null)
+            intConstants[key] = value
+        return key
     }
 
     /** clear accumulator */
@@ -267,17 +285,17 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun decAccumulator() = outputCodeTabNl("subs\tr3, r3, #1")
 
     /** push accumulator to the stack */
-    override fun saveAccumulator() = outputCodeTabNl("push\t{r3}")
+    override fun saveAccumulator() = outputCodeTabNl("str\tr3, [sp, #-4]!")
 
     /** add top of stack to accumulator */
     override fun addToAccumulator() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("adds\tr3, r3, r2")
     }
 
     /** subtract top of stack from accumulator */
     override fun subFromAccumulator() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("subs\tr3, r2, r3")
     }
 
@@ -286,13 +304,13 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** multiply accumulator by top of stack */
     override fun multiplyAccumulator() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("muls\tr3, r3, r2")
     }
 
     /** divide accumulator by top of stack */
     override fun divideAccumulator() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("sdiv\tr3, r2, r3")
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
@@ -306,11 +324,8 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to local variable */
     override fun setAccumulatorToLocalVar(offset: Int) {
-        outputCodeTab("movq\t")
-        if (offset != 0)
-            outputCode("$offset")
-        outputCodeNl("(%rbp), %rax")
-        outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
+        outputCodeTabNl("ldr\tr3, [fp, #${offset}]")
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
     /** set variable to accumulator */
@@ -321,10 +336,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set stack variable to accumulator */
     override fun assignmentLocalVar(offset: Int) {
-        outputCodeTab("movq\t%rax, ")
-        if (offset != 0)
-            outputCode("$offset")
-        outputCodeNl("(%rbp)")
+        outputCodeTabNl("str\tr3, [fp, #${offset}]")
     }
 
     //////////////////////////////////// function calls ///////////////////////////////////
@@ -352,19 +364,19 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** or top of stack with accumulator */
     override fun orAccumulator() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("orrs\tr3, r2, r3")
     }
 
     /** exclusive or top of stack with accumulator */
     override fun xorAccumulator() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("eors\tr3, r2, r3")
     }
 
     /** and top of stack with accumulator */
     override fun andAccumulator() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("ands\tr3, r2, r3")
     }
 
@@ -372,7 +384,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** compare and set accumulator and flags - is equal to */
     override fun compareEquals() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("cmp\tr2, r3")
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("moveq\tr3, #1")     // set r3 to 1 if comparison is ==
@@ -381,7 +393,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** compare and set accumulator and flags - is not equal to */
     override fun compareNotEquals() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("cmp\tr2, r3")
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("movne\tr3, #1")      // set r3 to 1 if comparison is !=
@@ -390,7 +402,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** compare and set accumulator and flags - is less than */
     override fun compareLess() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("cmp\tr2, r3")
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("movlt\tr3, #1")        // set r3 to 1 if comparison is r2 < r3
@@ -399,7 +411,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** compare and set accumulator and flags - is less than */
     override fun compareLessEqual() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("cmp\tr2, r3")
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("movle\tr3, #1")        // set r3 to 1 if comparison is <=
@@ -408,7 +420,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** compare and set accumulator and flags - is greater than */
     override fun compareGreater() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("cmp\tr2, r3")
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("movgt\tr3, #1")        // set r3 to 1 if comparison is >
@@ -417,7 +429,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** compare and set accumulator and flags - is greater than */
     override fun compareGreaterEqual() {
-        outputCodeTabNl("pop\t{r2}")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("cmp\tr2, r3")
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("movge\tr3, #1")        // set r3 to 1 if comparison is >=
@@ -444,6 +456,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** read global int var into variable */
     override fun readInt(identifier: String) {
+        readStringAndConvertToInt()
+    }
+
+    private fun readStringAndConvertToInt() {
         outputCodeTab("mov\tr0, #0\t\t")
         outputCommentNl("read string")
         outputCodeTabNl("ldr\tr1, ${STRING_BUFFER}${GLOBAL_VARS_ADDR_SUFFIX}")
@@ -452,18 +468,12 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("ldr\tr0, ${STRING_BUFFER}${GLOBAL_VARS_ADDR_SUFFIX}")
         outputCodeTab("bl\tatoi\t\t")
         outputCommentNl("convert to int")
-        outputCodeTabNl("mov\tr3, r0")
-        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
+        outputCodeTabNl("movs\tr3, r0")     // also sets flags - Z flag set = FALSE
     }
 
     /** read local int var into variable */
     override fun readIntLocal(stackOffset: Int) {
-        outputCodeTab("movq\t")
-        if (stackOffset != 0)
-            outputCode("$stackOffset")
-        outputCode("(%rbp), %rdi\t\t")
-        outputCommentNl("address of the variable to be read")
-        outputCodeTabNl("call\tread_i_")
+        readStringAndConvertToInt()
     }
 
     ///////////////////////////// string operations ///////////////////////
@@ -479,13 +489,13 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** initialise a str stack var */
     override fun initStackVarString(stackOffset: Int, stringDataOffset: Int, constStrAddress: String) {
-        outputCodeTabNl("lea\t$stringDataOffset(%rbp), %rax")
-        outputCodeTab("movq\t%rax, $stackOffset(%rbp)\t\t")
+        outputCodeTabNl("sub\tr2, fp, #${-stringDataOffset}")
+        outputCodeTab("str\tr2, [fp, #$stackOffset]\t\t")
         outputCommentNl("initialise local var string address")
         if (constStrAddress.isNotEmpty()) {
-            outputCodeTabNl("lea\t$constStrAddress(%rip), %rsi")
-            outputCodeTabNl("movq\t$stackOffset(%rbp), %rdi")
-            outputCodeTab("call\tstrcpy_\t\t")
+            outputCodeTabNl("ldr\tr1, $constStrAddress${GLOBAL_VARS_ADDR_SUFFIX}")
+            outputCodeTabNl("sub\tr0, fp, $stackOffset")
+            outputCodeTab("bl\tstrcpy\t\t")
             outputCommentNl("initialise local var string")
         }
     }
@@ -502,12 +512,12 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("ldr\tr0, ${STRING_BUFFER}${GLOBAL_VARS_ADDR_SUFFIX}")
         outputCodeTabNl("bl\tstrcpy")
         outputCodeTabNl("mov\tr3, r0")
-        outputCodeTabNl("push\tr3")
+        outputCodeTabNl("str\tr3, [sp, #-4]!")
     }
 
     /** add acc string to buf string - both are pointers*/
     override fun addString() {
-        outputCodeTab("pop\t{r0}\t\t")
+        outputCodeTab("ldr\tr0, [sp], #4\t\t")
         outputCommentNl("add string - strcat(top-of-stack, r3)")
         outputCodeTabNl("mov\tr1, r3")
         outputCodeTabNl("bl\tstrcat")
@@ -524,13 +534,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set string variable from accumulator (var and acc are pointers */
     override fun assignmentStringLocalVar(stackOffset: Int) {
-        outputCodeTab("movq\t%rax, %rsi\t\t")
-        outputCommentNl("assign string - strcpy_(offset(%rbp), %rax)")
-        outputCodeTab("movq\t")
-        if (stackOffset != 0)
-            outputCode("$stackOffset")
-        outputCodeNl("(%rbp), %rdi")
-        outputCodeTabNl("call\tstrcpy_")
+        outputCodeTab("mov\tr1, r3\t\t")
+        outputCommentNl("assign string - strcpy([fp-offset], r3)")
+        outputCodeTabNl("sub\tr0, fp, #${-stackOffset}")
+        outputCodeTabNl("bl\tstrcpy")
     }
 
     /** print string - address in accumulator */
@@ -561,18 +568,24 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** read string into local variable - address in accumulator*/
     override fun readStringLocal(stackOffset: Int, length: Int) {
-        outputCodeTab("movq\t")
-        if (stackOffset != 0)
-            outputCode("$stackOffset")
-        outputCodeNl("(%rbp), %rdi\t\t# address of the string to be read")
-        outputCodeTab("movq\t$${length}, %rsi\t\t")
+        outputCodeTab("mov\tr0, #0\t\t")
+        outputCommentNl("stdin")
+        outputCodeTab("ldr\tr1, [fp, #${stackOffset}]\t\t")
+        outputCommentNl("address of the string to be read")
+        outputCodeTab("mov\tr2, #${length}\t\t")
         outputCommentNl("max number of bytes to read")
-        outputCodeTabNl("call\tread_s_")
+        outputCodeTabNl("bl\tread")
+        outputCodeTab("ldr\tr2, [fp, #${stackOffset}]\t\t")
+        outputCommentNl("get rid of the newline at the end of the string")
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("sub\tr0, r0, #1")
+        outputCodeTabNl("str\tr3, [r2, r0]")
+        outputCodeTabNl("mov\tr3, r0")
     }
 
     /** compare 2 strings for equality */
     override fun compareStringEquals() {
-        outputCodeTab("pop\t{r0}\t\t")
+        outputCodeTab("ldr\tr0, [sp], #4\t\t")
         outputCommentNl("compare strings - strcmp(top-of-stack, r3)")
         outputCodeTabNl("mov\tr1, r3")
         outputCodeTabNl("bl\tstrcmp")
@@ -582,7 +595,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** compare 2 strings for non-equality */
     override fun compareStringNotEquals() {
-        outputCodeTab("pop\t{r0}\t\t")
+        outputCodeTab("ldr\tr0, [sp], #4")
         outputCommentNl("compare strings - strcmp(top-of-stack, r3)")
         outputCodeTabNl("mov\tr1, r3")
         outputCodeTabNl("bl\tstrcmp")

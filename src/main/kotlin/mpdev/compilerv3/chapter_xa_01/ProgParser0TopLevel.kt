@@ -17,8 +17,8 @@ fun parseProgram() {
     if (inp.lookahead().encToken == Kwd.funDecl)
         parseFunDecl()
     parseMainBlock()
-    parseProgEnd()
     parseStringConstants()
+    parseProgEnd()
 }
 
 /**
