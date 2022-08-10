@@ -380,6 +380,11 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("ands\tr3, r2, r3")
     }
 
+    //todo numeric and, or, xor, shl, shr
+    //todo int arrays
+    //todo short and byte types
+    //todo exit code
+
     //////////////////////////////////// comparisons ///////////////////////////////////
 
     /** compare and set accumulator and flags - is equal to */
