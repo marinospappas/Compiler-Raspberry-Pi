@@ -360,7 +360,11 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     //////////////////////////////////// boolean arithmetic ///////////////////////////////////
 
     /** boolean not accumulator */
-    override fun booleanNotAccumulator() = outputCodeTabNl("eors\tr3, r3, #1")
+    override fun booleanNotAccumulator() {
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("moveq\tr3, #1")     // set r3 to 1 if zero flag is set
+        outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
+    }
 
     /** or top of stack with accumulator */
     override fun orAccumulator() {

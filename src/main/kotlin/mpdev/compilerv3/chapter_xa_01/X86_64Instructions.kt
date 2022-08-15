@@ -309,7 +309,11 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override fun jump(label: String) = outputCodeTabNl("jmp\t$label")
 
     /** boolean not accumulator */
-    override fun booleanNotAccumulator() = outputCodeTabNl("xorq\t$1, %rax")
+    override fun booleanNotAccumulator() {
+        outputCodeTabNl("testq\t%rax, %rax")
+        outputCodeTabNl("sete\t%al")        // set AL to 1 if rax is 0
+        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+    }
 
     /** or top of stack with accumulator */
     override fun orAccumulator() {

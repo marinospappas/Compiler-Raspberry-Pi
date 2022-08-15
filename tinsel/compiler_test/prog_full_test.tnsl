@@ -10,11 +10,9 @@ fun num_expression(a1: int, a2: int, a3: int, a4: int): void {
     var result1: int, result2: int
     println "integer input: ", a1, ", ", a2, ", ", a3, ", ", a4
     result1 = (a1 + a2) / a3 - 14 - (-1) * ((a4 / (-a3)) + (1 - a2 * (6 + a1)))
-    println "result1 = (a1 + a2) / a3 - 14 - (-1) * ((a4 / (-a3)) + (1 - a2 * (6 + a1)))"
-    println result1
+    println "result1: (a1 + a2) / a3 - 14 - (-1) * ((a4 / (-a3)) + (1 - a2 * (6 + a1))) = ", result1
     result2 = -((((a1 + 1) * a2 + 5) * a3 - 120) * (-(a4 + 5)) - 99 )
-    println "result2 = -((((a1 + 1) * a2 + 5) * a3 - 120) * (-(a4 + 5)) - 99 )"
-    println result2
+    println "result2: -((((a1 + 1) * a2 + 5) * a3 - 120) * (-(a4 + 5)) - 99 ) = ", result2
     return
 }
 
@@ -25,24 +23,25 @@ fun bool_expression(a1: int, a2: int, a3: int): void {
     var result1: int, result2: int
     println "integer input: ", a1, ", ", a2, ", ", a3
     result1 = a1 >= a2 || a3
-    println "result1 = a1 >= a2 || a3"
+    print "result1: a1 >= a2 || a3 = "
     if (result1) { println "true" } else { println "false" }
-    result2 = a1
-    println "a3 is zero"
+    print "a3 is zero: "
     if (a3 == 0) { println "true" } else { println "false" }
-    println "a3 is not zero"
+    print "a3 is zero: "
+    if (a3) { println "false" } else { println "true" }
+    print "a3 is zero: "
     if (!a3) { println "true" } else { println "false" }
     if (a1 > 10) {
-        println "a1 > 10 AND a2 < 0 && a3 >= 5"
+        print "result2: a1 > 10 AND a2 < 0 && a3 >= 5 = "
         if (a2 < 0 && a3 >= 5) { println "true" } else { println "false" }
     }
     else {
     if (a1 < 5) {
-        println "a1 < 5 AND a2 > 1 || a3 == 0"
+        print "result3: a1 < 5 AND a2 > 1 || a3 == 0 = "
         if (a2 > 1 || a3 == 0) { println "true" } else { println "false" }
     }
     else {
-        println "a1 is >=5 and <= 10 AND neither a2 nor a3 is 0"
+        print "result4: a1 is >=5 and <= 10 AND neither a2 nor a3 is 0 = "
         if (a2 && a3) { println "true" } else { println "false" }
     }
     }
