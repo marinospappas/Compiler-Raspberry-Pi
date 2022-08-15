@@ -9,6 +9,7 @@ interface CodeModule {
     val funTempParamsCpuRegisters: Array<String>
     val MAX_FUN_PARAMS: Int
 
+    val WORD_SIZE: Int
     val INT_SIZE: Int
     val STRPTR_SIZE: Int
 

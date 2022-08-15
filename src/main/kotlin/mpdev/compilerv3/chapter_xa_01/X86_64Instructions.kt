@@ -24,9 +24,12 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     // flag to include the string buffer in the assembly code
     var includeStringBuffer = false
 
+    // architecture word size
+    override val WORD_SIZE = 8  // 64-bit architecture
+
     // sizes of various types
-    override val INT_SIZE = 8    // 64-bit integers
-    override val STRPTR_SIZE = 8     // string pointer 64 bit
+    override val INT_SIZE = WORD_SIZE    // 64-bit integers
+    override val STRPTR_SIZE = WORD_SIZE    // string pointer 64 bit
 
     /** initialisation code - class InputProgramScanner */
     init {
@@ -306,7 +309,11 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override fun jump(label: String) = outputCodeTabNl("jmp\t$label")
 
     /** boolean not accumulator */
-    override fun booleanNotAccumulator() = outputCodeTabNl("xorq\t$1, %rax")
+    override fun booleanNotAccumulator() {
+        outputCodeTabNl("testq\t%rax, %rax")
+        outputCodeTabNl("sete\t%al")        // set AL to 1 if rax is 0
+        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+    }
 
     /** or top of stack with accumulator */
     override fun orAccumulator() {
