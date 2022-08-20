@@ -24,7 +24,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     // flag to include the string buffer in the assembly code
     var includeStringBuffer = false
 
-    // architecture word size
+    // architecture word size.
     override val WORD_SIZE = 8  // 64-bit architecture
 
     // sizes of various types
