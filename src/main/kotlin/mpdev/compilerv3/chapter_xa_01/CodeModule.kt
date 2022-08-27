@@ -1,9 +1,13 @@
 package mpdev.compilerv3.chapter_xa_01
 
+import java.io.PrintStream
+
 /** code module interface - defines the functions needed to generate assembly code */
 interface CodeModule {
     val COMMENT: String
     var stackVarOffset: Int
+    var outStream: PrintStream
+    var outputLines: Int
 
     val funInpParamsCpuRegisters: Array<String>
     val funTempParamsCpuRegisters: Array<String>
@@ -13,15 +17,23 @@ interface CodeModule {
     val INT_SIZE: Int
     val STRPTR_SIZE: Int
 
-    fun getOutputLines(): Int
-
-    fun outputCode(s: String)
-    fun outputCodeNl(s: String = "")
-    fun outputCodeTab(s: String)
-    fun outputCodeTabNl(s: String)
-    fun outputComment(s: String)
-    fun outputCommentNl(s: String)
-    fun outputLabel(s: String)
+    /** output code */
+    fun outputCode(s: String) {
+        outStream.print(s)
+        outputLines += s.count { it == '\n' }
+    }
+    /** output code with newline */
+    fun outputCodeNl(s: String = "") = outputCode("$s\n")
+    /** output code with tab */
+    fun outputCodeTab(s: String) = outputCode("\t$s")
+    /** output code with tab and newline */
+    fun outputCodeTabNl(s: String) = outputCodeTab("$s\n")
+    /** output comment */
+    fun outputComment(s: String) = outputCode("$COMMENT $s")
+    /** output comment with newline*/
+    fun outputCommentNl(s: String) = outputComment("$s\n")
+    /** output a label */
+    fun outputLabel(s: String) = outputCodeNl("$s:")
 
     /** initialisation code for assembler */
     fun progInit(progName: String)

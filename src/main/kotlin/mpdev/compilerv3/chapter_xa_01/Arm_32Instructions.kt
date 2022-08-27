@@ -11,12 +11,11 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     private val CODE_ID = "Arm-32 Assembly Code - Raspberry Pi"
     override val COMMENT = "@"
+    override var outputLines: Int = 0
+    override var outStream: PrintStream = out
+
     private val MAIN_ENTRYPOINT = "main"
     private val MAIN_EXITPOINT = "${MAIN_BLOCK}_exit_"
-
-    private var outStream: PrintStream = out
-
-    private var outputLines = 0
 
     // the offset from frame pointer for the next local variable (in the stack)
     override var stackVarOffset = -4
@@ -62,26 +61,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     // 4 params maximum allowed
     override val MAX_FUN_PARAMS = funInpParamsCpuRegisters.size
 
-    /** output lines */
-    override fun getOutputLines() = outputLines
-
-    /** output code */
-    override fun outputCode(s: String) {
-        outStream.print(s)
-        outputLines += s.count { it == '\n' }
-    }
-    /** output code with newline */
-    override fun outputCodeNl(s: String) = outputCode("$s\n")
-    /** output code with tab */
-    override fun outputCodeTab(s: String) = outputCode("\t$s")
-    /** output code with tab and newline */
-    override fun outputCodeTabNl(s: String) = outputCodeTab("$s\n")
-    /** output comment */
     override fun outputComment(s: String) = outputCode("$COMMENT $s")
-    /** output comment with newline*/
-    override fun outputCommentNl(s: String) = outputComment("$s\n")
-    /** output a label */
-    override fun outputLabel(s: String) = outputCodeNl("$s:")
 
     /////////////////////////// initialisation and termination //////////////////////////////7
 

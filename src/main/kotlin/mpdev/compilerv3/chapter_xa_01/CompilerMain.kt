@@ -77,7 +77,7 @@ fun initCompiler(args: Array<String>) {
     processCmdLineArgs(args)
     // initialise the code module
     code = when (cpuArchitecture) {
-        CPUArch.x86 -> `X86_64Instructions`(outFile)
+        CPUArch.x86 -> X86_64Instructions(outFile)
         CPUArch.arm -> Arm_32Instructions(outFile)
     }
     // initialise the scanner module
@@ -110,7 +110,7 @@ fun main(args: Array<String>) {
         exit("end of debug run")
     }
     val elapsedTime = measureTimeMillis { parseProgram() }
-    println("Successful compilation, $inFile: ${inp.currentLineNumber-1} source lines, $outFile: ${code.getOutputLines()} assembly lines")
+    println("Successful compilation, $inFile: ${inp.currentLineNumber-1} source lines, $outFile: ${code.outputLines} assembly lines")
                                         // -1 is needed as an extra new line was added when the input was read
     println("Completed in: $elapsedTime milliseconds")
 }

@@ -146,7 +146,7 @@ class InputProgramScanner(inputFile: String = "") {
         return Token()  // dummy return to keep the compiler happy - unreachable
     }
 
-    /** set the next token as invalid - it has nto been recognised */
+    /** set the next token as invalid - it has not been recognised */
     private fun getInvalidToken(): Token {
         val thisChar = nextChar
         getNextChar()
