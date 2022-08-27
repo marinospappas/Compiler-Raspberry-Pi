@@ -11,12 +11,12 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     private val CODE_ID = "x86-64 Assembly Code - AT&T format"
     override val COMMENT = "#"
+    override var outputLines: Int = 0
+    override var outStream: PrintStream = out
+
     private val MAIN_ENTRYPOINT = "_start"
     private val MAIN_EXITPOINT = "${MAIN_BLOCK}_exit_"
 
-    private var outStream: PrintStream = out
-
-    private var outputLines = 0
 
     // the offset from base pointer for the next local variable (in the stack)
     override var stackVarOffset = 0
@@ -52,26 +52,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     // 6 params maximum allowed
     override val MAX_FUN_PARAMS = funInpParamsCpuRegisters.size
 
-    /** output lines */
-    override fun getOutputLines() = outputLines
-
-    /** output code */
-    override fun outputCode(s: String) {
-        outStream.print(s)
-        outputLines += s.count { it == '\n' }
-    }
-    /** output code with newline */
-    override fun outputCodeNl(s: String) = outputCode("$s\n")
-    /** output code with tab */
-    override fun outputCodeTab(s: String) = outputCode("\t$s")
-    /** output code with tab and newline */
-    override fun outputCodeTabNl(s: String) = outputCodeTab("$s\n")
-    /** output comment */
     override fun outputComment(s: String) = outputCode("$COMMENT $s")
-    /** output comment with newline*/
-    override fun outputCommentNl(s: String) = outputComment("$s\n")
-    /** output a label */
-    override fun outputLabel(s: String) = outputCodeNl("$s:")
 
     /** initialisation code for assembler */
     override fun progInit(progName: String) {
