@@ -25,7 +25,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     var includeStringBuffer = false
 
     // architecture word size.
-    override val WORD_SIZE = 8  // 64-bit architecture
+    val WORD_SIZE = 8  // 64-bit architecture
 
     // sizes of various types
     override val INT_SIZE = WORD_SIZE    // 64-bit integers

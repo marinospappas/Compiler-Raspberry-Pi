@@ -62,7 +62,7 @@ fun declareGlobalVar(name: String, type: DataType, initValue: String, length: In
 /** declare a local variable */
 fun declareLocalVar(name: String, type: DataType, initValue: String, length: Int) {
     val stackOffset: Int
-    val lengthRoundedToWord = (length / code.WORD_SIZE + 1) * code.WORD_SIZE
+    val lengthRoundedToWord = (length / code.INT_SIZE + 1) * code.INT_SIZE
     when (type) {
         DataType.int -> {
             stackOffset = code.allocateStackVar(code.INT_SIZE)

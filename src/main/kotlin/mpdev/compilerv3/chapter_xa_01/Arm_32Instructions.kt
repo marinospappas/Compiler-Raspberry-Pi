@@ -21,7 +21,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override var stackVarOffset = -4
 
     // architecture word size
-    override val WORD_SIZE = 4  // 32-bit architecture
+    val WORD_SIZE = 4  // 32-bit architecture
 
     // sizes of various types
     override val INT_SIZE = WORD_SIZE   // 32-bit integers
@@ -240,6 +240,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /** set accumulator to a value */
     override fun setAccumulator(value: String) {
         val intConstantAddr = createIntConst(value)
+        //TODO generate single MOV instruction for small constants
         outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
@@ -375,6 +376,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun compareEquals() {
         outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("cmp\tr2, r3")
+        //TODO can we use movs and moveqs to set flag sand avoid the ands?
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("moveq\tr3, #1")     // set r3 to 1 if comparison is ==
         outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
