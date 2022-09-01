@@ -22,6 +22,8 @@ package mpdev.compilerv3.chapter_xa_01
  *
  */
 
+//TODO: improvement to support "if (a && b)" equivalent to if "(a != 0 && b != 0)"
+
 /** parse a Boolean expression */
 fun parseBooleanExpression(): DataType {
     val typeT1 = parseBooleanTerm()

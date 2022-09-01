@@ -1,0 +1,65 @@
+/*--
+ *-- tinsel full test
+ *-- this program tests as many compiler features as possible
+ *--
+ */
+
+program full_test
+
+// global vars
+var v1: int, v2: int = 25, result: int
+var c1: string = "World!              ", c2: string(21), greeting: string = "Hello, "
+var msg: string(100)
+
+///////////////////////////
+// boolean expressions test
+///////////////////////////
+fun bool_expression(a1: int, a2: int, a3: int): void {
+    var result1: int, result2: int
+    println "integer input: ", a1, ", ", a2, ", ", a3
+    result1 = a1 >= a2 || a3
+    print "result1: a1 >= a2 || a3 = "
+    if (result1) { println "true" } else { println "false" }
+    print "a3 is zero: "
+    if (a3 == 0) { println "true" } else { println "false" }
+    print "a3 is zero: "
+    if (a3) { println "false" } else { println "true" }
+    print "a3 is zero: "
+    if (!a3) { println "true" } else { println "false" }
+    print "a1 not equal to a3: "
+    if (a1 != a3) { println "true" } else { println  "false" }
+    if (a1 > 10) {
+        print "result2: a1 > 10 AND a2 < 0 && a3 >= 5 = "
+        if (a2 < 0 && a3 >= 5) { println "true" } else { println "false" }
+    }
+    else {
+    if (a1 < 5) {
+        print "result3: a1 < 5 AND a2 > 1 || a3 == 0 = "
+        if (a2 > 1 || a3 == 0) { println "true" } else { println "false" }
+    }
+    else {
+        print "result4: a1 is >=5 and <= 10 AND neither a2 nor a3 is 0 = "
+        if (a2 != 0 && a3 != 0) { println "true" } else { println "false" }
+    }
+    }
+    return
+}
+
+// main program
+main {
+    var x1: int = 0, x2: int = -1, x3: int = 10, x4: int
+    var s1: string(21), s2: string = "World             ."
+
+    println "initial values: ", x1, ", ", x2, ", ", x3
+    println s2
+
+    println ""
+    println "2. boolean expressions and if-else"
+    println "enter 3 small integers (hit <enter> after each one): "
+    read x1, x2, x3
+    bool_expression(x1, x2, x3)
+
+    exit
+}
+
+endprogram

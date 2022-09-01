@@ -1,0 +1,53 @@
+/*--
+ *-- tinsel full test
+ *-- this program tests as many compiler features as possible
+ *--
+ */
+
+program full_test
+
+// global vars
+var v1: int, v2: int = 25, result: int
+var c1: string = "World!              ", c2: string(21), greeting: string = "Hello, "
+var msg: string(100)
+
+////////////////////
+// global variables
+////////////////////
+fun global_vars(): void {
+    result = v1 + v2
+    println "result 1: ", result
+    result = (v1+v2) * (v1-v2)
+    println "result 2: ", result
+    result = v1 * v2 - v1 / v2
+    println "result 3: ", result
+    print "strings are the same: "
+    if (c1 == c2) { println "true" }
+    if (c1 != c2) { println "false" }
+    msg = greeting + c1
+    println "greeting is: " + msg
+    return
+}
+
+// main program
+main {
+    var x1: int = 0, x2: int = -1, x3: int = 10, x4: int
+    var s1: string(21), s2: string = "World             ."
+
+    println "initial values: ", x1, ", ", x2, ", ", x3
+    println s2
+
+    println ""
+    println "5. global variables"
+    println "initial values: ", v1, ", ", v2
+    println c2, ", ", c1
+    println "enter two integers"
+    read v1, v2
+    println "enter two strings"
+    read c1, c2
+    global_vars()
+
+    exit
+}
+
+endprogram
