@@ -23,6 +23,7 @@ package mpdev.compilerv3.chapter_xa_01
  */
 
 //TODO: improvement to support "if (a && b)" equivalent to if "(a != 0 && b != 0)"
+//TODO: check whether and, or, xor work as numeric ops as well or otherwise implement
 
 /** parse a Boolean expression */
 fun parseBooleanExpression(): DataType {
