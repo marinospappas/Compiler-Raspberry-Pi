@@ -272,6 +272,7 @@ fun printExpressions() {
  * current version implements exit(0) - exit code will be supported later
  */
 fun parseExit() {
+    //TODO: exit code and also ability to call it from anywhere and not just from main which is the case now
     inp.match()
     code.exitProgram()
 }

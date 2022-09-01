@@ -206,7 +206,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
      * returns the new stack offset for this new variable
      */
     override fun allocateStackVar(size: Int): Int {
-        outputCodeTabNl("sub\tsp, sp, ${size}")
+        outputCodeTabNl("sub\tsp, sp, #${size}")
         stackVarOffset -= size
         return stackVarOffset
     }
@@ -219,8 +219,12 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** initialise an int stack var */
     override fun initStackVarInt(stackOffset : Int, initValue: String) {
-        val intConstantAddr = createIntConst(initValue)
-        outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
+        if (initValue.toInt() in 0..255)
+            outputCodeTabNl("mov\tr3, #${initValue}")
+        else {
+            val intConstantAddr = createIntConst(initValue)
+            outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
+        }
         outputCodeTabNl("str\tr3, [fp, #${stackOffset}]")
     }
 
@@ -239,10 +243,13 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to a value */
     override fun setAccumulator(value: String) {
-        val intConstantAddr = createIntConst(value)
-        //TODO generate single MOV instruction for small constants
-        outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
-        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
+        if (value.toInt() in 0..255)
+            outputCodeTabNl("movs\tr3, #${value}")
+        else {
+            val intConstantAddr = createIntConst(value)
+            outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
+            outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
+        }
     }
 
     private fun createIntConst(value: String): String {
@@ -365,10 +372,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("ands\tr3, r2, r3")
     }
 
-    //todo numeric and, or, xor, shl, shr
-    //todo int arrays
-    //todo short and byte types
-    //todo exit code
+    //TODO: numeric and, or, xor, shl, shr
 
     //////////////////////////////////// comparisons ///////////////////////////////////
 
@@ -376,7 +380,6 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun compareEquals() {
         outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("cmp\tr2, r3")
-        //TODO can we use movs and moveqs to set flag sand avoid the ands?
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("moveq\tr3, #1")     // set r3 to 1 if comparison is ==
         outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
@@ -485,7 +488,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("initialise local var string address")
         if (constStrAddress.isNotEmpty()) {
             outputCodeTabNl("ldr\tr1, $constStrAddress${GLOBAL_VARS_ADDR_SUFFIX}")
-            outputCodeTabNl("sub\tr0, fp, $stackOffset")
+            outputCodeTabNl("mov\tr0, r2")
             outputCodeTab("bl\tstrcpy\t\t")
             outputCommentNl("initialise local var string")
         }
@@ -517,7 +520,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set string variable from accumulator (var and acc are pointers */
     override fun assignmentString(identifier: String) {
-        outputCodeTab("mov\t, r1, r3\t\t")
+        outputCodeTab("mov\tr1, r3\t\t")
         outputCommentNl("assign string - strcpy(identifier, r3)")
         outputCodeTabNl("ldr\tr0, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
         outputCodeTabNl("bl\tstrcpy")
@@ -527,7 +530,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun assignmentStringLocalVar(stackOffset: Int) {
         outputCodeTab("mov\tr1, r3\t\t")
         outputCommentNl("assign string - strcpy([fp-offset], r3)")
-        outputCodeTabNl("sub\tr0, fp, #${-stackOffset}")
+        outputCodeTabNl("ldr\tr0, [fp, #${stackOffset}]")
         outputCodeTabNl("bl\tstrcpy")
     }
 
@@ -570,7 +573,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("get rid of the newline at the end of the string")
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("sub\tr0, r0, #1")
-        outputCodeTabNl("str\tr3, [r2, r0]")
+        outputCodeTabNl("strb\tr3, [r2, r0]")
         outputCodeTabNl("mov\tr3, r0")
     }
 
@@ -580,8 +583,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("compare strings - strcmp(top-of-stack, r3)")
         outputCodeTabNl("mov\tr1, r3")
         outputCodeTabNl("bl\tstrcmp")
-        outputCodeTabNl("and\tr3, r0, #1")
-        outputCodeTabNl("eors\tr3, r3, #1")   // boolean not r3 and set flags - Z flag set = FALSE
+        outputCodeTabNl("and\tr3, r0, #1")    // r3 = 0 and Z flag set if equal
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("moveq\tr3, #1")     // set r3 to 1 if comparison is ==
+        outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
 
     /** compare 2 strings for non-equality */
@@ -590,7 +595,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("compare strings - strcmp(top-of-stack, r3)")
         outputCodeTabNl("mov\tr1, r3")
         outputCodeTabNl("bl\tstrcmp")
-        outputCodeTabNl("ands\tr3, r0, #1")   // Z flag set = FALSE
+        outputCodeTabNl("and\tr3, r0, #1")    // r3 = 0 and Z flag set if equal
+        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("movne\tr3, #1")     // set r3 to 1 if comparison is !=
+        outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
 
     /** string constants */

@@ -1,0 +1,73 @@
+/*--
+ *-- tinsel full test
+ *-- this program tests as many compiler features as possible
+ *--
+ */
+
+program full_test
+
+// global vars
+var v1: int, v2: int = 25, result: int
+var c1: string = "World!              ", c2: string(21), greeting: string = "Hello, "
+var msg: string(100)
+
+/////////////
+// loops test
+/////////////
+fun print_triangle(lines: int): void {
+    var line: int = 0
+    while (line < lines) {
+        for (i = 1 to line+1) {
+            print i, " "
+        }
+        println ""
+        line = line + 1
+    }
+    return
+}
+
+fun print_inverted_triangle(lines: int): void {
+    for (line = lines down to 1) {
+        for (i = 1 to line) {
+            print i, " "
+        }
+        println ""
+    }
+    return
+}
+
+fun loops(a1: int, a2: int): void {
+    var count: int = 0;
+    println a1, " triangles"
+    repeat {
+        print_triangle(a2 / (a1-count))
+        count = count + 1
+    } until (count >= a1)
+    count = 0
+    println ""
+    println a1, " inverted triangles"
+    repeat {
+        print_inverted_triangle(a2 / (a1-count))
+        count = count + 1
+    } until (count >= a1)
+    return
+}
+
+// main program
+main {
+    var x1: int = 0, x2: int = -1, x3: int = 10, x4: int
+    var s1: string(21), s2: string = "World             ."
+
+    println "initial values: ", x1, ", ", x2, ", ", x3
+    println s2
+
+    println ""
+    println "3. loops"
+    println "enter two small integers, one between 1 and 5 and one between 1 and 30"
+    read x1, x2
+    loops(x1, x2)
+
+    exit
+}
+
+endprogram
