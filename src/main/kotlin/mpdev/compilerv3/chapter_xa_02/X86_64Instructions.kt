@@ -259,6 +259,18 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("lea\t${identifier}(%rip), %rax")
     }
 
+    override fun savePtrValue() {
+        outputCodeTabNl("movq\t%rax, %rcx")
+    }
+
+    override fun pointerAssignment() {
+        outputCodeTabNl("movq\t(%rcx), %rax")
+    }
+
+    override fun setAccumulatorToPointerVar() {
+        outputCodeTabNl("movq\t%rax, (%rcx)")
+    }
+
     /** set accumulator to local variable */
     override fun setAccumulatorToLocalVar(offset: Int) {
         outputCodeTab("movq\t")

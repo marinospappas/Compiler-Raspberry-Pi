@@ -87,6 +87,12 @@ interface CodeModule {
     fun setAccumulatorToVar(identifier: String)
     /** set accumulator to global variable address */
     fun setAccumulatorToVarAddress(identifier: String)
+    /** save pointer value (currently in accumulator) for later use */
+    fun savePtrValue()
+    /** assignment to previously saved ptr */
+    fun pointerAssignment()
+    /** get value from pointer to accumulator */
+    fun setAccumulatorToPointerVar()
     /** set accumulator to local variable value */
     fun setAccumulatorToLocalVar(offset: Int)
     /** set accumulator to local variable address */

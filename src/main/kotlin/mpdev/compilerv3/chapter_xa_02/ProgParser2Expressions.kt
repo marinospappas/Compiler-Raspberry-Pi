@@ -30,11 +30,15 @@ fun parseAssignment() {
  */
 fun parsePtrAssignment() {
     inp.match()
-    val ptrName: String = inp.match(Kwd.identifier).value
+    val expType = parseExpression()
+    if (expType != DataType.intptr)
+        abort("line ${inp.currentLineNumber}: pointer expression expected")
+    inp.match(Kwd.ptrClose)
     inp.match(Kwd.equalsOp)
+    code.savePtrValue()
     val typeExp = parseBooleanExpression()
     checkOperandTypeCompatibility(DataType.intptr, typeExp, ASSIGN)
-    parseNumPtrAssignment(ptrName)
+    code.pointerAssignment()
 }
 
 /** check if variable can be assigned a value */
@@ -125,6 +129,7 @@ fun parseFactor(): DataType {
         Kwd.number -> return parseNumber()
         Kwd.string -> return parseStringLiteral()
         Kwd.addressOfVar -> return parseAddressOfVar()
+        Kwd.ptrOpen -> return parsePtrExpression()
         else -> inp.expected("valid factor (expression, number or string)")
     }
     return DataType.void    // dummy instruction
@@ -174,6 +179,21 @@ fun parseAddressOfVar(): DataType {
         code.setAccumulatorToVarAddress(varName)
     inp.match(Kwd.rightParen)
     return DataType.intptr
+}
+
+/**
+ * parse a pointer expression
+ * returns the data type of the parenth. expression
+ */
+fun parsePtrExpression(): DataType {
+    inp.match()
+    val expType = parseExpression()
+    if (expType != DataType.intptr)
+        abort("line ${inp.currentLineNumber}: pointer expression expected")
+    code.savePtrValue()
+    code.setAccumulatorToPointerVar()
+    inp.match(Kwd.ptrClose)
+    return expType
 }
 
 /**

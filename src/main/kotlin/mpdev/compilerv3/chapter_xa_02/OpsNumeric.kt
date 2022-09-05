@@ -24,14 +24,6 @@ fun parseNumAssignment(varName: String) {
         code.assignment(varName)
 }
 
-/** process assignment to address where a pointer is pointing to */
-fun parseNumPtrAssignment(varName: String) {
-    if (identifiersMap[varName]?.isStackVar == true)
-        identifiersMap[varName]?.stackOffset?.let { code.assignmentLocalVar(it) }
-    else
-        code.assignment(varName)
-}
-
 /** process a numeric addition */
 fun addNumber() {
     code.addToAccumulator()

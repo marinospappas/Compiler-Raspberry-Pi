@@ -305,17 +305,39 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
-    /** set accumulator to variable */
+    /** set accumulator to global variable */
     override fun setAccumulatorToVar(identifier: String) {
         outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
         outputCodeTabNl("ldr\tr3, [r2]")
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
+    /** set accumulator to global variable address */
+    override fun setAccumulatorToVarAddress(identifier: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun savePtrValue() {
+        TODO("Not yet implemented")
+    }
+
+    override fun pointerAssignment() {
+        TODO("Not yet implemented")
+    }
+
+    override fun setAccumulatorToPointerVar() {
+        TODO("Not yet implemented")
+    }
+
     /** set accumulator to local variable */
     override fun setAccumulatorToLocalVar(offset: Int) {
         outputCodeTabNl("ldr\tr3, [fp, #${offset}]")
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
+    }
+
+    /** set accumulator to local variable  address */
+    override fun setAccumulatorToLocalVarAddress(offset: Int) {
+        TODO("Not yet implemented")
     }
 
     /** set variable to accumulator */
