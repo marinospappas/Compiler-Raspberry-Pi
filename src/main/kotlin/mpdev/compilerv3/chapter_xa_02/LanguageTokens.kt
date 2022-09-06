@@ -35,7 +35,7 @@ enum class Kwd {
     isGreater, isLess,
     isGreaterOrEq, isLessOrEq,
 
-    intType, stringType, voidType,
+    intType, stringType, intPtrType, voidType,
 
     startBlock, endBlock,
     commaToken, semiColonToken, colonToken,
@@ -105,6 +105,9 @@ fun initKeywords() {
     )
     languageTokens.add(
         Token("string",  Kwd.stringType,    TokType.varType)
+    )
+    languageTokens.add(
+        Token("intptr",     Kwd.intPtrType,       TokType.varType)
     )
     languageTokens.add(
         Token("void",    Kwd.voidType,      TokType.none)

@@ -29,7 +29,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     // sizes of various types
     override val INT_SIZE = WORD_SIZE    // 64-bit integers
-    override val STRPTR_SIZE = WORD_SIZE    // string pointer 64 bit
+    override val PTR_SIZE = WORD_SIZE    // pointer 64 bit
 
     /** initialisation code - class InputProgramScanner */
     init {
@@ -65,6 +65,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("tinsel_msg_: .string \"TINSEL version 2.1 for x86-84 (Linux) May 2022 (c) M.Pappas\\n\"")
         // newline string
         outputCodeTabNl("newline_: .string \"\\n\"")
+        outputCodeNl(".align 8")
     }
 
     /** declare int variable (64bit) */
@@ -264,11 +265,11 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     }
 
     override fun pointerAssignment() {
-        outputCodeTabNl("movq\t(%rcx), %rax")
+        outputCodeTabNl("movq\t%rax, (%rcx)")
     }
 
     override fun setAccumulatorToPointerVar() {
-        outputCodeTabNl("movq\t%rax, (%rcx)")
+        outputCodeTabNl("movq\t(%rcx), %rax")
     }
 
     /** set accumulator to local variable */

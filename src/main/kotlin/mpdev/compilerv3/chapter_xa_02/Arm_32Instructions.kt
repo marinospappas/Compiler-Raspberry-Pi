@@ -25,7 +25,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     // sizes of various types
     override val INT_SIZE = WORD_SIZE   // 32-bit integers
-    override val STRPTR_SIZE = WORD_SIZE     // string pointer 32 bit
+    override val PTR_SIZE = WORD_SIZE   // pointer 32 bit
 
     // global vars list - need for entering the global var addresses in the .text section
     private val globalVarsList = mutableListOf<String>()
@@ -77,13 +77,14 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeNl(".syntax\tunified")
         outputCodeNl("")
         outputCodeNl(".data")
-        outputCodeNl(".align 2")
+        outputCodeNl(".align 4")
         // copyright message
         outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 3.0 for Arm-32 (Raspberry Pi) July 2022 (c) M.Pappas\\n\"")
         // newline string
         outputCodeTabNl("$NEWLINE: .asciz \"\\n\"")
         // int format for printf
         outputCodeTabNl("$INT_FMT: .asciz \"%d\"")
+        outputCodeNl(".align 4")
     }
 
     /** declare int variable (32bit) */
@@ -99,7 +100,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun funInit() {
         outputCodeNl()
         outputCodeNl(".text")
-        outputCodeNl(".align 2")
+        outputCodeNl(".align 4")
         outputCodeNl(".global $MAIN_ENTRYPOINT")
     }
 
@@ -181,7 +182,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         val globalVarNamesList = globalVarsList + stringConstants.keys +
                 listOf(TINSEL_MSG, NEWLINE, INT_FMT, STRING_BUFFER)
         outputCodeNl("")
-        outputCodeNl(".align 2")
+        outputCodeNl(".align 4")
         outputCommentNl("global var addresses go here")
         globalVarNamesList.forEach{ varname ->
             outputCodeNl("${varname}${GLOBAL_VARS_ADDR_SUFFIX}:\t.word $varname")
@@ -627,7 +628,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun stringConstantsDataSpace() {
         code.outputCodeNl()
         code.outputCodeNl(".data")
-        code.outputCodeTabNl(".align 2")
+        code.outputCodeTabNl(".align 4")
         code.outputCommentNl("buffer for string operations - max str length limit")
         code.outputCodeTabNl("$STRING_BUFFER:\t.space $STR_BUF_SIZE")
     }

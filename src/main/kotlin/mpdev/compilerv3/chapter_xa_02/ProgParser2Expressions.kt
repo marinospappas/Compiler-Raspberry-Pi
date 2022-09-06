@@ -17,7 +17,7 @@ fun parseAssignment() {
     val typeExp = parseBooleanExpression()
     checkOperandTypeCompatibility(typeVar, typeExp, ASSIGN)
     when (typeVar) {
-        DataType.int -> parseNumAssignment(identName)
+        DataType.int, DataType.intptr -> parseNumAssignment(identName)
         DataType.string -> parseStringAssignment(identName)
         else -> {}
     }
@@ -29,15 +29,10 @@ fun parseAssignment() {
  * stores the result of <expression> to the address the pointer points to
  */
 fun parsePtrAssignment() {
-    inp.match()
-    val expType = parseExpression()
-    if (expType != DataType.intptr)
-        abort("line ${inp.currentLineNumber}: pointer expression expected")
-    inp.match(Kwd.ptrClose)
+    parsePtrExpression()
     inp.match(Kwd.equalsOp)
-    code.savePtrValue()
     val typeExp = parseBooleanExpression()
-    checkOperandTypeCompatibility(DataType.intptr, typeExp, ASSIGN)
+    checkOperandTypeCompatibility(DataType.ptrExpr, typeExp, ASSIGN)
     code.pointerAssignment()
 }
 
@@ -129,7 +124,7 @@ fun parseFactor(): DataType {
         Kwd.number -> return parseNumber()
         Kwd.string -> return parseStringLiteral()
         Kwd.addressOfVar -> return parseAddressOfVar()
-        Kwd.ptrOpen -> return parsePtrExpression()
+        Kwd.ptrOpen -> return parsePointer()
         else -> inp.expected("valid factor (expression, number or string)")
     }
     return DataType.void    // dummy instruction
@@ -172,7 +167,7 @@ fun parseAddressOfVar(): DataType {
     val nextToken = inp.match(Kwd.identifier)
     val varName = nextToken.value
     if (nextToken.type != TokType.variable)
-        abort("line ${inp.currentLineNumber}: variable name expected, found ${varName}")
+        abort("line ${inp.currentLineNumber}: expected variable name, found ${varName}")
     if (identifiersMap[varName]?.isStackVar == true)
         identifiersMap[varName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
     else
@@ -181,17 +176,23 @@ fun parseAddressOfVar(): DataType {
     return DataType.intptr
 }
 
+/** parse Pointer - returns the value a pointer points to */
+fun parsePointer(): DataType {
+    val expType = parsePtrExpression()
+    code.setAccumulatorToPointerVar()
+    return expType
+}
+
 /**
  * parse a pointer expression
- * returns the data type of the parenth. expression
+ * parses an expression containing a pointer and saves the address it points to
  */
 fun parsePtrExpression(): DataType {
     inp.match()
     val expType = parseExpression()
-    if (expType != DataType.intptr)
-        abort("line ${inp.currentLineNumber}: pointer expression expected")
+    if (expType != DataType.ptrExpr)
+        abort("line ${inp.currentLineNumber}: expected pointer expression, found ${expType}")
     code.savePtrValue()
-    code.setAccumulatorToPointerVar()
     inp.match(Kwd.ptrClose)
     return expType
 }
@@ -254,6 +255,7 @@ fun restoreParamRegisters(functionName: String) {
 fun parseVariable(): DataType {
     return when (getType(inp.lookahead().value)) {
         DataType.int -> parseNumVariable()
+        DataType.intptr -> parsePtrVariable()
         DataType.string -> parseStringVariable()
         else -> DataType.void
     }
@@ -265,7 +267,7 @@ fun add(typeT1: DataType) {
     val typeT2 = parseTerm()
     checkOperandTypeCompatibility(typeT1, typeT2, ADD)
     when (typeT1) {
-        DataType.int -> addNumber()
+        DataType.int, DataType.intptr -> addNumber()
         DataType.string -> addString()
         else -> {}
     }
@@ -277,7 +279,7 @@ fun subtract(typeT1: DataType) {
     val typeT2 = parseTerm()
     checkOperandTypeCompatibility(typeT1, typeT2, SUBTRACT)
     when (typeT1) {
-        DataType.int -> subtractNumber()
+        DataType.int, DataType.intptr -> subtractNumber()
         else -> {}
     }
 }

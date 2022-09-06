@@ -1,13 +1,12 @@
 package mpdev.compilerv3.chapter_xa_02
 
 //TODO: int arrays
-//TODO: int pointers
 //TODO: short and byte types
 
 // global vars
 
 /** our variable types */
-enum class DataType { int, string, intptr, void, none }
+enum class DataType { int, string, intptr, ptrExpr, void, none }
 
 /** our variable scope */
 enum class VarScope { global, local }
@@ -57,7 +56,7 @@ fun declareVar(name: String, type: DataType, initValue: String, length: Int, sco
 fun declareGlobalVar(name: String, type: DataType, initValue: String, length: Int) {
     identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue!="", length)
     when (type) {
-        DataType.int -> code.declareInt(name, initValue)
+        DataType.int, DataType.intptr -> code.declareInt(name, initValue)
         DataType.string -> code.declareString(name, initValue, length)
         else -> return
     }
@@ -73,7 +72,7 @@ fun declareLocalVar(name: String, type: DataType, initValue: String, length: Int
             initLocalIntVar(stackOffset, initValue)
         }
         DataType.string -> {
-            stackOffset = code.allocateStackVar(code.STRPTR_SIZE)
+            stackOffset = code.allocateStackVar(code.PTR_SIZE)
             initLocalStringVar(name, stackOffset, initValue, lengthRoundedToWord)
         }
         else -> return
@@ -168,6 +167,13 @@ val typesCompatibility = mapOf(
     // pointer with int allowed only for add and subtract
     TypesAndOpsCombi(DataType.intptr, DataType.int, ADD) to true,
     TypesAndOpsCombi(DataType.intptr, DataType.int, SUBTRACT) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.int, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.int, DataType.intptr, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.intptr, ASSIGN) to true,
+    // pointer expression (i.e. where a pointer is pointing) with int allowed
+    TypesAndOpsCombi(DataType.ptrExpr, DataType.int, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.int, DataType.ptrExpr, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.ptrExpr, DataType.none, PRINT) to true,
     // pointer with pointer allowed only for subtract
     TypesAndOpsCombi(DataType.intptr, DataType.intptr, SUBTRACT) to true,
     // all other combinations forbidden unless set here

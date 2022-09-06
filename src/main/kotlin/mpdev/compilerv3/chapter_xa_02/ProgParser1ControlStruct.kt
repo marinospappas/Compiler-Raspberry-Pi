@@ -45,7 +45,7 @@ fun releaseLocalVars(blockName: String, restoreSP: Boolean) {
         localVarSize +=
             when (identifiersMap[it]?.type) {
                 DataType.int -> code.INT_SIZE
-                DataType.string -> code.STRPTR_SIZE + identifiersMap[it]?.size!!
+                DataType.string -> code.PTR_SIZE + identifiersMap[it]?.size!!
                 else-> code.INT_SIZE
             }
         identifiersMap.remove(it)
@@ -260,7 +260,7 @@ fun printExpressions() {
         val exprType = parseBooleanExpression()
         checkOperandTypeCompatibility(exprType, DataType.none, PRINT)
         when (exprType) {
-            DataType.int -> code.printInt()
+            DataType.int, DataType.ptrExpr -> code.printInt()
             DataType.string -> code.printStr()
             else -> {}
         }

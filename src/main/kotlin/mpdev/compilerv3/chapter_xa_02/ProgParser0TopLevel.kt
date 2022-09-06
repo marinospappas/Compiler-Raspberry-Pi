@@ -49,6 +49,7 @@ fun parseOneVarDecl(scope: VarScope, blockName: String) {
     inp.match(Kwd.colonToken)
     when (inp.lookahead().encToken) {
         Kwd.intType -> parseOneIntDecl(varName, scope)
+        Kwd.intPtrType -> parseOnePtrDecl(varName, scope)
         Kwd.stringType -> parseOneStringDecl(varName, scope)
         else -> inp.expected("variable type (int or string)")
     }
@@ -68,6 +69,17 @@ fun parseOneIntDecl(varName: String, scope: VarScope) {
         initValue = initIntVar()
     }
     declareVar(varName, DataType.int, initValue, code.INT_SIZE, scope)
+}
+
+/** parse one pointer var declaration */
+fun parseOnePtrDecl(varName: String, scope: VarScope) {
+    var initValue = ""
+    inp.match()
+    if (inp.lookahead().encToken == Kwd.equalsOp) {
+        inp.match()
+        initValue = initIntVar()
+    }
+    declareVar(varName, DataType.intptr, initValue, code.PTR_SIZE, scope)
 }
 
 /** parse one string var declaration */
@@ -160,7 +172,7 @@ fun parseOneFunParam(): FunctionParameter {
     inp.match(Kwd.colonToken)
     var paramType = DataType.none
     when (inp.lookahead().encToken) {
-        Kwd.intType -> paramType = DataType.int
+        Kwd.intType, Kwd.intPtrType -> paramType = DataType.int
         Kwd.stringType -> paramType = DataType.string
         else -> inp.expected("variable type (int or string)")
     }

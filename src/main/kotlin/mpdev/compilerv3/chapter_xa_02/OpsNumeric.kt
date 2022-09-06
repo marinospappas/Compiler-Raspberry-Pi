@@ -16,6 +16,16 @@ fun parseNumVariable(): DataType {
     return DataType.int
 }
 
+/** process a numeric variable */
+fun parsePtrVariable(): DataType {
+    val varName = inp.match(Kwd.identifier).value
+    if (identifiersMap[varName]?.isStackVar == true)
+        identifiersMap[varName]?.stackOffset?.let { code.setAccumulatorToLocalVar(it) }
+    else
+        code.setAccumulatorToVar(varName)
+    return DataType.ptrExpr
+}
+
 /** process assignment to numeric var (int for now) */
 fun parseNumAssignment(varName: String) {
     if (identifiersMap[varName]?.isStackVar == true)

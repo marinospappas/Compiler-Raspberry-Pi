@@ -14,7 +14,7 @@ interface CodeModule {
     val MAX_FUN_PARAMS: Int
 
     val INT_SIZE: Int
-    val STRPTR_SIZE: Int
+    val PTR_SIZE: Int
 
     /** output code */
     fun outputCode(s: String) {
