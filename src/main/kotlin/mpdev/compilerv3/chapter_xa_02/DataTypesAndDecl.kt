@@ -8,8 +8,12 @@ package mpdev.compilerv3.chapter_xa_02
 /** our variable types */
 enum class DataType { int, string, intptr, ptrExpr, void, none }
 
-/** our variable scope */
-enum class VarScope { global, local }
+/** our variable scope
+ *  packageGlobal: scope across program and all libraries in the package
+ *  global: scope within the program only
+ *  local: scope within the block only
+ */
+enum class VarScope { packageGlobal, global, local, external }
 
 /** the declaration space (variables and functions) */
 class IdentifierDecl(var fv: TokType, var type: DataType, var initialised: Boolean = false, var size: Int = 0,
@@ -47,9 +51,17 @@ fun declareVar(name: String, type: DataType, initValue: String, length: Int, sco
     if (identifiersMap[name] != null)
         abort ("line ${inp.currentLineNumber}: identifier $name already declared")
     when (scope) {
+        VarScope.packageGlobal -> declarePackageGlobalVar(name, type, initValue, length)
         VarScope.global -> declareGlobalVar(name, type, initValue, length)
         VarScope.local -> declareLocalVar(name, type, initValue, length)
+        VarScope.external -> declareExternalVar(name, type, "", length)
     }
+}
+
+/** declare a package-global variable */
+fun declarePackageGlobalVar(name: String, type: DataType, initValue: String, length: Int) {
+    code.globalSymbol(name)
+    declareGlobalVar(name, type, initValue, length)
 }
 
 /** declare a global variable */
@@ -67,7 +79,7 @@ fun declareLocalVar(name: String, type: DataType, initValue: String, length: Int
     val stackOffset: Int
     val lengthRoundedToWord = (length / code.INT_SIZE + 1) * code.INT_SIZE
     when (type) {
-        DataType.int -> {
+        DataType.int, DataType.intptr -> {
             stackOffset = code.allocateStackVar(code.INT_SIZE)
             initLocalIntVar(stackOffset, initValue)
         }
@@ -80,6 +92,11 @@ fun declareLocalVar(name: String, type: DataType, initValue: String, length: Int
     identifiersMap[name] = IdentifierDecl(
         TokType.variable, type, initialised = true, size = lengthRoundedToWord, isStackVar = true, stackOffset = stackOffset
     )
+}
+
+/** declare an external variable */
+fun declareExternalVar(name: String, type: DataType, initValue: String, length: Int) {
+    identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue!="", length)
 }
 
 /** initialise a local int var */
@@ -106,10 +123,10 @@ fun initLocalStringVar(name: String, stackOffset: Int, initValue: String, length
 }
 
 /** process a function declaration */
-fun declareFun(name: String, type: DataType) {
-    if (identifiersMap[name] != null)
-        abort ("line ${inp.currentLineNumber}: identifier $name already declared")
-    identifiersMap[name] = IdentifierDecl(TokType.function, type)
+fun declareFun(name: String, isPackageGlobal: Boolean) {
+    code.outputCodeNl()
+    if (isPackageGlobal)
+        code.globalSymbol(name)
     code.declareAsmFun(name)
 }
 

@@ -66,9 +66,9 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /////////////////////////// initialisation and termination //////////////////////////////7
 
     /** initialisation code for assembler */
-    override fun progInit(progName: String) {
+    override fun progInit(progOrLib: String, progName: String) {
         outputCommentNl(CODE_ID)
-        outputCommentNl("program $progName")
+        outputCommentNl("$progOrLib $progName")
         outputCommentNl("compiled on ${Date()}")
         outputCodeNl("")
         outputCommentNl("define the Raspberry Pi CPU")
@@ -101,12 +101,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeNl()
         outputCodeNl(".text")
         outputCodeNl(".align 4")
-        outputCodeNl(".global $MAIN_ENTRYPOINT")
     }
 
     /** declare function */
     override fun declareAsmFun(name: String) {
-        outputCodeNl()
         outputCodeNl(".type $name %function")
         outputCommentNl("function $name")
         outputLabel(name)
@@ -146,9 +144,14 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("ldr\t${funTempParamsCpuRegisters[paramIndx]}, [sp], #4")
     }
 
+    override fun globalSymbol(name: String) {
+        outputCodeNl(".global $name")
+    }
+
     /** initial code for main */
     override fun mainInit() {
         outputCodeNl()
+        globalSymbol(MAIN_ENTRYPOINT)
         outputCodeNl(".type $MAIN_ENTRYPOINT %function")
         outputCommentNl("main program")
         outputLabel(MAIN_ENTRYPOINT)
@@ -237,9 +240,9 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     /** end of program */
-    override fun progEnd() {
+    override fun progEnd(libOrProg: String) {
         outputCodeNl()
-        outputCommentNl("end program")
+        outputCommentNl("end $libOrProg")
     }
 
     /////////////////////////// integer assignments and arithmetic //////////////////////////////7
