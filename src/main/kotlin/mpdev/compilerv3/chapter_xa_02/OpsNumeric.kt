@@ -53,3 +53,33 @@ fun multiplyNumber() {
 fun divideNumber() {
     code.divideAccumulator()
 }
+
+/** process a numeric modulo op */
+fun moduloNumber() {
+    code.moduloAccumulator()
+}
+
+/** process shift left */
+fun shiftLeftNumber() {
+    code.shiftAccumulatorLeft()
+}
+
+/** process shift right */
+fun shiftRightNumber() {
+    code.shiftAccumulatorRight()
+}
+
+/** process bitwise or */
+fun orNumber() {
+    code.orAccumulator()
+}
+
+/** process bitwise xor */
+fun xorNumber() {
+    code.xorAccumulator()
+}
+
+/** process bitwise and */
+fun andNumber() {
+    code.andAccumulator()
+}

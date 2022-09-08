@@ -252,6 +252,49 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("idivq\t%rbx, %rax")
     }
 
+    /** modulo after divide accumulator by top of stack */
+    override fun moduloAccumulator() {
+        divideAccumulator()
+        outputCodeTabNl("movq\t%rdx, %rax")     // modulo in rdx
+    }
+
+    /** bitwise not accumulator */
+    override fun notAccumulator() {
+        outputCodeTabNl("xorq\t%rax, %rax")
+    }
+
+    /** or top of stack with accumulator */
+    override fun orAccumulator() {
+        outputCodeTabNl("popq\t%rbx")
+        outputCodeTabNl("orq\t%rbx, %rax")
+    }
+
+    /** exclusive or top of stack with accumulator */
+    override fun xorAccumulator() {
+        outputCodeTabNl("popq\t%rbx")
+        outputCodeTabNl("xorq\t%rbx, %rax")
+    }
+
+    /** and top of stack with accumulator */
+    override fun andAccumulator() {
+        outputCodeTabNl("popq\t%rbx")
+        outputCodeTabNl("andq\t%rbx, %rax")
+    }
+
+    /** shift accumulator left */
+    override fun shiftAccumulatorLeft() {
+        outputCodeTabNl("movq\t%rax, %rcx")
+        outputCodeTabNl("popq\t%rax")
+        outputCodeTabNl("shlq\t%cl, %rax")
+    }
+
+    /** shift accumulator right */
+    override fun shiftAccumulatorRight() {
+        outputCodeTabNl("movq\t%rax, %rcx")
+        outputCodeTabNl("popq\t%rax")
+        outputCodeTabNl("shrq\t%cl, %rax")
+    }
+
     /** set accumulator to global variable value */
     override fun setAccumulatorToVar(identifier: String) {
         outputCodeTabNl("movq\t${identifier}(%rip), %rax")
@@ -325,22 +368,12 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
     }
 
-    /** or top of stack with accumulator */
-    override fun orAccumulator() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("orq\t%rbx, %rax")
+    override fun booleanOrAccumulator() {
+        TODO("Not yet implemented")
     }
 
-    /** exclusive or top of stack with accumulator */
-    override fun xorAccumulator() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("xorq\t%rbx, %rax")
-    }
-
-    /** and top of stack with accumulator */
-    override fun andAccumulator() {
-        outputCodeTabNl("popq\t%rbx")
-        outputCodeTabNl("andq\t%rbx, %rax")
+    override fun booleanAndAccumulator() {
+        TODO("Not yet implemented")
     }
 
     /** compare and set accumulator and flags - is equal to */

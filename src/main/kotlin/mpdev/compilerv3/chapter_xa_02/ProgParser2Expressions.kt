@@ -57,6 +57,8 @@ fun parseExpression(): DataType {
         when (inp.lookahead().encToken) {
             Kwd.addOp -> add(typeT1)
             Kwd.subOp -> subtract(typeT1)
+            Kwd.orOp -> bitwiseOr(typeT1)
+            Kwd.xorOp -> bitwiseXor(typeT1)
             else -> inp.expected("add or subtract operator")
         }
     }
@@ -79,6 +81,10 @@ fun parseTerm(): DataType {
         when (inp.lookahead().encToken) {
             Kwd.mulOp -> multiply(typeF1)
             Kwd.divOp -> divide(typeF1)
+            Kwd.modOp -> modulo(typeF1)
+            Kwd.shlOp -> shiftLeft(typeF1)
+            Kwd.shrOp -> shiftRight(typeF1)
+            Kwd.andOp -> bitwiseAnd(typeF1)
             else -> inp.expected("multiply or divide operator")
         }
     }
@@ -89,6 +95,7 @@ fun parseTerm(): DataType {
  * parse a signed factor
  * this can be only the first factor in a term
  * <signed factor> ::= [ addop ] <factor>
+ * also parses bitwise not in a similar manner
  */
 fun parseSignedFactor(): DataType {
     val factType: DataType
@@ -107,6 +114,13 @@ fun parseSignedFactor(): DataType {
             code.negateAccumulator()
         }
     }
+    else
+        if (inp.lookahead().encToken == Kwd.notOp) {
+            inp.match()
+            factType = parseFactor()
+            checkOperandTypeCompatibility(factType, DataType.none, NOT)
+            code.notAccumulator()
+        }
     else
         factType = parseFactor()
     return factType
@@ -306,3 +320,68 @@ fun divide(typeF1: DataType) {
     }
 }
 
+/** parse a modulo op */
+fun modulo(typeF1: DataType) {
+    inp.match()
+    val typeF2 = parseFactor()
+    checkOperandTypeCompatibility(typeF1, typeF2, MODULO)
+    when (typeF1) {
+        DataType.int -> moduloNumber()
+        else -> {}
+    }
+}
+
+/** parse a shift left op */
+fun shiftLeft(typeF1: DataType) {
+    inp.match()
+    val typeF2 = parseFactor()
+    checkOperandTypeCompatibility(typeF1, typeF2, SHIFT_LEFT)
+    when (typeF1) {
+        DataType.int -> shiftLeftNumber()
+        else -> {}
+    }
+}
+
+/** parse a shift right op */
+fun shiftRight(typeF1: DataType) {
+    inp.match()
+    val typeF2 = parseFactor()
+    checkOperandTypeCompatibility(typeF1, typeF2, SHIFT_RIGHT)
+    when (typeF1) {
+        DataType.int -> shiftRightNumber()
+        else -> {}
+    }
+}
+
+/** parse a bitwise or */
+fun bitwiseOr(typeF1: DataType) {
+    inp.match()
+    val typeF2 = parseFactor()
+    checkOperandTypeCompatibility(typeF1, typeF2, OR)
+    when (typeF1) {
+        DataType.int -> orNumber()
+        else -> {}
+    }
+}
+
+/** parse a bitwise xor */
+fun bitwiseXor(typeF1: DataType) {
+    inp.match()
+    val typeF2 = parseFactor()
+    checkOperandTypeCompatibility(typeF1, typeF2, XOR)
+    when (typeF1) {
+        DataType.int -> xorNumber()
+        else -> {}
+    }
+}
+
+/** parse a bitwise or */
+fun bitwiseAnd(typeF1: DataType) {
+    inp.match()
+    val typeF2 = parseFactor()
+    checkOperandTypeCompatibility(typeF1, typeF2, AND)
+    when (typeF1) {
+        DataType.int -> andNumber()
+        else -> {}
+    }
+}

@@ -85,6 +85,20 @@ interface CodeModule {
     fun multiplyAccumulator()
     /** divide accumulator by top of stack */
     fun divideAccumulator()
+    /** modulo - divide accumulator by top of stack */
+    fun moduloAccumulator()
+    /** bitwise not accumulator */
+    fun notAccumulator()
+    /** bitwise or top of stack with accumulator */
+    fun orAccumulator()
+    /** bitwise exclusive or top of stack with accumulator */
+    fun xorAccumulator()
+    /** bitwise and top of stack with accumulator */
+    fun andAccumulator()
+    /** shift accumulator left */
+    fun shiftAccumulatorLeft()
+    /** shift accumulator right */
+    fun shiftAccumulatorRight()
     /** set accumulator to global variable value */
     fun setAccumulatorToVar(identifier: String)
     /** set accumulator to global variable address */
@@ -115,12 +129,10 @@ interface CodeModule {
 
     /** boolean not accumulator */
     fun booleanNotAccumulator()
-    /** or top of stack with accumulator */
-    fun orAccumulator()
-    /** exclusive or top of stack with accumulator */
-    fun xorAccumulator()
-    /** and top of stack with accumulator */
-    fun andAccumulator()
+    /** boolean or top of stack with accumulator */
+    fun booleanOrAccumulator()
+    /** boolean and top of stack with accumulator */
+    fun booleanAndAccumulator()
 
     /** compare and set accumulator and flags - is equal to */
     fun compareEquals()

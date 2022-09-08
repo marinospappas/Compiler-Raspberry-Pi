@@ -309,6 +309,40 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
+    override fun moduloAccumulator() {
+        TODO("Not yet implemented")
+    }
+
+    override fun notAccumulator() {
+        TODO("Not yet implemented")
+    }
+
+    /** or top of stack with accumulator */
+    override fun orAccumulator() {
+        outputCodeTabNl("ldr\tr2, [sp], #4")
+        outputCodeTabNl("orrs\tr3, r2, r3")
+    }
+
+    /** exclusive or top of stack with accumulator */
+    override fun xorAccumulator() {
+        outputCodeTabNl("ldr\tr2, [sp], #4")
+        outputCodeTabNl("eors\tr3, r2, r3")
+    }
+
+    /** and top of stack with accumulator */
+    override fun andAccumulator() {
+        outputCodeTabNl("ldr\tr2, [sp], #4")
+        outputCodeTabNl("ands\tr3, r2, r3")
+    }
+
+    override fun shiftAccumulatorLeft() {
+        TODO("Not yet implemented")
+    }
+
+    override fun shiftAccumulatorRight() {
+        TODO("Not yet implemented")
+    }
+
     /** set accumulator to global variable */
     override fun setAccumulatorToVar(identifier: String) {
         outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
@@ -382,22 +416,12 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
 
-    /** or top of stack with accumulator */
-    override fun orAccumulator() {
-        outputCodeTabNl("ldr\tr2, [sp], #4")
-        outputCodeTabNl("orrs\tr3, r2, r3")
+    override fun booleanOrAccumulator() {
+        TODO("Not yet implemented")
     }
 
-    /** exclusive or top of stack with accumulator */
-    override fun xorAccumulator() {
-        outputCodeTabNl("ldr\tr2, [sp], #4")
-        outputCodeTabNl("eors\tr3, r2, r3")
-    }
-
-    /** and top of stack with accumulator */
-    override fun andAccumulator() {
-        outputCodeTabNl("ldr\tr2, [sp], #4")
-        outputCodeTabNl("ands\tr3, r2, r3")
+    override fun booleanAndAccumulator() {
+        TODO("Not yet implemented")
     }
 
     //////////////////////////////////// comparisons ///////////////////////////////////
