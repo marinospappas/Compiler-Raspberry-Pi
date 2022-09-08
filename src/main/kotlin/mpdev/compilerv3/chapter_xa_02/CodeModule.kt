@@ -35,7 +35,7 @@ interface CodeModule {
     fun outputLabel(s: String) = outputCodeNl("$s:")
 
     /** initialisation code for assembler */
-    fun progInit(progName: String)
+    fun progInit(progOrLib: String, progName: String)
     /** declare int variable */
     fun declareInt(varName: String, initValue: String)
     /** initial code for functions */
@@ -50,6 +50,8 @@ interface CodeModule {
     fun setFunParamReg(paramIndx: Int)
     /** restore a function input param register */
     fun restoreFunTempParamReg(paramIndx: Int)
+    /** initial code for main */
+    fun globalSymbol(name: String)
     /** initial code for main */
     fun mainInit()
     /** termination code for assembler */
@@ -143,7 +145,7 @@ interface CodeModule {
     fun readIntLocal(stackOffset: Int)
 
     /** end of program */
-    fun progEnd()
+    fun progEnd(libOrProg: String)
 
     ////////// string operations ///////////////////////
     /** declare string global variable */

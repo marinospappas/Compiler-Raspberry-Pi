@@ -55,9 +55,9 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override fun outputComment(s: String) = outputCode("$COMMENT $s")
 
     /** initialisation code for assembler */
-    override fun progInit(progName: String) {
+    override fun progInit(progOrLib: String, progName: String) {
         outputCommentNl(CODE_ID)
-        outputCommentNl("program $progName")
+        outputCommentNl("$progOrLib $progName")
         outputCommentNl("compiled on ${Date()}")
         outputCodeNl(".data")
         outputCodeNl(".align 8")
@@ -81,12 +81,10 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeNl()
         outputCodeNl(".text")
         outputCodeNl(".align 8")
-        outputCodeNl(".global $MAIN_ENTRYPOINT")
     }
 
     /** declare function */
     override fun declareAsmFun(name: String) {
-        outputCodeNl()
         outputCommentNl("function $name")
         outputLabel(name)
         outputCodeTab("pushq\t%rbx\t\t")
@@ -126,9 +124,14 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("popq\t${funTempParamsCpuRegisters[paramIndx]}")
     }
 
+    override fun globalSymbol(name: String) {
+        outputCodeNl(".global $name")
+    }
+
     /** initial code for main */
     override fun mainInit() {
         outputCodeNl()
+        globalSymbol(MAIN_ENTRYPOINT)
         outputCommentNl("main program")
         outputLabel(MAIN_ENTRYPOINT)
         outputCodeTab("pushq\t%rbx\t\t")
@@ -416,9 +419,9 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     }
 
     /** end of program */
-    override fun progEnd() {
+    override fun progEnd(libOrProg: String) {
         outputCodeNl()
-        outputCommentNl("end program")
+        outputCommentNl("end $libOrProg")
     }
 
     ////////// string operations ///////////////////////

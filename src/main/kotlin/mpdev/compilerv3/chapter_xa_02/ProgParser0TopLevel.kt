@@ -5,6 +5,9 @@ package mpdev.compilerv3.chapter_xa_02
  * Top Level - program structure
  */
 
+/** program / library flag */
+var isLibrary = false
+
 /**
  * parse a program
  * <program> ::= <prog header> [ <var declarations> ] [ <fun declarations> ] <main block> <prog end>
@@ -26,8 +29,12 @@ fun parseProgram() {
  * <program header> ::= program <identifier>
  */
 fun parseProgHeader() {
-    inp.match(Kwd.startOfProgram)
-    code.progInit(inp.match(Kwd.identifier).value)
+    when (inp.lookahead().encToken) {
+        Kwd.startOfProgram -> isLibrary = false
+        Kwd.startOfLibrary -> isLibrary = true
+        else -> inp.expected("program or library")
+    }
+    code.progInit(inp.match().value, inp.match(Kwd.identifier).value)
 }
 
 /**
@@ -46,11 +53,17 @@ fun parseVarDecl(scope: VarScope = VarScope.global, blockName: String = "") {
 /** parse one variable declaration */
 fun parseOneVarDecl(scope: VarScope, blockName: String) {
     val varName = inp.match(Kwd.identifier).value
+    var varScope = scope
+    when (inp.lookahead().encToken) {     // check for "package-global" or "external" symbol
+        Kwd.global -> { inp.match(); varScope = VarScope.packageGlobal }
+        Kwd.external -> { inp.match(); varScope = VarScope.external }
+        else -> {}
+    }
     inp.match(Kwd.colonToken)
     when (inp.lookahead().encToken) {
-        Kwd.intType -> parseOneIntDecl(varName, scope)
-        Kwd.intPtrType -> parseOnePtrDecl(varName, scope)
-        Kwd.stringType -> parseOneStringDecl(varName, scope)
+        Kwd.intType -> parseOneIntDecl(varName, varScope)
+        Kwd.intPtrType -> parseOnePtrDecl(varName, varScope)
+        Kwd.stringType -> parseOneStringDecl(varName, varScope)
         else -> inp.expected("variable type (int or string)")
     }
     if (scope == VarScope.local) {      // add any local vars to the local vars map for this block
@@ -125,6 +138,8 @@ fun initStringVar(): String {
  */
 fun parseFunDecl() {
     while (inp.lookahead().encToken == Kwd.funDecl) {
+        var isExternal = false
+        var isPackageGlobal = false
         inp.match()
         val functionName = inp.match(Kwd.identifier).value
         labelPrefix = functionName        // set label prefix and label index to function name
@@ -133,6 +148,11 @@ fun parseFunDecl() {
         inp.match(Kwd.leftParen)
         parseFunParams(functionName)
         inp.match(Kwd.rightParen)
+        when (inp.lookahead().encToken) {     // check for "package-global" or "external" function
+            Kwd.global -> { inp.match(); isPackageGlobal = true }
+            Kwd.external -> { inp.match(); isExternal = true }
+            else -> {}
+        }
         inp.match(Kwd.colonToken)
         var funType: DataType = DataType.void
         when (inp.lookahead().encToken) {
@@ -142,9 +162,14 @@ fun parseFunDecl() {
             else -> inp.expected("function type (int, string or void)")
         }
         inp.match()
-        declareFun(functionName, funType)
-        storeParamsToStack(functionName)
-        parseFunctionBlock()
+        if (identifiersMap[functionName] != null)
+            abort ("line ${inp.currentLineNumber}: identifier $functionName already declared")
+        identifiersMap[functionName] = IdentifierDecl(TokType.function, funType)
+        if (!isExternal) {    // external functions do not have body
+            declareFun(functionName, isPackageGlobal)
+            storeParamsToStack(functionName)
+            parseFunctionBlock()
+        }
     }
 }
 
@@ -208,6 +233,7 @@ fun parseFunctionBlock() {
  * <main block> ::= main <block>
  */
 fun parseMainBlock() {
+    if (isLibrary) return   // no main block for libraries
     labelPrefix = MAIN_BLOCK        // set label prefix and label index
     labelIndx = 0
     inp.match(Kwd.mainToken)
@@ -221,8 +247,12 @@ fun parseMainBlock() {
  * <program end> ::= endprogram
  */
 fun parseProgEnd() {
-    inp.match(Kwd.endOfProgram)
-    code.progEnd()
+    val endModule: Token
+    if (isLibrary)
+        endModule = inp.match(Kwd.endOfLibrary)
+    else
+        endModule = inp.match(Kwd.endOfProgram)
+    code.progEnd(endModule.value)
     inp.match(Kwd.endOfInput)
 }
 

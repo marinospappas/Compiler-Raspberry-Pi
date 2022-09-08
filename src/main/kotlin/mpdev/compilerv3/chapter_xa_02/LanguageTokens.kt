@@ -60,6 +60,8 @@ enum class Kwd {
     commentEnd,
 
     startOfProgram, endOfProgram,
+    startOfLibrary, endOfLibrary,
+    external, global,
     varDecl, funDecl, retToken, mainToken, exitToken,
     endOfInput, any, invalid, noToken
 }
@@ -83,12 +85,24 @@ fun initKeywords() {
     languageTokens.add(
         Token("endprogram", Kwd.endOfProgram, TokType.endOfPRogram)
     )
+    languageTokens.add(
+        Token("library",  Kwd.startOfLibrary, TokType.none)
+    )
+    languageTokens.add(
+        Token("endlibrary", Kwd.endOfLibrary, TokType.endOfPRogram)
+    )
 
     languageTokens.add(
         Token("var",      Kwd.varDecl,       TokType.none)
     )
     languageTokens.add(
         Token("fun",      Kwd.funDecl,       TokType.none)
+    )
+    languageTokens.add(
+        Token("@external", Kwd.external,     TokType.none)
+    )
+    languageTokens.add(
+        Token("@global",  Kwd.global,        TokType.none)
     )
     languageTokens.add(
         Token("return",   Kwd.retToken,      TokType.none)
