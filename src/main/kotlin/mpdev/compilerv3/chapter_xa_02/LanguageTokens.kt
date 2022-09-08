@@ -26,11 +26,13 @@ var languageTokens = mutableListOf<Token>()
 
 // our language list of keywords and operands and any other special character sequence
 enum class Kwd {
-    addOp, subOp, mulOp, divOp,
+    addOp, subOp, mulOp, divOp, modOp,
+    shlOp, shrOp,
+    notOp, orOp, xorOp, andOp,
     equalsOp,
     leftParen, rightParen,
 
-    orOp, xorOp, andOp, notOp,
+    boolOrOp, boolXorOp, boolAndOp, boolNotOp,
     isEqual, isNotEqual,
     isGreater, isLess,
     isGreaterOrEq, isLessOrEq,
@@ -68,7 +70,8 @@ enum class Kwd {
 
 enum class TokType {
     addOps, mulOps,
-    orOps, andOps, relOps,
+    orOps, andOps,
+    boolOrOps, boolAndOps, relOps,
     endOfBlock, endOfPRogram, endOfInput,
     function, variable,
     commentStart,
@@ -255,6 +258,27 @@ fun initOperators() {
     languageTokens.add(
         Token("/",      Kwd.divOp,      TokType.mulOps)
     )
+    languageTokens.add(
+        Token("%",      Kwd.modOp,      TokType.mulOps)
+    )
+    languageTokens.add(
+        Token("<<",      Kwd.shlOp,      TokType.mulOps)
+    )
+    languageTokens.add(
+        Token(">>",      Kwd.shrOp,      TokType.mulOps)
+    )
+    languageTokens.add(
+        Token("~",      Kwd.notOp,      TokType.none)
+    )
+    languageTokens.add(
+        Token("|",     Kwd.orOp,       TokType.orOps)
+    )
+    languageTokens.add(
+        Token("^",     Kwd.xorOp,      TokType.orOps)
+    )
+    languageTokens.add(
+        Token("&",     Kwd.andOp,      TokType.andOps)
+    )
 
     languageTokens.add(
         Token("(",      Kwd.leftParen,  TokType.none)
@@ -264,22 +288,22 @@ fun initOperators() {
     )
     // boolean operators
     languageTokens.add(
-        Token("||",     Kwd.orOp,       TokType.orOps)
+        Token("!",      Kwd.boolNotOp,      TokType.none)
     )
     languageTokens.add(
-        Token("^^",     Kwd.xorOp,      TokType.orOps)
+        Token("or",     Kwd.boolOrOp,       TokType.boolOrOps)
     )
     languageTokens.add(
-        Token("&&",     Kwd.andOp,      TokType.andOps)
+        Token("xor",     Kwd.boolXorOp,      TokType.boolOrOps)
+    )
+    languageTokens.add(
+        Token("and",     Kwd.boolAndOp,      TokType.boolAndOps)
     )
     languageTokens.add(
         Token("==",     Kwd.isEqual,    TokType.relOps)
     )
     languageTokens.add(
         Token("!=",     Kwd.isNotEqual, TokType.relOps)
-    )
-    languageTokens.add(
-        Token("!",      Kwd.notOp,      TokType.none)
     )
     languageTokens.add(
         Token(">=",     Kwd.isGreaterOrEq, TokType.relOps)
@@ -293,7 +317,7 @@ fun initOperators() {
     languageTokens.add(
         Token("<",      Kwd.isLess,     TokType.relOps)
     )
-
+    // assignment
     languageTokens.add(
         Token("=",      Kwd.equalsOp,   TokType.none)
     )

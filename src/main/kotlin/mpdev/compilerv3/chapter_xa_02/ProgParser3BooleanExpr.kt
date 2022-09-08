@@ -28,12 +28,11 @@ package mpdev.compilerv3.chapter_xa_02
 /** parse a Boolean expression */
 fun parseBooleanExpression(): DataType {
     val typeT1 = parseBooleanTerm()
-    while (inp.lookahead().type == TokType.orOps) {
+    while (inp.lookahead().type == TokType.boolOrOps) {
         code.saveAccumulator()
         when (inp.lookahead().encToken) {
-            Kwd.orOp -> boolOr(typeT1)
-            Kwd.xorOp -> boolXor(typeT1)
-            else -> inp.expected("boolean or or xor operator")
+            Kwd.boolOrOp -> boolOr(typeT1)
+            else -> inp.expected("boolean or operator")
         }
     }
     return typeT1
@@ -42,10 +41,10 @@ fun parseBooleanExpression(): DataType {
 /** parse a boolean term */
 fun parseBooleanTerm(): DataType {
     val typeF1 = parseNotFactor()
-    while (inp.lookahead().type == TokType.andOps) {
+    while (inp.lookahead().type == TokType.boolAndOps) {
         code.saveAccumulator()
         when (inp.lookahead().encToken) {
-            Kwd.andOp -> boolAnd(typeF1)
+            Kwd.boolAndOp -> boolAnd(typeF1)
             else -> inp.expected("boolean and operator")
         }
     }
@@ -55,10 +54,10 @@ fun parseBooleanTerm(): DataType {
 /** parse a not factor */
 fun parseNotFactor(): DataType {
     val typeF: DataType
-    if (inp.lookahead().encToken == Kwd.notOp) {
+    if (inp.lookahead().encToken == Kwd.boolNotOp) {
         inp.match()
         typeF = parseBooleanFactor()
-        checkOperandTypeCompatibility(typeF, DataType.none, BOOLEAN_NOT)
+        checkOperandTypeCompatibility(typeF, DataType.none, BOOL_NOT)
         code.booleanNotAccumulator()
     }
     else
@@ -106,24 +105,16 @@ fun parseRelation(): DataType {
 fun boolOr(typeE1: DataType) {
     inp.match()
     val typeE2 = parseBooleanTerm()
-    checkOperandTypeCompatibility(typeE1, typeE2, OR)
-    code.orAccumulator()
-}
-
-/** parse boolean xor */
-fun boolXor(typeE1: DataType) {
-    inp.match()
-    val typeE2 = parseBooleanTerm()
-    checkOperandTypeCompatibility(typeE1, typeE2, XOR)
-    code.xorAccumulator()
+    checkOperandTypeCompatibility(typeE1, typeE2, BOOL_OR)
+    code.booleanOrAccumulator()
 }
 
 /** parse boolean and */
 fun boolAnd(typeF1: DataType) {
     inp.match()
     val typeF2 = parseNotFactor()
-    checkOperandTypeCompatibility(typeF1, typeF2, AND)
-    code.andAccumulator()
+    checkOperandTypeCompatibility(typeF1, typeF2, BOOL_AND)
+    code.booleanAndAccumulator()
 }
 
 /** parse is equal to */
