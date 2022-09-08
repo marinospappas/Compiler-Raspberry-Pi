@@ -203,12 +203,41 @@ class InputProgramScanner(inputFile: String = "") {
     }
 
     /**
-     * get a number
+     * get a decimal number
      * <number> ::= [ <digit> ] +
      */
     private fun getNumber(): String {
+        if (isBinaryNumber())
+            return getBinaryNumber()
+        if (isHexNumber())
+            return getHexNumber()
+        return getDecimalNumber()
+    }
+
+    /** get a decimal number */
+    private fun getDecimalNumber(): String {
         var value = ""
         while (isNumeric(nextChar)) {
+            value += nextChar.toString()
+            getNextChar()
+        }
+        return value
+    }
+
+    /** get a binary number */
+    private fun getBinaryNumber(): String {
+        var value = "0b"
+        while (isBinaryDigit(nextChar)) {
+            value += nextChar.toString()
+            getNextChar()
+        }
+        return value
+    }
+
+    /** get a binary number */
+    private fun getHexNumber(): String {
+        var value = "0x"
+        while (isHexDigit(nextChar)) {
             value += nextChar.toString()
             getNextChar()
         }
@@ -237,6 +266,12 @@ class InputProgramScanner(inputFile: String = "") {
                         inputProgram[++cursor]
                     else
                         endOfInput
+    }
+
+    /** "pushes" the current character back to the queue and sets the next char to the previous one from input */
+    private fun pushChar() {
+        if (cursor > 0)
+            nextChar = inputProgram[--cursor]
     }
 
     /**
@@ -296,8 +331,14 @@ class InputProgramScanner(inputFile: String = "") {
     /** check for an alpha char */
     private fun isAlpha(c: Char): Boolean = c.uppercaseChar() in 'A'..'Z'
 
-    /** check for a numeric char */
+    /** check for a decimal numeric char */
     private fun isNumeric(c: Char): Boolean = c in '0'..'9'
+
+    /** check for a binary numeric char */
+    private fun isBinaryDigit(c: Char): Boolean = c in '0'..'1'
+
+    /** check for a decimal numeric char */
+    private fun isHexDigit(c: Char): Boolean = c in '0'..'9' || c in 'a'..'f' || c in 'A'..'F'
 
     /** check for alphanumeric */
     private fun isAlphanumeric(c: Char): Boolean = isAlpha(c) || isNumeric(c) || c == '_'
@@ -317,6 +358,32 @@ class InputProgramScanner(inputFile: String = "") {
     /** check for end of program - called by parseBlock */
     fun isEndOfProgram(): Boolean = nextToken.encToken == Kwd.endOfProgram ||
         nextToken.encToken == Kwd.endOfInput
+
+    /** check for a binary number - starting with 0b */
+    fun isBinaryNumber(): Boolean {
+        if (nextChar != '0')
+            return false
+        getNextChar()
+        if (nextChar != 'b') {
+            pushChar()
+            return false
+        }
+        getNextChar()
+        return true
+    }
+
+    /** check for a binary number - starting with 0b */
+    fun isHexNumber(): Boolean {
+        if (nextChar != '0')
+            return false
+        getNextChar()
+        if (nextChar != 'x') {
+            pushChar()
+            return false
+        }
+        getNextChar()
+        return true
+    }
 
     /** decode an encoded token to token name */
     fun decodeToken(token: Kwd): String {
