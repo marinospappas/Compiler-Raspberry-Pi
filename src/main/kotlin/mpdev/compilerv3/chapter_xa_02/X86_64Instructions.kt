@@ -117,7 +117,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("movq\t${funTempParamsCpuRegisters[paramIndx]}, ${funInpParamsCpuRegisters[paramIndx]}")
     }
 
-    /** restore a funciton input param register */
+    /** restore a function input param register */
     override fun restoreFunTempParamReg(paramIndx: Int) {
         if (funTempParamsCpuRegisters[paramIndx] == "%rax")
             return
