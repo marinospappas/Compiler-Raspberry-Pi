@@ -1,7 +1,7 @@
 package mpdev.compilerv3.chapter_xa_02
 
 //TODO: int arrays
-//TODO: short and byte types
+//TODO: byte types
 
 // global vars
 

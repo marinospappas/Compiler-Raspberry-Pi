@@ -288,13 +288,7 @@ fun initOperators() {
     )
     // boolean operators
     languageTokens.add(
-        Token("!",      Kwd.boolNotOp,      TokType.none)
-    )
-    languageTokens.add(
         Token("or",     Kwd.boolOrOp,       TokType.boolOrOps)
-    )
-    languageTokens.add(
-        Token("xor",     Kwd.boolXorOp,      TokType.boolOrOps)
     )
     languageTokens.add(
         Token("and",     Kwd.boolAndOp,      TokType.boolAndOps)
@@ -304,6 +298,9 @@ fun initOperators() {
     )
     languageTokens.add(
         Token("!=",     Kwd.isNotEqual, TokType.relOps)
+    )
+    languageTokens.add(
+        Token("!",      Kwd.boolNotOp,      TokType.none)
     )
     languageTokens.add(
         Token(">=",     Kwd.isGreaterOrEq, TokType.relOps)
