@@ -117,7 +117,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("movq\t${funTempParamsCpuRegisters[paramIndx]}, ${funInpParamsCpuRegisters[paramIndx]}")
     }
 
-    /** restore a funciton input param register */
+    /** restore a function input param register */
     override fun restoreFunTempParamReg(paramIndx: Int) {
         if (funTempParamsCpuRegisters[paramIndx] == "%rax")
             return
@@ -260,7 +260,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     /** bitwise not accumulator */
     override fun notAccumulator() {
-        outputCodeTabNl("xorq\t%rax, %rax")
+        outputCodeTabNl("not\t%rax")
     }
 
     /** or top of stack with accumulator */
@@ -366,14 +366,33 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("testq\t%rax, %rax")
         outputCodeTabNl("sete\t%al")        // set AL to 1 if rax is 0
         outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+
     }
 
     override fun booleanOrAccumulator() {
-        TODO("Not yet implemented")
+        outputCodeTabNl("popq\t%rbx")
+        outputCodeTabNl("testq\t%rbx, %rbx") // convert op1 to 0-1
+        outputCodeTabNl("setne\t%bl")        // set BL to 1 if rbx is not 0
+        outputCodeTabNl("andq\t$1, %rbx")   // zero the rest of rbx and set flags
+
+        outputCodeTabNl("testq\t%rax, %rax")  // convert op2 to 0-1
+        outputCodeTabNl("setne\t%al")        // set AL to 1 if rax is 0
+        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+
+        outputCodeTabNl("orq\t%rbx, %rax")
     }
 
     override fun booleanAndAccumulator() {
-        TODO("Not yet implemented")
+        outputCodeTabNl("popq\t%rbx")
+        outputCodeTabNl("testq\t%rbx, %rbx") // convert op1 to 0-1
+        outputCodeTabNl("setne\t%bl")        // set BL to 1 if rbx is not 0
+        outputCodeTabNl("andq\t$1, %rbx")   // zero the rest of rbx and set flags
+
+        outputCodeTabNl("testq\t%rax, %rax")  // convert op2 to 0-1
+        outputCodeTabNl("setne\t%al")        // set AL to 1 if rax is 0
+        outputCodeTabNl("andq\t$1, %rax")   // zero the rest of rax and set flags - Z flag set = FALSE
+
+        outputCodeTabNl("andq\t%rbx, %rax")
     }
 
     /** compare and set accumulator and flags - is equal to */
