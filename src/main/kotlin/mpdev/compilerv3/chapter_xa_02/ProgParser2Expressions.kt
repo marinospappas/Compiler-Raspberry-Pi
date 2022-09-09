@@ -71,7 +71,6 @@ fun parseExpression(): DataType {
  * returns the data type of the term
  */
 fun parseTerm(): DataType {
-    //TODO: implement shift left and shift right
     val typeF1 = parseSignedFactor()
     while (inp.lookahead().type == TokType.mulOps) {
         if (typeF1 == DataType.string)
