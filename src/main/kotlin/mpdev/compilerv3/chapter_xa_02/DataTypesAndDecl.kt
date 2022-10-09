@@ -187,18 +187,41 @@ val typesCompatibility = mapOf(
     TypesAndOpsCombi(DataType.string, DataType.string, COMPARE_EQ) to true,
     TypesAndOpsCombi(DataType.string, DataType.string, COMPARE_NE) to true,
     TypesAndOpsCombi(DataType.string, DataType.none, PRINT) to true,
-    // pointer with int allowed only for add and subtract
+    // pointer with int allowed only for assign add, subtract and comparisons
     TypesAndOpsCombi(DataType.intptr, DataType.int, ADD) to true,
     TypesAndOpsCombi(DataType.intptr, DataType.int, SUBTRACT) to true,
     TypesAndOpsCombi(DataType.intptr, DataType.int, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.string, ASSIGN) to true,
     TypesAndOpsCombi(DataType.int, DataType.intptr, ASSIGN) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.intptr, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_EQ) to true,
+    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_EQ) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_NE) to true,
+    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_NE) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_LT) to true,
+    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_LT) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_GT) to true,
+    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_GT) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_LE) to true,
+    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_LE) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_GE) to true,
+    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_GE) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.none, PRINT) to true,
     // pointer expression (i.e. where a pointer is pointing) with int allowed
-    TypesAndOpsCombi(DataType.ptrExpr, DataType.int, ASSIGN) to true,
-    TypesAndOpsCombi(DataType.int, DataType.ptrExpr, ASSIGN) to true,
-    TypesAndOpsCombi(DataType.ptrExpr, DataType.none, PRINT) to true,
-    // pointer with pointer allowed only for subtract
+    TypesAndOpsCombi(DataType.ptrExpr, DataType.int, ALL_OPS) to true,
+    TypesAndOpsCombi(DataType.int, DataType.ptrExpr, ALL_OPS) to true,
+    TypesAndOpsCombi(DataType.ptrExpr, DataType.none, ALL_OPS) to true,
+    //TypesAndOpsCombi(DataType.ptrExpr, DataType.int, ASSIGN) to true,
+    //TypesAndOpsCombi(DataType.int, DataType.ptrExpr, ASSIGN) to true,
+    //TypesAndOpsCombi(DataType.ptrExpr, DataType.none, PRINT) to true,
+    // pointer with pointer allowed only for subtract, assign and compare
     TypesAndOpsCombi(DataType.intptr, DataType.intptr, SUBTRACT) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.intptr, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_EQ) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_NE) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_LT) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_GT) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_LE) to true,
+    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_GE) to true,
     // all other combinations forbidden unless set here
 )
 

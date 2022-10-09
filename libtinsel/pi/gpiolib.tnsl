@@ -1,0 +1,119 @@
+/*--
+ *-- GPIO library for the Raspberry Pi
+ *-- Version 1.0, October 2022
+ *-- Marinos Pappas
+ *--/
+library gpiolib
+
+var gpio: intptr = 0
+// GPIO registers
+var GPIO_READ_PIN :int = 13
+var GPIO_SET_PIN_LOW :int = 10
+var GPIO_SET_PIN_HIGH :int = 7
+
+fun open(file:string, options:int) @external:int
+fun close(fd:int) @external:int
+fun mmap(address:intptr, length:int, prot:int, flags:int, fd:int, offset:intptr) @external:intptr
+
+/*
+ * initialise gpio lib and set the gpio pointer to the gpio registers
+ */
+fun gpio_init() @global:int {
+    var fd :int,
+        FILE_FLAGS :int = 0x181002;
+    var GPIO_MEM_NAME :string = "/dev/gpiomem"
+    fd = open (GPIO_MEM_NAME, FILE_FLAGS)
+    if (fd < 0) {
+        println "could not open ", GPIO_MEM_NAME
+        return -1
+    }
+
+    var ADDR :intptr = 0
+    var BLOCK_SIZE :int = 4096
+    var PROT_READ :int = 0x1
+    var PROT_WRITE :int = 0x2
+    var MAP_SHARED :int = 0x01
+    var GPIO_BASE: intptr = 0x00200000
+    gpio = mmap(ADDR, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, GPIO_BASE)
+    if (gpio == -1) {
+        println "could not map memory"
+        return -1
+    }
+    close(fd)
+    return 0
+}
+
+/*
+ * read a gpio register
+ */
+fun gpio_read_reg(reg :int) @global:int {
+    if (gpio == 0) {
+        println "gpio not initialised"
+        return -1
+    }
+    var regvalue :int;
+    regvalue = [gpio + reg*4]
+    return regvalue
+}
+
+/*
+ * read a gpio pin mode (0 = input, 1 = output)
+ */
+fun gpio_get_pin_mode(pin: int) @global:int {
+    if (gpio == 0) {
+        println "gpio not initialised"
+        return -1
+    }
+    var gpio_reg :int,
+        shift_factor :int,
+        mode :int
+    gpio_reg = pin / 10
+    shift_factor = (pin % 10) * 3
+    mode = [gpio + gpio_reg*4] & (7 << shift_factor)
+    if (mode == 0) {
+        return 0
+    }
+    else {
+        return 1
+    }
+}
+
+/*
+void set_pin_mode(int pin, int mode) {
+    int gpio_reg = pin / 10;
+    int shift = (pin % 10) * 3;
+    int reg_value = *(gpio + gpio_reg) & ~(7 << shift);
+    if (mode == 1)
+        reg_value |= (1 << shift);
+    *(gpio + gpio_reg) = reg_value;
+}
+*/
+
+/*
+ * read a gpio pin (0 = low, 1 = high)
+ */
+fun gpio_get_pin(pin :int) @global:int {
+    if (gpio == 0) {
+        println "gpio not initialised"
+        return -1
+    }
+    var shift_factor :int,
+        pin_value :int
+    shift_factor = pin & 0x1f
+    pin_value = [gpio + GPIO_READ_PIN*4] & (1 << shift_factor)
+    if (pin_value == 0) {
+        return 0
+    }
+    else {
+        return 1
+    }
+}
+
+/*
+void set_pin(int pin, int value) {
+    int gpio_reg;
+    gpio_reg = (value == 0) ? GPIO_SET_PIN_LOW : GPIO_SET_PIN_HIGH;
+    *(gpio + gpio_reg) = 1 << (pin & 31) ;
+}
+*/
+endlibrary

@@ -1,47 +1,68 @@
 program memory_read
 
-var memptr: intptr, membase: int = 0x4000000
+var fd: int
+var xa:int = 145
+var xb:int = 1821
+
+var memptr: intptr, membase: intptr = 0x0000000
 fun open(file:string, options:int) @external:int
-fun mmap(a:int, b:int, c:int, d:int, e:int, f:int) @external:intptr
+fun lseek(fdes:int, offst:int, whence:int) @external:int
+fun read(fdes:int, buf:intptr, count:int) @external:int
+
+fun mmap(a:int, b:int, c:int, d:int, e:int, f:intptr) @external:intptr
 
 fun init_mem(): int {
-    var fd: int
+    var temp: int
     /*
            #define O_CLOEXEC       02000000
            #define O_DSYNC         00010000
            #define __O_SYNC        04000000
            #define O_RDWR          00000002
      */
-    fd = open ("/dev/mem", 6010002)
+    fd = open ("/dev/mem", 0x6010002)
     if (fd < 0) {
-        println "could nto open /dev/mem"
+        println "could not open /dev/mem"
         return -1
     }
     /*
         #define    BLOCK_SIZE        (4*1024)
-        #define PROT_READ       0x1             /* page can be read */
-        #define PROT_WRITE      0x2             /* page can be written */
-        #define MAP_SHARED      0x01            /* Share changes */
-     */
+        #define PROT_READ       0x1             page can be read
+        #define PROT_WRITE      0x2             page can be written
+        #define MAP_SHARED      0x01            Share changes
+    */
     memptr = mmap(0, 4096, 3, 1, fd, membase)
     if (memptr < 0) {
         println "could not map memory"
         return -1
     }
+
     return 0
 }
 
 fun readmem(offset: int): int {
-    var x: int
-    x = [memptr + offset]
+    //# define SEEK_SET	0
+    var x: int, seek_result: int, num_bytes:int
+    seek_result = lseek(fd, offset, 0)
+    if (seek_result < 0) {
+        println "could not seek"
+        return -1
+    }
+    var buf: intptr;
+    buf = addr(x)
+    num_bytes = read(fd, buf, 8)
+    if (num_bytes < 0) {
+        println "could not read"
+        return -1
+    }
     return x
 }
 
 main {
-    println readmem(0)
-    println readmem(8)
-    println readmem(16)
-    println readmem(24)
+    var mem_address:int
+    init_mem()
+    mem_address = addr(xa)
+    println readmem(mem_address)
+    println readmem(mem_address+8)
 }
 
 endprogram

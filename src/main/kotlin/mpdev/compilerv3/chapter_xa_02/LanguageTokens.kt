@@ -70,7 +70,6 @@ enum class Kwd {
 
 enum class TokType {
     addOps, mulOps,
-    orOps, andOps,
     boolOrOps, boolAndOps, relOps,
     endOfBlock, endOfPRogram, endOfInput,
     function, variable,
@@ -118,13 +117,13 @@ fun initKeywords() {
     )
 
     languageTokens.add(
+        Token("intptr",     Kwd.intPtrType,       TokType.varType)
+    )
+    languageTokens.add(
         Token("int",     Kwd.intType,       TokType.varType)
     )
     languageTokens.add(
         Token("string",  Kwd.stringType,    TokType.varType)
-    )
-    languageTokens.add(
-        Token("intptr",     Kwd.intPtrType,       TokType.varType)
     )
     languageTokens.add(
         Token("void",    Kwd.voidType,      TokType.none)
@@ -183,7 +182,7 @@ fun initKeywords() {
         Token("continue", Kwd.continueToken,  TokType.none)
     )
     languageTokens.add(
-        Token("read",     Kwd.readToken,      TokType.none)
+        Token("readln",     Kwd.readToken,      TokType.none)
     )
     languageTokens.add(
         Token("print",    Kwd.printToken,     TokType.none)
@@ -271,13 +270,13 @@ fun initOperators() {
         Token("~",      Kwd.notOp,      TokType.none)
     )
     languageTokens.add(
-        Token("|",     Kwd.orOp,       TokType.orOps)
+        Token("|",     Kwd.orOp,       TokType.addOps)
     )
     languageTokens.add(
-        Token("^",     Kwd.xorOp,      TokType.orOps)
+        Token("^",     Kwd.xorOp,      TokType.addOps)
     )
     languageTokens.add(
-        Token("&",     Kwd.andOp,      TokType.andOps)
+        Token("&",     Kwd.andOp,      TokType.mulOps)
     )
 
     languageTokens.add(
