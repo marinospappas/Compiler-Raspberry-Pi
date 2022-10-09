@@ -5,6 +5,7 @@ import java.io.PrintStream
 import java.lang.System.err
 import java.lang.System.out
 import java.util.Date
+import javax.print.attribute.IntegerSyntax
 
 /** this class implements all the instructions for the target machine */
 class Arm_32Instructions(outFile: String = ""): CodeModule {
@@ -54,11 +55,12 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** register names for the function params - in order 1-4 (arm architecture specific) */
     // these registers hold the fun params at the time of the call
-    override val funInpParamsCpuRegisters = arrayOf("r0", "r1", "r2", "r3")
+    // parameters 5 and 6 go to the stack and the offset from fp is noted here
+    override val funInpParamsCpuRegisters = arrayOf("r0", "r1", "r2", "r3", "r4:stack:4", "r5:stack:8")
     // during the assignment of the parameters, their values are saved temporarily here,
     // so that they are not corrupted by function calls executed during the assignment of the parameters
-    override val funTempParamsCpuRegisters = arrayOf("r4", "r5", "r6", "r7")
-    // 4 params maximum allowed
+    override val funTempParamsCpuRegisters = arrayOf("r6", "r7", "r8", "r9", "r10", "r11")
+    // 6 params maximum allowed
     override val MAX_FUN_PARAMS = funInpParamsCpuRegisters.size
 
     override fun outputComment(s: String) = outputCode("$COMMENT $s")
@@ -113,13 +115,27 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         newStackFrame()
     }
 
+    /** check whether a function parameter is in stack
+     *  returns the frame offset if yes otherwise -1
+     */
+    override fun isFunParamInStack(paramIndx: Int): Int {
+        val reg = funInpParamsCpuRegisters[paramIndx]
+        val regParts = reg.split(":")
+        if (regParts.size == 1) // parameter is in register
+            return -1
+        else
+            return regParts[2].toInt()
+    }
+
     /** transfer a function parameter to stack variable */
     override fun storeFunParamToStack(paramIndx: Int, stackOffset: Int) {
-        outputCodeTabNl("str\t${funInpParamsCpuRegisters[paramIndx]}, [fp, #$stackOffset]")
+        if (isFunParamInStack(paramIndx) < 0) // parameter is in register
+            outputCodeTabNl("str\t${funInpParamsCpuRegisters[paramIndx]}, [fp, #$stackOffset]")
     }
 
     /** end of function - tidy up stack */
     private fun funEnd() {
+        outputCodeTabNl("mov\tr0, r3")      // return value in r0
         outputCodeTab("sub\tsp, fp, #4\t\t")
         outputCommentNl("restore stack pointer")
         outputCodeTab("ldmia\tsp!, {fp, pc}\t\t")
@@ -134,14 +150,22 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set a function input param register from the temporary register */
     override fun setFunParamReg(paramIndx: Int) {
-        if (funInpParamsCpuRegisters[paramIndx] == "r3")
-            return
-        outputCodeTabNl("mov\t${funInpParamsCpuRegisters[paramIndx]}, ${funTempParamsCpuRegisters[paramIndx]}")
+        if (isFunParamInStack(paramIndx) < 0)     // parameter goes in register
+            outputCodeTabNl("mov\t${funInpParamsCpuRegisters[paramIndx]}, ${funTempParamsCpuRegisters[paramIndx]}")
+        else                            // parameter goes in the stack
+            outputCodeTabNl("str\t${funTempParamsCpuRegisters[paramIndx]}, [sp, #-4]!")
     }
 
-    /** restore a function input param register */
+    /** restore a function temporary param register */
     override fun restoreFunTempParamReg(paramIndx: Int) {
-        outputCodeTabNl("ldr\t${funTempParamsCpuRegisters[paramIndx]}, [sp], #4")
+        if (isFunParamInStack(paramIndx) > 0) // parameter is in stack
+            outputCodeTabNl("ldr\t${funTempParamsCpuRegisters[paramIndx]}, [sp], #4")
+    }
+
+    /** restore the stack space used a function stack param */
+    override fun restoreFunStackParam(paramIndx: Int) {
+        if (isFunParamInStack(paramIndx) > 0) // parameter is in stack
+            outputCodeTabNl("add\tsp, sp,#4")
     }
 
     override fun globalSymbol(name: String) {
@@ -175,6 +199,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("restore stack pointer")
         outputCodeTabNl("ldmia\tsp!, {fp, lr}")
         outputCodeTabNl("bx\tlr")
+    }
+
+    /** create relative addresses for global vars */
+    override fun createRelativeAddresses() {
         setGlobalVarAddresses()
         setIntConstants()
     }
@@ -225,7 +253,14 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** initialise an int stack var */
     override fun initStackVarInt(stackOffset : Int, initValue: String) {
-        if (initValue.toInt() in 0..255)
+        val value: Int
+        if (initValue.startsWith("0x"))
+            value = initValue.substring(2).toInt(16)
+        else if (initValue.startsWith("0b"))
+            value = initValue.substring(2).toInt(2)
+        else
+            value = initValue.toInt()
+        if (value in 0..255)
             outputCodeTabNl("mov\tr3, #${initValue}")
         else {
             val intConstantAddr = createIntConst(initValue)
@@ -249,7 +284,14 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to a value */
     override fun setAccumulator(value: String) {
-        if (value.toInt() in 0..255)
+        val intValue: Int
+        if (value.startsWith("0x"))
+            intValue = value.substring(2).toInt(16)
+        else if (value.startsWith("0b"))
+            intValue = value.substring(2).toInt(2)
+        else
+            intValue = value.toInt()
+        if (intValue in 0..255)
             outputCodeTabNl("movs\tr3, #${value}")
         else {
             val intConstantAddr = createIntConst(value)
@@ -260,10 +302,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     private fun createIntConst(value: String): String {
         val key = INT_CONST_NAME +
-                if (value.toInt() >= 0)
-                    value
-                else
+                if (value.startsWith("-"))
                     "_" + value.substring(1)
+                else
+                    value
         if (intConstants[key] == null)
             intConstants[key] = value
         return key
@@ -310,7 +352,11 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     override fun moduloAccumulator() {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, [sp], #4")
+        outputCodeTabNl("sdiv\tr0, r2, r3")
+        outputCodeTabNl("mul\tr1, r0, r3")
+        outputCodeTabNl("sub\tr3, r2, r1")
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
     override fun notAccumulator() {
@@ -336,12 +382,15 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     override fun shiftAccumulatorLeft() {
-        TODO("Not yet implemented")
-    }
+        outputCodeTabNl("ldr\tr2, [sp], #4")
+        outputCodeTabNl("lsl\tr3, r2, r3")
+        outputCodeTabNl("tst\tr3, r3")
+   }
 
     override fun shiftAccumulatorRight() {
-        TODO("Not yet implemented")
-    }
+        outputCodeTabNl("ldr\tr2, [sp], #4")
+        outputCodeTabNl("lsr\tr3, r2, r3")
+        outputCodeTabNl("tst\tr3, r3")    }
 
     /** set accumulator to global variable */
     override fun setAccumulatorToVar(identifier: String) {
@@ -352,20 +401,24 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to global variable address */
     override fun setAccumulatorToVarAddress(identifier: String) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr3, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
     }
 
+    /** save address a pointer is pointing to for later use */
     override fun savePtrValue() {
-        TODO("Not yet implemented")
+        // the address the pointer points to is saved in r1
+        outputCodeTabNl("mov\tr1, r3")
     }
 
+    /** save accumulator to the previously saved address the pointer is pointing to */
     override fun pointerAssignment() {
-        TODO("Not yet implemented")
+        // the pointer address was previously saved in r1
+        outputCodeTabNl("str\tr3, [r1]")
     }
 
+    /** set accumulator to the contents of the address already in accumulator */
     override fun setAccumulatorToPointerVar() {
-        TODO("Not yet implemented")
-    }
+        outputCodeTabNl("ldr\tr3, [r1]")    }
 
     /** set accumulator to local variable */
     override fun setAccumulatorToLocalVar(offset: Int) {
@@ -375,7 +428,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to local variable  address */
     override fun setAccumulatorToLocalVarAddress(offset: Int) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("add\tr3, fp, #${offset}")
     }
 
     /** set variable to accumulator */
@@ -392,7 +445,11 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     //////////////////////////////////// function calls ///////////////////////////////////
 
     /** call a function */
-    override fun callFunction(subroutine: String) = outputCodeTabNl("bl\t${subroutine}")
+    override fun callFunction(subroutine: String) {
+        outputCodeTabNl("bl\t${subroutine}")
+        // function return to accumulator (r3)
+        outputCodeTabNl("mov\tr3, r0")
+    }
 
     /** return from function */
     override fun returnFromCall() {

@@ -48,14 +48,22 @@ interface CodeModule {
     fun setIntTempFunParam(paramIndx: Int)
     /** set a function input param register from the temporary register */
     fun setFunParamReg(paramIndx: Int)
-    /** restore a function input param register */
+    /** restore a function temporary param register */
     fun restoreFunTempParamReg(paramIndx: Int)
+    /** check whether a function parameter is in stack
+     *  returns the frame offset if yes otherwise -1
+     */
+    fun isFunParamInStack(paramIndx: Int): Int { return -1 }
+    /** restore the stack space used a function stack param */
+    fun restoreFunStackParam(paramIndx: Int) {}
     /** initial code for main */
     fun globalSymbol(name: String)
     /** initial code for main */
     fun mainInit()
     /** termination code for assembler */
     fun mainEnd()
+    /** create relative addresses for global vars */
+    fun createRelativeAddresses()
     /** allocate variable space in the stack - returns the new stack offset for this new variable */
     fun allocateStackVar(size: Int): Int
     /** release variable space in the stack */

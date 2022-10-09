@@ -14,7 +14,8 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override var outputLines: Int = 0
     override var outStream: PrintStream = out
 
-    private val MAIN_ENTRYPOINT = "_start"
+    // private val MAIN_ENTRYPOINT = "_start"
+    private val MAIN_ENTRYPOINT = "main"
     private val MAIN_EXITPOINT = "${MAIN_BLOCK}_exit_"
 
 
@@ -153,10 +154,15 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("restore \"callee\"-save registers")
         outputCodeTab("movq\t$60, %rax\t\t")
         outputCommentNl("exit system call")
-        outputCodeTab("xorq\t%rdi, %rdi\t\t")
+        //outputCodeTab("xorq\t%rdi, %rdi\t\t")
+        outputCodeTab("xorq\t%rax, %rax\t\t")
         outputCommentNl("exit code 0")
-        outputCodeTabNl("syscall")
+        //outputCodeTabNl("syscall")
+        outputCodeTabNl("ret")
     }
+
+    /** create relative addresses for global vars */
+    override fun createRelativeAddresses() {}
 
     /** set new stack frame */
     private fun newStackFrame() {
