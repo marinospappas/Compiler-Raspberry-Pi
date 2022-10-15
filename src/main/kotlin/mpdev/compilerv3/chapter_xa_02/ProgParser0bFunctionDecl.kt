@@ -87,12 +87,14 @@ fun storeParamsToStack(functionName: String) {
                 isStackVar = true, stackOffset = paramVarOffs, canAssign = false
             )
             code.storeFunParamToStack(i, paramVarOffs)
+            code.outputCommentNl("parameter ${paramsList[i].name} offset from frame ${paramVarOffs}")
         }
         else {          // parameter in stack already
             identifiersMap[paramsList[i].name] = IdentifierDecl(
                 TokType.variable, paramsList[i].type, initialised = true, size = code.INT_SIZE,
                 isStackVar = true, stackOffset = foundOffset, canAssign = false
             )
+            code.outputCommentNl("parameter ${paramsList[i].name} offset from frame ${foundOffset}")
         }
     }
 }

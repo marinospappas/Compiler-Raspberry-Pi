@@ -92,6 +92,7 @@ fun declareLocalVar(name: String, type: DataType, initValue: String, length: Int
     identifiersMap[name] = IdentifierDecl(
         TokType.variable, type, initialised = true, size = lengthRoundedToWord, isStackVar = true, stackOffset = stackOffset
     )
+    code.outputCommentNl("local var ${name} offset from frame ${stackOffset}")
 }
 
 /** declare an external variable */
