@@ -16,6 +16,9 @@ interface CodeModule {
     val INT_SIZE: Int
     val PTR_SIZE: Int
 
+    val DEF_INT_FMT: String
+    val INT_FMT: String
+
     /** output code */
     fun outputCode(s: String) {
         outStream.print(s)
@@ -158,7 +161,7 @@ interface CodeModule {
     /** print a newline */
     fun printNewline()
     /** print accumulator as integer */
-    fun printInt()
+    fun printInt(fmt: String)
     /** read global int var into variable */
     fun readInt(identifier: String)
     /** read local int var into variable */

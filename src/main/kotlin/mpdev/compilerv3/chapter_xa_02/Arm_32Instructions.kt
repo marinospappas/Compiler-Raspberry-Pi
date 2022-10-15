@@ -32,10 +32,12 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     private val globalVarsList = mutableListOf<String>()
     private val GLOBAL_VARS_ADDR_SUFFIX = "_addr"
 
-    // various string constants
+    // various string and word constants
     val TINSEL_MSG = "tinsel_msg"
     val NEWLINE = "newline"
-    val INT_FMT = "int_fmt"
+    override val DEF_INT_FMT = "def_int_fmt"
+    override val INT_FMT = "int_fmt"
+    val CONST_ALL_1S = "const_all_1s"
 
     // need a map of int constants due to limitation in loading const value to register
     val intConstants = mutableMapOf<String,String>()
@@ -85,7 +87,9 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         // newline string
         outputCodeTabNl("$NEWLINE: .asciz \"\\n\"")
         // int format for printf
-        outputCodeTabNl("$INT_FMT: .asciz \"%d\"")
+        outputCodeTabNl("$DEF_INT_FMT: .asciz \"%d\"")
+        // all 1s constant
+        outputCodeTabNl("$CONST_ALL_1S: .word 0xffffffff")
         outputCodeNl(".align 4")
     }
 
@@ -211,7 +215,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     private fun setGlobalVarAddresses() {
         //TODO: this has to be done after each function for those references used in that function
         val globalVarNamesList = globalVarsList + stringConstants.keys +
-                listOf(TINSEL_MSG, NEWLINE, INT_FMT, STRING_BUFFER)
+                listOf(TINSEL_MSG, NEWLINE, DEF_INT_FMT, CONST_ALL_1S, STRING_BUFFER)
         outputCodeNl("")
         outputCodeNl(".align 4")
         outputCommentNl("global var addresses go here")
@@ -360,7 +364,9 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     override fun notAccumulator() {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, ${CONST_ALL_1S}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("ldr\tr2, [r2]")
+        outputCodeTabNl("eors\tr3, r3, r2")
     }
 
     /** or top of stack with accumulator */
@@ -546,8 +552,8 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     /** print accumulator as integer */
-    override fun printInt() {
-        outputCodeTabNl("ldr\tr0, ${INT_FMT}${GLOBAL_VARS_ADDR_SUFFIX}")
+    override fun printInt(fmt: String) {
+        outputCodeTabNl("ldr\tr0, ${fmt}${GLOBAL_VARS_ADDR_SUFFIX}")
         outputCodeTab("mov\tr1, r3\t\t")
         outputCommentNl("integer to be printed in r1")
         outputCodeTabNl("bl\tprintf")
@@ -690,7 +696,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("compare strings - strcmp(top-of-stack, r3)")
         outputCodeTabNl("mov\tr1, r3")
         outputCodeTabNl("bl\tstrcmp")
-        outputCodeTabNl("and\tr3, r0, #1")    // r3 = 0 and Z flag set if equal
+        outputCodeTabNl("ands\tr3, r0, #1")    // r3 = 0 and Z flag set if equal
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("moveq\tr3, #1")     // set r3 to 1 if comparison is ==
         outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
@@ -702,7 +708,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("compare strings - strcmp(top-of-stack, r3)")
         outputCodeTabNl("mov\tr1, r3")
         outputCodeTabNl("bl\tstrcmp")
-        outputCodeTabNl("and\tr3, r0, #1")    // r3 = 0 and Z flag set if equal
+        outputCodeTabNl("ands\tr3, r0, #1")    // r3 = 0 and Z flag set if equal
         outputCodeTabNl("mov\tr3, #0")
         outputCodeTabNl("movne\tr3, #1")     // set r3 to 1 if comparison is !=
         outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE

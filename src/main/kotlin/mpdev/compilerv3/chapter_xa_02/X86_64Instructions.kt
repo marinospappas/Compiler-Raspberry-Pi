@@ -32,6 +32,9 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override val INT_SIZE = WORD_SIZE    // 64-bit integers
     override val PTR_SIZE = WORD_SIZE    // pointer 64 bit
 
+    override val DEF_INT_FMT = "def_int_fmt"
+    override val INT_FMT = "int_fmt"
+
     /** initialisation code - class InputProgramScanner */
     init {
         if (outFile != "") {
@@ -456,7 +459,8 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     }
 
     /** print accumulator as integer */
-    override fun printInt() {
+    override fun printInt(fmt: String) {
+        //TODO: support various dec formats
         outputCodeTabNl("movq\t%rax, %rdi\t\t# value to be printed in rdi")
         outputCodeTabNl("call\twrite_i_")
     }

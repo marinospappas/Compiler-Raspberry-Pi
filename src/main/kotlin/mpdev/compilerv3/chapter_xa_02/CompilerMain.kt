@@ -102,7 +102,7 @@ fun debugCompiler() {
 
 /** main function */
 fun main(args: Array<String>) {
-    println("TINSEL(c) compiler v3.0_02 October 2022, Copyright M.Pappas")
+    println("TINSEL(c) compiler v3.0_08 October 2022, Copyright M.Pappas")
     initCompiler(args)
     println("Target architecture: ${if (cpuArchitecture==CPUArch.x86) "x86-64" else "Arm-32"}\n")
     if (debugMode) {
