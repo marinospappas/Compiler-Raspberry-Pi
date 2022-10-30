@@ -29,26 +29,31 @@ fun parseAssignFunParams(functionName: String) {
         val paramExprType = parseBooleanExpression()
         if (paramExprType != paramTypeList[i].type)
             abort("line ${inp.currentLineNumber}: parameter #${i + 1} must be type ${paramTypeList[i].type}, found $paramExprType")
-        when (paramExprType) {
-            DataType.int, DataType.intptr -> code.setIntTempFunParam(i)      // the same code is used for int, intptr and for string parameters
-            DataType.string -> code.setIntTempFunParam(i)   // i.e. moves %rax to the appropriate register for this parameter
-            else -> {}
-        }
+        // all params but the last one are saved to temp registers
+        // the last param remains in the accumulator
+        if (i < paramTypeList.size - 1)
+            when (paramExprType) {
+                DataType.int, DataType.intptr -> code.setIntTempFunParam(i)      // the same code is used for int, intptr and for string parameters
+                DataType.string -> code.setIntTempFunParam(i)   // i.e. moves %rax to the appropriate register for this parameter
+                else -> {}
+            }
     }
 }
 
 /** set the registers to pass the parameter values as per assembler spec */
 fun setInpFunParams(functionName: String) {
     val paramTypeList = funParamsMap[functionName] ?: listOf()
-    for (i in paramTypeList.indices)
-        code.setFunParamReg(paramTypeList.size - i - 1)
+    if (paramTypeList.size > 0)
+        code.setFunParamRegFromAcc(paramTypeList.size-1)    // last param is still in accumulator
+    for (i in 0 until paramTypeList.size-1)
+        code.setFunParamRegFromTempReg(i)
 }
 
 /** restore the cpu registers used for the function params that were saved before the call */
 fun restoreParamRegisters(functionName: String) {
     val paramTypeList = funParamsMap[functionName] ?: listOf()
-    for (i in paramTypeList.indices)
-        code.restoreFunTempParamReg(paramTypeList.size - i - 1)
+    for (i in 0 until paramTypeList.size-1)
+        code.restoreFunTempParamReg(paramTypeList.size - i - 2)
 }
 
 /** recover the space taken by any stack parameters */

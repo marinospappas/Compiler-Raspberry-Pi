@@ -148,28 +148,41 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set a temporary function param register to the value of r3 (the result of the last expression) */
     override fun setIntTempFunParam(paramIndx: Int) {
-        outputCodeTabNl("str\t${funTempParamsCpuRegisters[paramIndx]}, [sp, #-4]!")
+        outputCodeTab("str\t${funTempParamsCpuRegisters[paramIndx]}, [sp, #-4]!\t")
+        outputCommentNl("save temp param register ${funTempParamsCpuRegisters[paramIndx]} to stack")
         outputCodeTabNl("mov\t${funTempParamsCpuRegisters[paramIndx]}, r3")
     }
 
     /** set a function input param register from the temporary register */
-    override fun setFunParamReg(paramIndx: Int) {
+    override fun setFunParamRegFromTempReg(paramIndx: Int) {
         if (isFunParamInStack(paramIndx) < 0)     // parameter goes in register
             outputCodeTabNl("mov\t${funInpParamsCpuRegisters[paramIndx]}, ${funTempParamsCpuRegisters[paramIndx]}")
         else                            // parameter goes in the stack
             outputCodeTabNl("str\t${funTempParamsCpuRegisters[paramIndx]}, [sp, #-4]!")
     }
 
+    /** set a function input param register from the accumulator */
+    override fun setFunParamRegFromAcc(paramIndx: Int) {
+        if (isFunParamInStack(paramIndx) < 0) {    // parameter goes in register
+            if (funInpParamsCpuRegisters[paramIndx] != "r3")
+                outputCodeTabNl("mov\t${funInpParamsCpuRegisters[paramIndx]}, r3")
+        }
+        else                            // parameter goes in the stack
+            outputCodeTabNl("str\tr3, [sp, #-4]!")
+    }
+
     /** restore a function temporary param register */
     override fun restoreFunTempParamReg(paramIndx: Int) {
-        if (isFunParamInStack(paramIndx) > 0) // parameter is in stack
-            outputCodeTabNl("ldr\t${funTempParamsCpuRegisters[paramIndx]}, [sp], #4")
+        outputCodeTab("ldr\t${funTempParamsCpuRegisters[paramIndx]}, [sp], #4\t")
+        outputCommentNl("restore temp param register ${funTempParamsCpuRegisters[paramIndx]} from stack")
     }
 
     /** restore the stack space used a function stack param */
     override fun restoreFunStackParam(paramIndx: Int) {
-        if (isFunParamInStack(paramIndx) > 0) // parameter is in stack
-            outputCodeTabNl("add\tsp, sp,#4")
+        if (isFunParamInStack(paramIndx) > 0) {   // parameter is in stack
+            outputCodeTab("add\tsp, sp,#4\t")
+            outputCommentNl("restore stack param space")
+        }
     }
 
     override fun globalSymbol(name: String) {
@@ -474,17 +487,31 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** boolean not accumulator */
     override fun booleanNotAccumulator() {
-        outputCodeTabNl("mov\tr3, #0")
+        outputCodeTabNl("mov\tr3, #0")       // zero accumulator but keep flags
         outputCodeTabNl("moveq\tr3, #1")     // set r3 to 1 if zero flag is set
         outputCodeTabNl("ands\tr3, r3, #1")   // zero the rest of r3 and set flags - Z flag set = FALSE
     }
 
     override fun booleanOrAccumulator() {
-        TODO("Not yet implemented")
+        outputCodeTabNl("mov\tr3, #0")       // convert accumulator to 0-1
+        outputCodeTabNl("movne\tr3, #1")     // set r3 to 1 if initially not 0
+
+        outputCodeTabNl("ldr\tr2, [sp], #4") // get op2 in r2 and convert to 0-1
+        outputCodeTabNl("orrs\tr2, r2, #0")   // set flags - Z flag set = FALSE
+        outputCodeTabNl("mov\tr2, #0")
+        outputCodeTabNl("movne\tr2, #1")     // set r2 to 1 if initially not 0
+
+        outputCodeTabNl("orrs\tr3, r3, r2")
     }
 
     override fun booleanAndAccumulator() {
-        TODO("Not yet implemented")
+        outputCodeTabNl("mov\tr3, #0")       // convert accumulator to 0-1
+        outputCodeTabNl("movne\tr3, #1")     // set r3 to 1 if initially not 0
+        outputCodeTabNl("ldr\tr2, [sp], #4") // get op2 in r2 and convert to 0-1
+        outputCodeTabNl("orrs\tr2, r2, #0")   // set flags - Z flag set = FALSE
+        outputCodeTabNl("mov\tr2, #0")
+        outputCodeTabNl("movne\tr2, #1")     // set r2 to 1 if initially not 0
+        outputCodeTabNl("ands\tr3, r3, r2")
     }
 
     //////////////////////////////////// comparisons ///////////////////////////////////

@@ -211,9 +211,6 @@ val typesCompatibility = mapOf(
     TypesAndOpsCombi(DataType.ptrExpr, DataType.int, ALL_OPS) to true,
     TypesAndOpsCombi(DataType.int, DataType.ptrExpr, ALL_OPS) to true,
     TypesAndOpsCombi(DataType.ptrExpr, DataType.none, ALL_OPS) to true,
-    //TypesAndOpsCombi(DataType.ptrExpr, DataType.int, ASSIGN) to true,
-    //TypesAndOpsCombi(DataType.int, DataType.ptrExpr, ASSIGN) to true,
-    //TypesAndOpsCombi(DataType.ptrExpr, DataType.none, PRINT) to true,
     // pointer with pointer allowed only for subtract, assign and compare
     TypesAndOpsCombi(DataType.intptr, DataType.intptr, SUBTRACT) to true,
     TypesAndOpsCombi(DataType.intptr, DataType.intptr, ASSIGN) to true,

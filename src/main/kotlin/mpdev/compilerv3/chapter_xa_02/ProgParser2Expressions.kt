@@ -207,7 +207,7 @@ fun parsePtrExpression(): DataType {
         abort("line ${inp.currentLineNumber}: expected pointer expression, found ${expType}")
     code.savePtrValue()
     inp.match(Kwd.ptrClose)
-    return DataType.ptrExpr
+    return if (expType == DataType.intptr) DataType.int else DataType.none
 }
 
 /**
