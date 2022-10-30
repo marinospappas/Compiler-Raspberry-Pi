@@ -36,10 +36,10 @@ main {
     gpio_set_pin_mode(BUTTON, IN)
     gpio_set_pin(RED, OFF)
     gpio_set_pin(GREEN, OFF)
-    for (i = 2 to 4){
+    for (i = 2 to 4) {
         println "gpio pin mode ", i, ": ", gpio_get_pin_mode(i)
     }
-    for (i = 3 to 4){
+    for (i = 3 to 4) {
         println "gpio pin value ", i, ": ", gpio_get_pin(i)
     }
     println "\nStart of loop"
