@@ -1,7 +1,8 @@
 package mpdev.compilerv3.chapter_xa_02
 
-//TODO: int arrays
-//TODO: byte types
+//TODO: implement int arrays
+//TODO: implement byte types
+//TODO: implement sizeof
 
 // global vars
 

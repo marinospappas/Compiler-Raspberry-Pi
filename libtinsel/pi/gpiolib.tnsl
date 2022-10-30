@@ -2,7 +2,8 @@
  *-- GPIO library for the Raspberry Pi
  *-- Version 1.0, October 2022
  *-- Marinos Pappas
- *--/
+ *--
+ */
 library gpiolib
 
 var gpio: intptr = 0
@@ -19,13 +20,11 @@ fun timeout(duration: int, unit: string) @external:void
 fun read_gpio_reg(reg: int): int {
     var value: int;
     value = [gpio + reg*4]
-    timeout(50, "microsec")
     return value
 }
 
 fun write_gpio_reg(reg: int, value: int): void {
     [gpio + reg*4] = value
-    timeout(50, "microsec")
     return
 }
 

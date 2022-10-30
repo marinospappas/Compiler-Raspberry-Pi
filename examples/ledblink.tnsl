@@ -1,0 +1,68 @@
+/*--
+ *-- blinks a dual LED (or two leds) Red and Geeen when a button is pressed
+ *-- blink sequence:
+ *--    red 1 sec
+ *--    green 300 msec
+ *--    green 300 msec
+ *--    red 1 sec
+ */
+program blinkled
+
+var IN:int = 0,
+    OUT:int = 1,
+    BUTTON:int = 2,
+    RED:int = 3,
+    GREEN:int = 4,
+    OFF:int = 0,
+    ON:int = 1
+
+fun gpio_init() @external:int
+fun gpio_read_reg(reg :int) @external:int
+fun gpio_get_pin_mode(pin: int) @external:int 
+fun gpio_get_pin(pin: int) @external:int 
+fun gpio_set_pin_mode(pin: int, node :int) @external:int 
+fun gpio_set_pin(pin: int, value :int) @external:int 
+fun timeout(duration: int, unit :string) @external:void
+
+main {
+    println "LED blink program using 1 button and 2 LEDs via GPIO pins 2, 3 and 4\n"
+    println "GPIO pin status"
+    if (gpio_init() < 0) {
+        println "could not initialise GPIO - exiting"
+        exit
+    }
+    gpio_set_pin_mode(RED, OUT)
+    gpio_set_pin_mode(GREEN, OUT)
+    gpio_set_pin_mode(BUTTON, IN)
+    gpio_set_pin(RED, OFF)
+    gpio_set_pin(GREEN, OFF)
+    for (i = 2 to 4){
+        println "gpio pin mode ", i, ": ", gpio_get_pin_mode(i)
+    }
+    for (i = 3 to 4){
+        println "gpio pin value ", i, ": ", gpio_get_pin(i)
+    }
+    println "\nStart of loop"
+    while (1) {
+        if (gpio_get_pin(BUTTON) == 0) {
+            println "blink LED"
+            gpio_set_pin(RED, ON)
+	        timeout(1, "")  // 1 sec timeout
+            gpio_set_pin(RED, OFF)
+	        timeout(200, "millisec")
+            gpio_set_pin(GREEN, ON)
+	        timeout(300, "millisec")
+            gpio_set_pin(GREEN, OFF)
+	        timeout(200, "millisec")
+            gpio_set_pin(GREEN, ON)
+	        timeout(300, "millisec")
+            gpio_set_pin(GREEN, OFF)
+	        timeout(200, "millisec")
+            gpio_set_pin(RED, ON)
+	        timeout(1, "")
+            gpio_set_pin(RED, OFF)
+	    }
+    }
+}
+
+endprogram
