@@ -83,7 +83,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeNl(".data")
         outputCodeNl(".align 4")
         // copyright message
-        outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 3.0 for Arm-32 (Raspberry Pi) July 2022 (c) M.Pappas\\n\"")
+        outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 3.1 for Arm-32 (Raspberry Pi) October 2022 (c) M.Pappas\\n\"")
         // newline string
         outputCodeTabNl("$NEWLINE: .asciz \"\\n\"")
         // int format for printf
