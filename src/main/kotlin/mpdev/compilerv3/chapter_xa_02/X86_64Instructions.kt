@@ -14,7 +14,6 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     override var outputLines: Int = 0
     override var outStream: PrintStream = out
 
-    // private val MAIN_ENTRYPOINT = "_start"
     private val MAIN_ENTRYPOINT = "main"
     private val MAIN_EXITPOINT = "${MAIN_BLOCK}_exit_"
 
@@ -110,22 +109,27 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     /** set a temporary function param register to the value of %rax (the result of the last expression) */
     override fun setIntTempFunParam(paramIndx: Int) {
-        if (funTempParamsCpuRegisters[paramIndx] == "%rax")
-            return
-        outputCodeTabNl("pushq\t${funTempParamsCpuRegisters[paramIndx]}")
+        outputCodeTab("pushq\t${funTempParamsCpuRegisters[paramIndx]}\t")
+        outputCommentNl("save temp param register ${funTempParamsCpuRegisters[paramIndx]} to stack")
         outputCodeTabNl("movq\t%rax, ${funTempParamsCpuRegisters[paramIndx]}")
     }
 
     /** set a function input param register from the temporary register */
-    override fun setFunParamReg(paramIndx: Int) {
+    override fun setFunParamRegFromTempReg(paramIndx: Int) {
         outputCodeTabNl("movq\t${funTempParamsCpuRegisters[paramIndx]}, ${funInpParamsCpuRegisters[paramIndx]}")
+    }
+
+    /** set a function input param register from accumulator */
+    override fun setFunParamRegFromAcc(paramIndx: Int) {
+        outputCodeTabNl("movq\t%rax, ${funInpParamsCpuRegisters[paramIndx]}")
     }
 
     /** restore a function input param register */
     override fun restoreFunTempParamReg(paramIndx: Int) {
         if (funTempParamsCpuRegisters[paramIndx] == "%rax")
             return
-        outputCodeTabNl("popq\t${funTempParamsCpuRegisters[paramIndx]}")
+        outputCodeTab("popq\t${funTempParamsCpuRegisters[paramIndx]}\t")
+        outputCommentNl("restore temp param register ${funTempParamsCpuRegisters[paramIndx]} from stack")
     }
 
     override fun globalSymbol(name: String) {
@@ -155,12 +159,9 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         restoreStackFrame()
         outputCodeTab("popq\t%rbx\t\t")
         outputCommentNl("restore \"callee\"-save registers")
-        outputCodeTab("movq\t$60, %rax\t\t")
         outputCommentNl("exit system call")
-        //outputCodeTab("xorq\t%rdi, %rdi\t\t")
         outputCodeTab("xorq\t%rax, %rax\t\t")
         outputCommentNl("exit code 0")
-        //outputCodeTabNl("syscall")
         outputCodeTabNl("ret")
     }
 

@@ -50,7 +50,9 @@ interface CodeModule {
     /** set a temporary function param register to the value of %rax (the result of the last expression) */
     fun setIntTempFunParam(paramIndx: Int)
     /** set a function input param register from the temporary register */
-    fun setFunParamReg(paramIndx: Int)
+    fun setFunParamRegFromTempReg(paramIndx: Int)
+    /** set a function input param register from accumulator */
+    fun setFunParamRegFromAcc(paramIndx: Int)
     /** restore a function temporary param register */
     fun restoreFunTempParamReg(paramIndx: Int)
     /** check whether a function parameter is in stack

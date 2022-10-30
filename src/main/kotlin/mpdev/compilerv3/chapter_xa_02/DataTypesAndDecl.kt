@@ -1,12 +1,13 @@
 package mpdev.compilerv3.chapter_xa_02
 
-//TODO: int arrays
-//TODO: byte types
+//TODO: implement int arrays
+//TODO: implement byte types
+//TODO: implement sizeof
 
 // global vars
 
 /** our variable types */
-enum class DataType { int, string, intptr, ptrExpr, void, none }
+enum class DataType { int, string, intptr, void, none }
 
 /** our variable scope
  *  packageGlobal: scope across program and all libraries in the package
@@ -207,13 +208,6 @@ val typesCompatibility = mapOf(
     TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_GE) to true,
     TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_GE) to true,
     TypesAndOpsCombi(DataType.intptr, DataType.none, PRINT) to true,
-    // pointer expression (i.e. where a pointer is pointing) with int allowed
-    TypesAndOpsCombi(DataType.ptrExpr, DataType.int, ALL_OPS) to true,
-    TypesAndOpsCombi(DataType.int, DataType.ptrExpr, ALL_OPS) to true,
-    TypesAndOpsCombi(DataType.ptrExpr, DataType.none, ALL_OPS) to true,
-    //TypesAndOpsCombi(DataType.ptrExpr, DataType.int, ASSIGN) to true,
-    //TypesAndOpsCombi(DataType.int, DataType.ptrExpr, ASSIGN) to true,
-    //TypesAndOpsCombi(DataType.ptrExpr, DataType.none, PRINT) to true,
     // pointer with pointer allowed only for subtract, assign and compare
     TypesAndOpsCombi(DataType.intptr, DataType.intptr, SUBTRACT) to true,
     TypesAndOpsCombi(DataType.intptr, DataType.intptr, ASSIGN) to true,
