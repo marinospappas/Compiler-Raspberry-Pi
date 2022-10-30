@@ -29,10 +29,10 @@ fun parseAssignment() {
  * stores the result of <expression> to the address the pointer points to
  */
 fun parsePtrAssignment() {
-    parsePtrExpression()
+    var ptrType = parsePtrExpression()
     inp.match(Kwd.equalsOp)
     val typeExp = parseBooleanExpression()
-    checkOperandTypeCompatibility(DataType.ptrExpr, typeExp, ASSIGN)
+    checkOperandTypeCompatibility(ptrType, typeExp, ASSIGN)
     code.pointerAssignment()
 }
 

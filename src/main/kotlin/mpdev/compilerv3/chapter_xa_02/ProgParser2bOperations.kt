@@ -6,7 +6,7 @@ fun add(typeT1: DataType) {
     val typeT2 = parseTerm()
     checkOperandTypeCompatibility(typeT1, typeT2, ADD)
     when (typeT1) {
-        DataType.int, DataType.ptrExpr, DataType.intptr -> addNumber()
+        DataType.int, DataType.intptr -> addNumber()
         DataType.string -> addString()
         else -> {}
     }
@@ -18,7 +18,7 @@ fun subtract(typeT1: DataType) {
     val typeT2 = parseTerm()
     checkOperandTypeCompatibility(typeT1, typeT2, SUBTRACT)
     when (typeT1) {
-        DataType.int, DataType.ptrExpr, DataType.intptr -> subtractNumber()
+        DataType.int, DataType.intptr -> subtractNumber()
         else -> {}
     }
 }
@@ -29,7 +29,7 @@ fun multiply(typeF1: DataType) {
     val typeF2 = parseFactor()
     checkOperandTypeCompatibility(typeF1, typeF2, MULTIPLY)
     when (typeF1) {
-        DataType.int, DataType.ptrExpr -> multiplyNumber()
+        DataType.int -> multiplyNumber()
         else -> {}
     }
 }
@@ -40,7 +40,7 @@ fun divide(typeF1: DataType) {
     val typeF2 = parseFactor()
     checkOperandTypeCompatibility(typeF1, typeF2, DIVIDE)
     when (typeF1) {
-        DataType.int, DataType.ptrExpr -> divideNumber()
+        DataType.int -> divideNumber()
         else -> {}
     }
 }
@@ -51,7 +51,7 @@ fun modulo(typeF1: DataType) {
     val typeF2 = parseFactor()
     checkOperandTypeCompatibility(typeF1, typeF2, MODULO)
     when (typeF1) {
-        DataType.int, DataType.ptrExpr -> moduloNumber()
+        DataType.int -> moduloNumber()
         else -> {}
     }
 }
@@ -62,7 +62,7 @@ fun shiftLeft(typeF1: DataType) {
     val typeF2 = parseFactor()
     checkOperandTypeCompatibility(typeF1, typeF2, SHIFT_LEFT)
     when (typeF1) {
-        DataType.int, DataType.ptrExpr -> shiftLeftNumber()
+        DataType.int -> shiftLeftNumber()
         else -> {}
     }
 }
@@ -73,7 +73,7 @@ fun shiftRight(typeF1: DataType) {
     val typeF2 = parseFactor()
     checkOperandTypeCompatibility(typeF1, typeF2, SHIFT_RIGHT)
     when (typeF1) {
-        DataType.int, DataType.ptrExpr -> shiftRightNumber()
+        DataType.int -> shiftRightNumber()
         else -> {}
     }
 }
@@ -84,7 +84,7 @@ fun bitwiseOr(typeF1: DataType) {
     val typeF2 = parseFactor()
     checkOperandTypeCompatibility(typeF1, typeF2, OR)
     when (typeF1) {
-        DataType.int, DataType.ptrExpr -> orNumber()
+        DataType.int -> orNumber()
         else -> {}
     }
 }
@@ -95,7 +95,7 @@ fun bitwiseXor(typeF1: DataType) {
     val typeF2 = parseFactor()
     checkOperandTypeCompatibility(typeF1, typeF2, XOR)
     when (typeF1) {
-        DataType.int, DataType.ptrExpr -> xorNumber()
+        DataType.int -> xorNumber()
         else -> {}
     }
 }
@@ -106,7 +106,7 @@ fun bitwiseAnd(typeF1: DataType) {
     val typeF2 = parseFactor()
     checkOperandTypeCompatibility(typeF1, typeF2, AND)
     when (typeF1) {
-        DataType.int, DataType.ptrExpr -> andNumber()
+        DataType.int -> andNumber()
         else -> {}
     }
 }
