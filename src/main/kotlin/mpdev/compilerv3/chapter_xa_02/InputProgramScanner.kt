@@ -234,7 +234,7 @@ class InputProgramScanner(inputFile: String = "") {
         return value
     }
 
-    /** get a binary number */
+    /** get a hex number */
     private fun getHexNumber(): String {
         var value = "0x"
         while (isHexDigit(nextChar)) {
