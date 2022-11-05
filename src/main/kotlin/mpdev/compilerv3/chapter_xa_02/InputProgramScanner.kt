@@ -372,7 +372,7 @@ class InputProgramScanner(inputFile: String = "") {
         return true
     }
 
-    /** check for a binary number - starting with 0b */
+    /** check for a hex number - starting with 0x */
     fun isHexNumber(): Boolean {
         if (nextChar != '0')
             return false
