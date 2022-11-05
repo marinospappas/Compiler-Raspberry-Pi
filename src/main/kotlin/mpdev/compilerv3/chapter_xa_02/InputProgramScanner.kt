@@ -337,7 +337,7 @@ class InputProgramScanner(inputFile: String = "") {
     /** check for a binary numeric digit */
     private fun isBinaryDigit(c: Char): Boolean = c in '0'..'1'
 
-    /** check for a decimal numeric digit */
+    /** check for a hex numeric digit */
     private fun isHexDigit(c: Char): Boolean = c in '0'..'9' || c in 'a'..'f' || c in 'A'..'F'
 
     /** check for alphanumeric */
