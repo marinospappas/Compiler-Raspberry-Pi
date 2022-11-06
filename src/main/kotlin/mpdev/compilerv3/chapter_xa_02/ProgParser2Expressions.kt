@@ -113,8 +113,7 @@ fun parseSignedFactor(): DataType {
             code.negateAccumulator()
         }
     }
-    else
-        if (inp.lookahead().encToken == Kwd.notOp) {
+    else if (inp.lookahead().encToken == Kwd.notOp) {
             inp.match()
             factType = parseFactor()
             checkOperandTypeCompatibility(factType, DataType.none, NOT)

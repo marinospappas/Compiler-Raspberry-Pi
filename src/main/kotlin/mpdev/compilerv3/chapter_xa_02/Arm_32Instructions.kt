@@ -437,7 +437,8 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to the contents of the address already in accumulator */
     override fun setAccumulatorToPointerVar() {
-        outputCodeTabNl("ldr\tr3, [r1]")    }
+        outputCodeTabNl("ldr\tr3, [r1]")
+    }
 
     /** set accumulator to local variable */
     override fun setAccumulatorToLocalVar(offset: Int) {
@@ -495,12 +496,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun booleanOrAccumulator() {
         outputCodeTabNl("mov\tr3, #0")       // convert accumulator to 0-1
         outputCodeTabNl("movne\tr3, #1")     // set r3 to 1 if initially not 0
-
         outputCodeTabNl("ldr\tr2, [sp], #4") // get op2 in r2 and convert to 0-1
         outputCodeTabNl("orrs\tr2, r2, #0")   // set flags - Z flag set = FALSE
         outputCodeTabNl("mov\tr2, #0")
         outputCodeTabNl("movne\tr2, #1")     // set r2 to 1 if initially not 0
-
         outputCodeTabNl("orrs\tr3, r3, r2")
     }
 
