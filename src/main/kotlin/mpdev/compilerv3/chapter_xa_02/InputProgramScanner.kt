@@ -234,7 +234,7 @@ class InputProgramScanner(inputFile: String = "") {
         return value
     }
 
-    /** get a binary number */
+    /** get a hex number */
     private fun getHexNumber(): String {
         var value = "0x"
         while (isHexDigit(nextChar)) {
@@ -331,13 +331,13 @@ class InputProgramScanner(inputFile: String = "") {
     /** check for an alpha char */
     private fun isAlpha(c: Char): Boolean = c.uppercaseChar() in 'A'..'Z'
 
-    /** check for a decimal numeric char */
+    /** check for a decimal numeric digit */
     private fun isNumeric(c: Char): Boolean = c in '0'..'9'
 
-    /** check for a binary numeric char */
+    /** check for a binary numeric digit */
     private fun isBinaryDigit(c: Char): Boolean = c in '0'..'1'
 
-    /** check for a decimal numeric char */
+    /** check for a hex numeric digit */
     private fun isHexDigit(c: Char): Boolean = c in '0'..'9' || c in 'a'..'f' || c in 'A'..'F'
 
     /** check for alphanumeric */
@@ -372,7 +372,7 @@ class InputProgramScanner(inputFile: String = "") {
         return true
     }
 
-    /** check for a binary number - starting with 0b */
+    /** check for a hex number - starting with 0x */
     fun isHexNumber(): Boolean {
         if (nextChar != '0')
             return false
