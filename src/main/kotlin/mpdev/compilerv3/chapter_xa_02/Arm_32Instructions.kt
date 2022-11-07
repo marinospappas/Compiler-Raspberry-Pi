@@ -313,8 +313,8 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         else {
             val intConstantAddr = createIntConst(value)
             outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
-            outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
         }
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
     private fun createIntConst(value: String): String {
@@ -371,8 +371,8 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun moduloAccumulator() {
         outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("sdiv\tr0, r2, r3")
-        outputCodeTabNl("mul\tr1, r0, r3")
-        outputCodeTabNl("sub\tr3, r2, r1")
+        outputCodeTabNl("mul\tr0, r0, r3")
+        outputCodeTabNl("sub\tr3, r2, r0")
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
