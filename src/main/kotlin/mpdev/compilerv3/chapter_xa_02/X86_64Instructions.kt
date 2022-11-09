@@ -270,7 +270,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     /** bitwise not accumulator */
     override fun notAccumulator() {
-        outputCodeTabNl("not\t%rax")
+        outputCodeTabNl("xorq\t%rax, -1")
     }
 
     /** or top of stack with accumulator */
