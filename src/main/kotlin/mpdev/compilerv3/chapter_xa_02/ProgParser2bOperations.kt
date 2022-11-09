@@ -100,7 +100,7 @@ fun bitwiseXor(typeF1: DataType) {
     }
 }
 
-/** parse a bitwise or */
+/** parse a bitwise and */
 fun bitwiseAnd(typeF1: DataType) {
     inp.match()
     val typeF2 = parseFactor()
