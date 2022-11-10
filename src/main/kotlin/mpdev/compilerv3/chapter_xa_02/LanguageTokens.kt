@@ -293,13 +293,13 @@ fun initOperators() {
         Token("and",     Kwd.boolAndOp,      TokType.boolAndOps)
     )
     languageTokens.add(
+        Token("not",      Kwd.boolNotOp,      TokType.none)
+    )
+    languageTokens.add(
         Token("==",     Kwd.isEqual,    TokType.relOps)
     )
     languageTokens.add(
         Token("!=",     Kwd.isNotEqual, TokType.relOps)
-    )
-    languageTokens.add(
-        Token("!",      Kwd.boolNotOp,      TokType.none)
     )
     languageTokens.add(
         Token(">=",     Kwd.isGreaterOrEq, TokType.relOps)
