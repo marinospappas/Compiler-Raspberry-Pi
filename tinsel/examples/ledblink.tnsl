@@ -16,13 +16,15 @@ var IN:int = 0,
     OFF:int = 0,
     ON:int = 1
 
+var UNIT_SEC: int = 2,
+    UNIT_MILLISEC: int = 1
+
 fun gpio_init() @external:int
-fun gpio_read_reg(reg :int) @external:int
-fun gpio_get_pin_mode(pin: int) @external:int 
+fun gpio_get_pin_mode(pin: int) @external:int
 fun gpio_get_pin(pin: int) @external:int 
 fun gpio_set_pin_mode(pin: int, node :int) @external:int 
-fun gpio_set_pin(pin: int, value :int) @external:int 
-fun timeout(duration: int, unit :string) @external:void
+fun gpio_set_pin(pin: int, value: int) @external:int
+fun timeout(duration: int, unit: int) @external:void
 
 main {
     println "LED blink program using 1 button and 2 LEDs via GPIO pins 2, 3 and 4\n"
@@ -47,19 +49,19 @@ main {
         if (gpio_get_pin(BUTTON) == 0) {
             println "blink LED"
             gpio_set_pin(RED, ON)
-	        timeout(1, "")  // 1 sec timeout
+	        timeout(1, UNIT_SEC)  // 1 sec timeout
             gpio_set_pin(RED, OFF)
-	        timeout(200, "millisec")
+	        timeout(200, UNIT_MILLISEC)
             gpio_set_pin(GREEN, ON)
-	        timeout(500, "millisec")
+	        timeout(500, UNIT_MILLISEC)
             gpio_set_pin(GREEN, OFF)
-	        timeout(200, "millisec")
+	        timeout(200, UNIT_MILLISEC)
             gpio_set_pin(GREEN, ON)
-	        timeout(500, "millisec")
+	        timeout(500, UNIT_MILLISEC)
             gpio_set_pin(GREEN, OFF)
-	        timeout(200, "millisec")
+	        timeout(200, UNIT_MILLISEC)
             gpio_set_pin(RED, ON)
-	        timeout(1, "")
+	        timeout(1, UNIT_SEC)
             gpio_set_pin(RED, OFF)
 	    }
     }

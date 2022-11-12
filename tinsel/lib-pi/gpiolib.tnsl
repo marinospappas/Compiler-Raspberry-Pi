@@ -8,15 +8,15 @@ library gpiolib
 
 var gpio: intptr = 0
 // GPIO registers
-var GPFUNSEL0 :int = 0
-var GPSET0 :int = 7
-var GPCLEAR0 :int = 10
-var GPLEV0 :int = 13
+var GPFUNSEL0: int = 0
+var GPSET0: int = 7
+var GPCLEAR0: int = 10
+var GPLEV0: int = 13
 
 fun open(file:string, options:int) @external:int
 fun close(fd:int) @external:int
 fun mmap(address:intptr, length:int, prot:int, flags:int, fd:int, offset:intptr) @external:intptr
-fun timeout(duration: int, unit: string) @external:void
+fun timeout(duration: int, unit: int) @external:void
 
 fun read_gpio_reg(reg: int): int {
     var value: int;
@@ -61,7 +61,7 @@ fun gpio_init() @global:int {
  * read a gpio pin mode (0 = input, 1 = output)
  */
 fun gpio_get_pin_mode(pin: int) @global:int {
-    if (gpio <= 0) {
+    if (gpio == 0) {
         println "gpio not initialised"
         return -1
     }
@@ -87,7 +87,7 @@ fun gpio_get_pin_mode(pin: int) @global:int {
  * set a gpio pin mode (0 = input, 1 = output)
  */
 fun gpio_set_pin_mode(pin :int, mode :int) @global:int {
-    if (gpio <= 0) {
+    if (gpio == 0) {
         println "gpio not initialised"
         return -1
     }
@@ -114,7 +114,7 @@ fun gpio_set_pin_mode(pin :int, mode :int) @global:int {
  * read a gpio pin (0 = low, 1 = high)
  */
 fun gpio_get_pin(pin :int) @global:int {
-    if (gpio <= 0) {
+    if (gpio == 0) {
         println "gpio not initialised"
         return -1
     }
@@ -136,7 +136,7 @@ fun gpio_get_pin(pin :int) @global:int {
  * set a gpio pin (0 = low, 1 = high)
  */
 fun gpio_set_pin(pin :int, value :int) @global:int {
-    if (gpio <= 0) {
+    if (gpio == 0) {
         println "gpio not initialised"
         return -1
     }
