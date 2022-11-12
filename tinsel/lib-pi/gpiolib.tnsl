@@ -8,14 +8,15 @@ library gpiolib
 
 var gpio: intptr = 0
 // GPIO registers
-var GPIO_READ_PIN :int = 13
-var GPIO_SET_PIN_LOW :int = 10
-var GPIO_SET_PIN_HIGH :int = 7
+var GPFUNSEL0: int = 0
+var GPSET0: int = 7
+var GPCLEAR0: int = 10
+var GPLEV0: int = 13
 
 fun open(file:string, options:int) @external:int
 fun close(fd:int) @external:int
 fun mmap(address:intptr, length:int, prot:int, flags:int, fd:int, offset:intptr) @external:intptr
-fun timeout(duration: int, unit: string) @external:void
+fun timeout(duration: int, unit: int) @external:void
 
 fun read_gpio_reg(reg: int): int {
     var value: int;
@@ -64,14 +65,18 @@ fun gpio_get_pin_mode(pin: int) @global:int {
         println "gpio not initialised"
         return -1
     }
+    if (pin < 1 or pin > 27) {
+        println "invalid gpio pin"
+        return -1
+    }
     var gpio_reg: int,
         shift_factor: int,
         reg_value: int,
         mode: int,
         mode_mask: int
-    gpio_reg = pin / 10
+    gpio_reg = GPFUNSEL0 + pin / 10
     shift_factor = (pin % 10) * 3
-    mode_mask = 7 << shift_factor
+    mode_mask = 0b111 << shift_factor
     reg_value = read_gpio_reg(gpio_reg)
     mode = reg_value & mode_mask
     if (mode == 0) { return 0 }
@@ -86,14 +91,18 @@ fun gpio_set_pin_mode(pin :int, mode :int) @global:int {
         println "gpio not initialised"
         return -1
     }
+    if (pin < 1 or pin > 27) {
+        println "invalid gpio pin"
+        return -1
+    }
     var gpio_reg: int,
         shift_factor: int,
         reg_value: int,
         new_value: int,
         mode_mask: int
-    gpio_reg = pin / 10
+    gpio_reg = GPFUNSEL0 + pin / 10
     shift_factor = (pin % 10) * 3
-    mode_mask = 7 << shift_factor
+    mode_mask = 0b111 << shift_factor
     reg_value = read_gpio_reg(gpio_reg)
     new_value = reg_value & (~mode_mask)
     new_value = new_value | (mode << shift_factor)
@@ -109,11 +118,15 @@ fun gpio_get_pin(pin :int) @global:int {
         println "gpio not initialised"
         return -1
     }
+    if (pin < 1 or pin > 27) {
+        println "invalid gpio pin"
+        return -1
+    }
     var shift_factor: int,
         reg_value: int,
         pin_value: int
-    shift_factor = pin & 0x1f
-    reg_value = read_gpio_reg(GPIO_READ_PIN)
+    shift_factor = pin
+    reg_value = read_gpio_reg(GPLEV0)
     pin_value = reg_value & (1 << shift_factor)
     if (pin_value == 0) { return 0 }
     else { return 1 }
@@ -127,16 +140,20 @@ fun gpio_set_pin(pin :int, value :int) @global:int {
         println "gpio not initialised"
         return -1
     }
+    if (pin < 1 or pin > 27) {
+        println "invalid gpio pin"
+        return -1
+    }
     var gpio_reg :int,
         shift_factor :int,
         new_value :int
-    shift_factor = pin & 0x1f
+    shift_factor = pin
     new_value = 1 << shift_factor
     if (value == 0) {
-        gpio_reg = GPIO_SET_PIN_LOW
+        gpio_reg = GPCLEAR0
     }
     else {
-        gpio_reg = GPIO_SET_PIN_HIGH
+        gpio_reg = GPSET0
     }
     write_gpio_reg(gpio_reg, new_value)
     return 0
