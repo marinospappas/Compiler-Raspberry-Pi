@@ -70,6 +70,7 @@ fun processCmdLineArgs(args: Array<String>) {
     }
     if (inFile == "")
         exit("missing argument input_file, $USAGE")
+    //TODO if input and output files are the same abort with error msg
 }
 
 /** compiler initialisation */
