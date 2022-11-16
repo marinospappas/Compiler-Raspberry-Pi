@@ -71,7 +71,7 @@ fun processCmdLineArgs(args: Array<String>) {
     if (inFile == "")
         exit("missing argument input_file, $USAGE")
     if (inFile == outFile)
-        exit("input and output files are identical ($inFile) - aborting")
+        exit("input and output files are identical ($inFile) - aborting\\n$USAGE")
 }
 
 /** compiler initialisation */
