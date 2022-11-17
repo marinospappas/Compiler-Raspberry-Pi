@@ -102,6 +102,11 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         globalVarsList.add(varName)      // add var to the list
     }
 
+    /** declare int array variable (64bit) */
+    override fun declareIntArray(varName: String, length: String) {
+        outputCodeTabNl("$varName:\t.space ${length.toInt()*INT_SIZE}")
+    }
+
     /** initial code for functions */
     override fun funInit() {
         outputCodeNl()

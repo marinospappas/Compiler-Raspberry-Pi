@@ -70,6 +70,7 @@ fun declareGlobalVar(name: String, type: DataType, initValue: String, length: In
     identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue!="", length)
     when (type) {
         DataType.int, DataType.intptr -> code.declareInt(name, initValue)
+        DataType.intarray -> code.declareIntArray(name, length.toString())
         DataType.string -> code.declareString(name, initValue, length)
         else -> return
     }
@@ -83,6 +84,9 @@ fun declareLocalVar(name: String, type: DataType, initValue: String, length: Int
         DataType.int, DataType.intptr -> {
             stackOffset = code.allocateStackVar(code.INT_SIZE)
             initLocalIntVar(stackOffset, initValue)
+        }
+        DataType.intarray -> {
+            stackOffset = code.allocateStackVar(length)
         }
         DataType.string -> {
             stackOffset = code.allocateStackVar(code.PTR_SIZE)

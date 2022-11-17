@@ -79,6 +79,11 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
             outputCodeTabNl("$varName:\t.quad $initValue")
     }
 
+    /** declare int array variable (64bit) */
+    override fun declareIntArray(varName: String, length: String) {
+        outputCodeTabNl("$varName:\t.space ${length.toInt()*INT_SIZE}")
+    }
+
     /** initial code for functions */
     override fun funInit() {
         outputCodeNl()

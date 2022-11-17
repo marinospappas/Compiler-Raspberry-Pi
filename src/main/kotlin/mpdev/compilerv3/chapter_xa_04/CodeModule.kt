@@ -41,6 +41,8 @@ interface CodeModule {
     fun progInit(progOrLib: String, progName: String)
     /** declare int variable */
     fun declareInt(varName: String, initValue: String)
+    /** declare int variable */
+    fun declareIntArray(varName: String, length: String)
     /** initial code for functions */
     fun funInit()
     /** declare function */
