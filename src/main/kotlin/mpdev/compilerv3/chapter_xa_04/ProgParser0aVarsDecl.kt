@@ -26,6 +26,7 @@ fun parseOneVarDecl(scope: VarScope, blockName: String) {
     when (inp.lookahead().encToken) {
         Kwd.intType -> parseOneIntDecl(varName, varScope)
         Kwd.intPtrType -> parseOnePtrDecl(varName, varScope)
+        Kwd.intArrayType -> parseOneArrayDecl(varName, varScope)
         Kwd.stringType -> parseOneStringDecl(varName, varScope)
         else -> inp.expected("variable type (int or string)")
     }
@@ -56,6 +57,15 @@ fun parseOnePtrDecl(varName: String, scope: VarScope) {
         initValue = initIntVar()
     }
     declareVar(varName, DataType.intptr, initValue, code.PTR_SIZE, scope)
+}
+
+/** parse one pointer var declaration */
+fun parseOneArrayDecl(varName: String, scope: VarScope) {
+    inp.match()
+    inp.match(Kwd.leftParen)
+    val size = inp.match(Kwd.number).value
+    inp.match(Kwd.rightParen)
+    declareVar(varName, DataType.intarray, "", size.toInt(), scope)
 }
 
 /** parse one string var declaration */

@@ -7,7 +7,7 @@ package mpdev.compilerv3.chapter_xa_04
 // global vars
 
 /** our variable types */
-enum class DataType { int, string, intptr, void, none }
+enum class DataType { int, string, intptr, intarray, void, none }
 
 /** our variable scope
  *  packageGlobal: scope across program and all libraries in the package
