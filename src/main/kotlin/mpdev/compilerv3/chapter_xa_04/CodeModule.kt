@@ -14,6 +14,7 @@ interface CodeModule {
     val MAX_FUN_PARAMS: Int
 
     val INT_SIZE: Int
+    val BYTE_SIZE: Int
     val PTR_SIZE: Int
 
     val DEF_INT_FMT: String
@@ -41,8 +42,12 @@ interface CodeModule {
     fun progInit(progOrLib: String, progName: String)
     /** declare int variable */
     fun declareInt(varName: String, initValue: String)
-    /** declare int variable */
+    /** declare byte variable */
+    fun declareByte(varName: String, initValue: String)
+    /** declare int array */
     fun declareIntArray(varName: String, length: String)
+    /** declare byte array */
+    fun declareByteArray(varName: String, length: String)
     /** initial code for functions */
     fun funInit()
     /** declare function */

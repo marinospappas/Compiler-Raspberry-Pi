@@ -29,6 +29,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     // sizes of various types
     override val INT_SIZE = WORD_SIZE    // 64-bit integers
+    override val BYTE_SIZE = 1
     override val PTR_SIZE = WORD_SIZE    // pointer 64 bit
 
     override val DEF_INT_FMT = "def_int_fmt"
@@ -79,9 +80,23 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
             outputCodeTabNl("$varName:\t.quad $initValue")
     }
 
+    /** declare byte variable (8bit) */
+    override fun declareByte(varName: String, initValue: String) {
+        if (initValue == "")
+            outputCodeTabNl("$varName:\t.byte 0")       // uninitialised global byte vars default to 0
+        else
+            outputCodeTabNl("$varName:\t.byte $initValue")
+        outputCodeNl(".align 8")
+    }
+
     /** declare int array variable (64bit) */
     override fun declareIntArray(varName: String, length: String) {
         outputCodeTabNl("$varName:\t.space ${length.toInt()*INT_SIZE}")
+    }
+
+    /** declare byte array variable */
+    override fun declareByteArray(varName: String, length: String) {
+        outputCodeTabNl("$varName:\t.space ${length.toInt()}")
     }
 
     /** initial code for functions */
@@ -536,6 +551,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
             outputCodeTabNl("$varName:\t.string \"$initValue\"")
         else
             outputCodeTabNl("$varName:\t.space $length") // uninitialised string vars must have length
+        outputCodeNl(".align 8")
     }
 
     /** initialise a str stack var */

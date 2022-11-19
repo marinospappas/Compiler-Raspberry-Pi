@@ -7,7 +7,7 @@ package mpdev.compilerv3.chapter_xa_04
 // global vars
 
 /** our variable types */
-enum class DataType { int, string, intptr, intarray, void, none }
+enum class DataType { int, string, intptr, intarray, byte, bytearray, void, none }
 
 /** our variable scope
  *  packageGlobal: scope across program and all libraries in the package
@@ -47,31 +47,32 @@ var hasReturn: Boolean = false
 var funName: String = ""
 
 /** declare a variable */
-fun declareVar(name: String, type: DataType, initValue: String, length: Int, scope: VarScope) {
+fun declareVar(name: String, type: DataType, initValue: String, size: Int, scope: VarScope) {
     // check for duplicate var declaration
     if (identifiersMap[name] != null)
         abort ("line ${inp.currentLineNumber}: identifier $name already declared")
     when (scope) {
-        VarScope.packageGlobal -> declarePackageGlobalVar(name, type, initValue, length)
-        VarScope.global -> declareGlobalVar(name, type, initValue, length)
-        VarScope.local -> declareLocalVar(name, type, initValue, length)
-        VarScope.external -> declareExternalVar(name, type, "", length)
+        VarScope.packageGlobal -> declarePackageGlobalVar(name, type, initValue, size)
+        VarScope.global -> declareGlobalVar(name, type, initValue, size)
+        VarScope.local -> declareLocalVar(name, type, initValue, size)
+        VarScope.external -> declareExternalVar(name, type, "", size)
     }
 }
 
 /** declare a package-global variable */
-fun declarePackageGlobalVar(name: String, type: DataType, initValue: String, length: Int) {
+fun declarePackageGlobalVar(name: String, type: DataType, initValue: String, size: Int) {
     code.globalSymbol(name)
-    declareGlobalVar(name, type, initValue, length)
+    declareGlobalVar(name, type, initValue, size)
 }
 
 /** declare a global variable */
-fun declareGlobalVar(name: String, type: DataType, initValue: String, length: Int) {
-    identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue!="", length)
+fun declareGlobalVar(name: String, type: DataType, initValue: String, size: Int) {
+    identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue!="", size)
     when (type) {
         DataType.int, DataType.intptr -> code.declareInt(name, initValue)
-        DataType.intarray -> code.declareIntArray(name, length.toString())
-        DataType.string -> code.declareString(name, initValue, length)
+        DataType.byte -> code.declareByte(name, initValue)
+        DataType.intarray -> code.declareIntArray(name, size.toString())
+        DataType.string -> code.declareString(name, initValue, size)
         else -> return
     }
 }

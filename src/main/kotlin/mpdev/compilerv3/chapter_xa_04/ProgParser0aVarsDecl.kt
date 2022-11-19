@@ -24,11 +24,12 @@ fun parseOneVarDecl(scope: VarScope, blockName: String) {
     }
     inp.match(Kwd.colonToken)
     when (inp.lookahead().encToken) {
-        Kwd.intType -> parseOneIntDecl(varName, varScope)
-        Kwd.intPtrType -> parseOnePtrDecl(varName, varScope)
+        Kwd.intType -> parseOneNumVarDecl(varName, varScope, DataType.int, code.INT_SIZE)
+        Kwd.byteType -> parseOneNumVarDecl(varName, varScope, DataType.byte, code.BYTE_SIZE)
+        Kwd.intPtrType -> parseOneNumVarDecl(varName, varScope, DataType.intptr, code.PTR_SIZE)
         Kwd.intArrayType -> parseOneArrayDecl(varName, varScope)
         Kwd.stringType -> parseOneStringDecl(varName, varScope)
-        else -> inp.expected("variable type (int or string)")
+        else -> inp.expected("variable type (int, byte, intarray, bytearray, intptr, byteptr or string)")
     }
     if (scope == VarScope.local) {      // add any local vars to the local vars map for this block
         val localVarsList: MutableList<String> = localVarsMap[blockName] ?: mutableListOf()
@@ -37,26 +38,11 @@ fun parseOneVarDecl(scope: VarScope, blockName: String) {
     }
 }
 
-/** parse one int var declaration */
-fun parseOneIntDecl(varName: String, scope: VarScope) {
-    var initValue = ""
+/** parse one numeric var declaration - used for int, byte, intptr */
+fun parseOneNumVarDecl(varName: String, scope: VarScope, type: DataType, size: Int) {
     inp.match()
-    if (inp.lookahead().encToken == Kwd.equalsOp) {
-        inp.match()
-        initValue = initIntVar()
-    }
-    declareVar(varName, DataType.int, initValue, code.INT_SIZE, scope)
-}
-
-/** parse one pointer var declaration */
-fun parseOnePtrDecl(varName: String, scope: VarScope) {
-    var initValue = ""
-    inp.match()
-    if (inp.lookahead().encToken == Kwd.equalsOp) {
-        inp.match()
-        initValue = initIntVar()
-    }
-    declareVar(varName, DataType.intptr, initValue, code.PTR_SIZE, scope)
+    val initValue = initIntVar()
+    declareVar(varName, type, initValue, size, scope)
 }
 
 /** parse one pointer var declaration */
@@ -91,13 +77,18 @@ fun parseOneStringDecl(varName: String, scope: VarScope) {
 
 /** initialisation for int vars */
 fun initIntVar(): String {
-    var sign = ""
-    if (inp.lookahead().type == TokType.addOps) {
-        val plusMinus = inp.match().value
-        if (plusMinus == "-")
-            sign = "-"
+    if (inp.lookahead().encToken == Kwd.equalsOp) {
+        inp.match()
+        var sign = ""
+        if (inp.lookahead().type == TokType.addOps) {
+            val plusMinus = inp.match().value
+            if (plusMinus == "-")
+                sign = "-"
+        }
+        return sign + inp.match(Kwd.number).value
     }
-    return sign + inp.match(Kwd.number).value
+    else
+        return ""
 }
 
 /** initialisation for string vars */

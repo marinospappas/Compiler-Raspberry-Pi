@@ -26,6 +26,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     // sizes of various types
     override val INT_SIZE = WORD_SIZE   // 32-bit integers
+    override val BYTE_SIZE = 1
     override val PTR_SIZE = WORD_SIZE   // pointer 32 bit
 
     // global vars list - need for entering the global var addresses in the .text section
@@ -102,9 +103,17 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         globalVarsList.add(varName)      // add var to the list
     }
 
+    override fun declareByte(varName: String, initValue: String) {
+        TODO("Not yet implemented")
+    }
+
     /** declare int array variable (64bit) */
     override fun declareIntArray(varName: String, length: String) {
         outputCodeTabNl("$varName:\t.space ${length.toInt()*INT_SIZE}")
+    }
+
+    override fun declareByteArray(varName: String, length: String) {
+        TODO("Not yet implemented")
     }
 
     /** initial code for functions */
