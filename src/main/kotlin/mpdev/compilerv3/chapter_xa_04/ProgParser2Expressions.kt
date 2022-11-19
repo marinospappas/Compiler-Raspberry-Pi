@@ -13,11 +13,14 @@ fun parseAssignment() {
     val identName: String = inp.match(Kwd.identifier).value
     checkCanAssign(identName)
     val typeVar = getType(identName)
+    if (typeVar == DataType.intarray)
+        parseArrayIndex()
     inp.match(Kwd.equalsOp)
     val typeExp = parseBooleanExpression()
     checkOperandTypeCompatibility(typeVar, typeExp, ASSIGN)
     when (typeVar) {
         DataType.int, DataType.intptr -> parseNumAssignment(identName)
+        DataType.intarray -> parseArrayAssignment(identName)
         DataType.string -> parseStringAssignment(identName)
         else -> {}
     }
@@ -29,7 +32,7 @@ fun parseAssignment() {
  * stores the result of <expression> to the address the pointer points to
  */
 fun parsePtrAssignment() {
-    var ptrType = parsePtrExpression()
+    val ptrType = parsePtrExpression()
     inp.match(Kwd.equalsOp)
     val typeExp = parseBooleanExpression()
     checkOperandTypeCompatibility(ptrType, typeExp, ASSIGN)
@@ -204,9 +207,32 @@ fun parsePtrExpression(): DataType {
     val expType = parseExpression()
     if (expType != DataType.intptr)
         abort("line ${inp.currentLineNumber}: expected pointer expression, found ${expType}")
-    code.savePtrValue()
+    code.saveAccToTempReg()
     inp.match(Kwd.ptrClose)
     return if (expType == DataType.intptr) DataType.int else DataType.none
+}
+
+/**
+ * parse array index
+ * parses an array element index expression and saves its value
+ */
+fun parseArrayIndex() {
+    inp.match(Kwd.arrayIndx)
+    val expType = parseExpression()
+    if (expType != DataType.int)
+        abort("line ${inp.currentLineNumber}: expected int array index, found ${expType}")
+    inp.match(Kwd.arrayIndx)
+    code.saveAccToTempReg()
+}
+
+/**
+ * parse an array element
+ * parses an array element expression and saves its address
+ */
+fun parseArrayElement(): DataType {
+    var arrayName = inp.match().value
+    parseArrayIndex()
+    return parseArrayVariable(arrayName)
 }
 
 /**
@@ -218,6 +244,7 @@ fun parseVariable(): DataType {
     return when (getType(inp.lookahead().value)) {
         DataType.int -> parseNumVariable()
         DataType.intptr -> parsePtrVariable()
+        DataType.intarray -> parseArrayElement()
         DataType.string -> parseStringVariable()
         else -> DataType.void
     }

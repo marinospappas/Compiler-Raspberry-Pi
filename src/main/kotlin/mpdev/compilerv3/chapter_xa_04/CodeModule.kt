@@ -116,16 +116,20 @@ interface CodeModule {
     fun shiftAccumulatorRight()
     /** set accumulator to global variable value */
     fun setAccumulatorToVar(identifier: String)
+    /** set accumulator to global array element value */
+    fun setAccumulatorToArrayVar(identifier: String)
     /** set accumulator to global variable address */
     fun setAccumulatorToVarAddress(identifier: String)
     /** save pointer value (currently in accumulator) for later use */
-    fun savePtrValue()
+    fun saveAccToTempReg()
     /** assignment to previously saved ptr */
     fun pointerAssignment()
     /** get value from pointer to accumulator */
     fun setAccumulatorToPointerVar()
     /** set accumulator to local variable value */
     fun setAccumulatorToLocalVar(offset: Int)
+    /** set accumulator to local variable value */
+    fun setAccumulatorToLocalArrayVar(offset: Int)
     /** set accumulator to local variable address */
     fun setAccumulatorToLocalVarAddress(offset: Int)
     /** call a function */
@@ -136,6 +140,10 @@ interface CodeModule {
     fun assignment(identifier: String)
     /** set stack variable to accumulator */
     fun assignmentLocalVar(offset: Int)
+    /** set array element to accumulator */
+    fun arrayAssignment(identifier: String)
+    /** set stack array element to accumulator */
+    fun assignmentLocalArrayVar(offset: Int)
 
     /** branch if false */
     fun jumpIfFalse(label: String)

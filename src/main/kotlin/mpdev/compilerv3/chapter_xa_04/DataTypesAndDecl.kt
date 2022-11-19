@@ -187,6 +187,11 @@ val typesCompatibility = mapOf(
     // int with int allowed for all operations
     TypesAndOpsCombi(DataType.int, DataType.int, ALL_OPS) to true,
     TypesAndOpsCombi(DataType.int, DataType.none, ALL_OPS) to true,
+    // int with intarray allowed for all operations
+    TypesAndOpsCombi(DataType.int, DataType.intarray, ALL_OPS) to true,
+    TypesAndOpsCombi(DataType.intarray, DataType.intarray, ALL_OPS) to true,
+    TypesAndOpsCombi(DataType.intarray, DataType.int, ALL_OPS) to true,
+    TypesAndOpsCombi(DataType.intarray, DataType.none, ALL_OPS) to true,
     // string with string allowed only for assign, add, compare_eq compare_ne
     TypesAndOpsCombi(DataType.string, DataType.string, ASSIGN) to true,
     TypesAndOpsCombi(DataType.string, DataType.string, ADD) to true,

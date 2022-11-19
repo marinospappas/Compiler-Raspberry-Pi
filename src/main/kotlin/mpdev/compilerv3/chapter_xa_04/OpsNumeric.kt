@@ -26,12 +26,29 @@ fun parsePtrVariable(): DataType {
     return DataType.intptr
 }
 
+/** process an array variable */
+fun parseArrayVariable(arrayName: String): DataType {
+    if (identifiersMap[arrayName]?.isStackVar == true)
+        identifiersMap[arrayName]?.stackOffset?.let { code.setAccumulatorToLocalArrayVar(it) }
+    else
+        code.setAccumulatorToArrayVar(arrayName)
+    return DataType.int
+}
+
 /** process assignment to numeric var (int for now) */
 fun parseNumAssignment(varName: String) {
     if (identifiersMap[varName]?.isStackVar == true)
         identifiersMap[varName]?.stackOffset?.let { code.assignmentLocalVar(it) }
     else
         code.assignment(varName)
+}
+
+/** process assignment to numeric var (int for now) */
+fun parseArrayAssignment(arrayName: String) {
+    if (identifiersMap[arrayName]?.isStackVar == true)
+        identifiersMap[arrayName]?.stackOffset?.let { code.assignmentLocalArrayVar(it) }
+    else
+        code.arrayAssignment(arrayName)
 }
 
 /** process a numeric addition */

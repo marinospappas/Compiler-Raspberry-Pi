@@ -39,6 +39,8 @@ enum class Kwd {
 
     intType, stringType, intPtrType, intArrayType, voidType,
 
+    arrayIndx,
+
     startBlock, endBlock,
     commaToken, semiColonToken, colonToken,
 
@@ -149,6 +151,9 @@ fun initKeywords() {
     )
     languageTokens.add(
         Token(":",        Kwd.colonToken,     TokType.none)
+    )
+    languageTokens.add(
+        Token("\\",        Kwd.arrayIndx,     TokType.none)
     )
 
     languageTokens.add(

@@ -423,13 +423,17 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
+    override fun setAccumulatorToArrayVar(identifier: String) {
+        TODO("Not yet implemented")
+    }
+
     /** set accumulator to global variable address */
     override fun setAccumulatorToVarAddress(identifier: String) {
         outputCodeTabNl("ldr\tr3, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
     }
 
     /** save address a pointer is pointing to for later use */
-    override fun savePtrValue() {
+    override fun saveAccToTempReg() {
         // the address the pointer points to is saved in r1
         outputCodeTabNl("mov\tr1, r3")
     }
@@ -451,6 +455,10 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
+    override fun setAccumulatorToLocalArrayVar(offset: Int) {
+        TODO("Not yet implemented")
+    }
+
     /** set accumulator to local variable  address */
     override fun setAccumulatorToLocalVarAddress(offset: Int) {
         outputCodeTabNl("add\tr3, fp, #${offset}")
@@ -465,6 +473,14 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /** set stack variable to accumulator */
     override fun assignmentLocalVar(offset: Int) {
         outputCodeTabNl("str\tr3, [fp, #${offset}]")
+    }
+
+    override fun arrayAssignment(identifier: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun assignmentLocalArrayVar(offset: Int) {
+        TODO("Not yet implemented")
     }
 
     //////////////////////////////////// function calls ///////////////////////////////////
