@@ -26,10 +26,11 @@ fun parseOneVarDecl(scope: VarScope, blockName: String) {
     when (inp.lookahead().encToken) {
         Kwd.intType -> parseOneNumVarDecl(varName, varScope, DataType.int, code.INT_SIZE)
         Kwd.byteType -> parseOneNumVarDecl(varName, varScope, DataType.byte, code.BYTE_SIZE)
-        Kwd.intPtrType -> parseOneNumVarDecl(varName, varScope, DataType.intptr, code.PTR_SIZE)
-        Kwd.intArrayType -> parseOneArrayDecl(varName, varScope)
+        Kwd.memPtrType -> parseOneNumVarDecl(varName, varScope, DataType.memptr, code.PTR_SIZE)
+        Kwd.intArrayType -> parseOneArrayDecl(varName, varScope, DataType.intarray)
+        Kwd.byteArrayType -> parseOneArrayDecl(varName, varScope, DataType.bytearray)
         Kwd.stringType -> parseOneStringDecl(varName, varScope)
-        else -> inp.expected("variable type (int, byte, intarray, bytearray, intptr, byteptr or string)")
+        else -> inp.expected("variable type (int, byte, intarray, bytearray, pointer or string)")
     }
     if (scope == VarScope.local) {      // add any local vars to the local vars map for this block
         val localVarsList: MutableList<String> = localVarsMap[blockName] ?: mutableListOf()
@@ -38,7 +39,7 @@ fun parseOneVarDecl(scope: VarScope, blockName: String) {
     }
 }
 
-/** parse one numeric var declaration - used for int, byte, intptr */
+/** parse one numeric var declaration - used for int, byte, pointer */
 fun parseOneNumVarDecl(varName: String, scope: VarScope, type: DataType, size: Int) {
     inp.match()
     val initValue = initIntVar()
@@ -46,12 +47,12 @@ fun parseOneNumVarDecl(varName: String, scope: VarScope, type: DataType, size: I
 }
 
 /** parse one pointer var declaration */
-fun parseOneArrayDecl(varName: String, scope: VarScope) {
+fun parseOneArrayDecl(varName: String, scope: VarScope, type: DataType) {
     inp.match()
     inp.match(Kwd.leftParen)
     val size = inp.match(Kwd.number).value
     inp.match(Kwd.rightParen)
-    declareVar(varName, DataType.intarray, "", size.toInt(), scope)
+    declareVar(varName, type, "", size.toInt(), scope)
 }
 
 /** parse one string var declaration */

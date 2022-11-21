@@ -13,14 +13,16 @@ fun parseAssignment() {
     val identName: String = inp.match(Kwd.identifier).value
     checkCanAssign(identName)
     val typeVar = getType(identName)
-    if (typeVar == DataType.intarray)
+    if (setOf(DataType.intarray, DataType.bytearray).contains(typeVar))
         parseArrayIndex()
     inp.match(Kwd.equalsOp)
     val typeExp = parseBooleanExpression()
     checkOperandTypeCompatibility(typeVar, typeExp, ASSIGN)
     when (typeVar) {
-        DataType.int, DataType.intptr -> parseNumAssignment(identName)
+        DataType.int, DataType.memptr -> parseNumAssignment(identName)
+        DataType.byte -> parseByteNumAssignment(identName)
         DataType.intarray -> parseArrayAssignment(identName)
+        DataType.bytearray -> parseByteArrayAssignment(identName)
         DataType.string -> parseStringAssignment(identName)
         else -> {}
     }
@@ -174,7 +176,7 @@ fun parseIdentifier(): DataType {
 
 /**
  * parse a call to address of variable
- * returns the data type intptr
+ * returns the data type memptr
  */
 fun parseAddressOfVar(): DataType {
     inp.match()
@@ -188,7 +190,7 @@ fun parseAddressOfVar(): DataType {
     else
         code.setAccumulatorToVarAddress(varName)
     inp.match(Kwd.rightParen)
-    return DataType.intptr
+    return DataType.memptr
 }
 
 /** parse Pointer - returns the value a pointer points to */
@@ -205,11 +207,11 @@ fun parsePointer(): DataType {
 fun parsePtrExpression(): DataType {
     inp.match()
     val expType = parseExpression()
-    if (expType != DataType.intptr)
+    if (expType != DataType.memptr)
         abort("line ${inp.currentLineNumber}: expected pointer expression, found ${expType}")
     code.saveAccToTempReg()
     inp.match(Kwd.ptrClose)
-    return if (expType == DataType.intptr) DataType.int else DataType.none
+    return if (expType == DataType.memptr) DataType.int else DataType.none
 }
 
 /**
@@ -231,8 +233,30 @@ fun parseArrayIndex() {
  */
 fun parseArrayElement(): DataType {
     var arrayName = inp.match().value
-    parseArrayIndex()
-    return parseArrayVariable(arrayName)
+    if (inp.lookahead().encToken == Kwd.arrayIndx) {
+        parseArrayIndex()
+        return parseArrayVariable(arrayName)
+    }
+    else {
+        code.setAccumulatorToVarAddress(arrayName)
+        return DataType.intarray
+    }
+}
+
+/**
+ * parse an array element
+ * parses an array element expression and saves its address
+ */
+fun parseByteArrayElement(): DataType {
+    val arrayName = inp.match().value
+    if (inp.lookahead().encToken == Kwd.arrayIndx) {
+        parseArrayIndex()
+        return parseByteArrayVariable(arrayName)
+    }
+    else {
+        code.setAccumulatorToVarAddress(arrayName)
+        return DataType.bytearray
+    }
 }
 
 /**
@@ -242,9 +266,11 @@ fun parseArrayElement(): DataType {
  */
 fun parseVariable(): DataType {
     return when (getType(inp.lookahead().value)) {
-        DataType.int -> parseNumVariable()
-        DataType.intptr -> parsePtrVariable()
+        DataType.int -> parseNumVariable(DataType.int)
+        DataType.byte -> parseNumByteVariable()
+        DataType.memptr -> parseNumVariable(DataType.memptr)
         DataType.intarray -> parseArrayElement()
+        DataType.bytearray -> parseByteArrayElement()
         DataType.string -> parseStringVariable()
         else -> DataType.void
     }

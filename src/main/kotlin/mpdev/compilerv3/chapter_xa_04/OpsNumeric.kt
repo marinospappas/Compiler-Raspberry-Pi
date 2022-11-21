@@ -6,24 +6,24 @@ fun parseNumber(): DataType {
     return DataType.int
 }
 
-/** process a numeric variable */
-fun parseNumVariable(): DataType {
+/** process a numeric int variable */
+fun parseNumVariable(type: DataType): DataType {
     val varName = inp.match(Kwd.identifier).value
     if (identifiersMap[varName]?.isStackVar == true)
         identifiersMap[varName]?.stackOffset?.let { code.setAccumulatorToLocalVar(it) }
     else
         code.setAccumulatorToVar(varName)
-    return DataType.int
+    return type
 }
 
-/** process a pointer variable */
-fun parsePtrVariable(): DataType {
+/** process a numeric byte variable */
+fun parseNumByteVariable(): DataType {
     val varName = inp.match(Kwd.identifier).value
     if (identifiersMap[varName]?.isStackVar == true)
-        identifiersMap[varName]?.stackOffset?.let { code.setAccumulatorToLocalVar(it) }
+        identifiersMap[varName]?.stackOffset?.let { code.setAccumulatorToLocalByteVar(it) }
     else
-        code.setAccumulatorToVar(varName)
-    return DataType.intptr
+        code.setAccumulatorToByteVar(varName)
+    return DataType.byte
 }
 
 /** process an array variable */
@@ -35,7 +35,16 @@ fun parseArrayVariable(arrayName: String): DataType {
     return DataType.int
 }
 
-/** process assignment to numeric var (int for now) */
+/** process an array variable */
+fun parseByteArrayVariable(arrayName: String): DataType {
+    if (identifiersMap[arrayName]?.isStackVar == true)
+        identifiersMap[arrayName]?.stackOffset?.let { code.setAccumulatorToLocalByteArrayVar(it) }
+    else
+        code.setAccumulatorToByteArrayVar(arrayName)
+    return DataType.int
+}
+
+/** process assignment to numeric var (int) */
 fun parseNumAssignment(varName: String) {
     if (identifiersMap[varName]?.isStackVar == true)
         identifiersMap[varName]?.stackOffset?.let { code.assignmentLocalVar(it) }
@@ -43,7 +52,7 @@ fun parseNumAssignment(varName: String) {
         code.assignment(varName)
 }
 
-/** process assignment to numeric var (int for now) */
+/** process assignment to array numeric var (int) */
 fun parseArrayAssignment(arrayName: String) {
     if (identifiersMap[arrayName]?.isStackVar == true)
         identifiersMap[arrayName]?.stackOffset?.let { code.assignmentLocalArrayVar(it) }
@@ -51,52 +60,88 @@ fun parseArrayAssignment(arrayName: String) {
         code.arrayAssignment(arrayName)
 }
 
+/** process assignment to numeric var (int) */
+fun parseByteNumAssignment(varName: String) {
+    if (identifiersMap[varName]?.isStackVar == true)
+        identifiersMap[varName]?.stackOffset?.let { code.assignmentLocalByteVar(it) }
+    else
+        code.assignmentByte(varName)
+}
+
+/** process assignment to array numeric var (int) */
+fun parseByteArrayAssignment(arrayName: String) {
+    if (identifiersMap[arrayName]?.isStackVar == true)
+        identifiersMap[arrayName]?.stackOffset?.let { code.assignmentLocalByteArrayVar(it) }
+    else
+        code.arrayByteAssignment(arrayName)
+}
+
 /** process a numeric addition */
-fun addNumber() {
+fun addNumber(resultType: DataType) {
     code.addToAccumulator()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }
 
 /** process a numeric subtraction */
-fun subtractNumber() {
+fun subtractNumber(resultType: DataType) {
     code.subFromAccumulator()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }
 
 /** process a numeric multiplication */
-fun multiplyNumber() {
+fun multiplyNumber(resultType: DataType) {
     code.multiplyAccumulator()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }
 
 /** process a numeric division */
-fun divideNumber() {
+fun divideNumber(resultType: DataType) {
     code.divideAccumulator()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }
 
 /** process a numeric modulo op */
-fun moduloNumber() {
+fun moduloNumber(resultType: DataType) {
     code.moduloAccumulator()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }
 
 /** process shift left */
-fun shiftLeftNumber() {
+fun shiftLeftNumber(resultType: DataType) {
     code.shiftAccumulatorLeft()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }
 
 /** process shift right */
-fun shiftRightNumber() {
+fun shiftRightNumber(resultType: DataType) {
     code.shiftAccumulatorRight()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }
 
 /** process bitwise or */
-fun orNumber() {
+fun orNumber(resultType: DataType) {
     code.orAccumulator()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }
 
 /** process bitwise xor */
-fun xorNumber() {
+fun xorNumber(resultType: DataType) {
     code.xorAccumulator()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }
 
 /** process bitwise and */
-fun andNumber() {
+fun andNumber(resultType: DataType) {
     code.andAccumulator()
+    if (resultType == DataType.byte)
+        code.convertToByte()
 }

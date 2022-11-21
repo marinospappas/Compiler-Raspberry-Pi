@@ -120,7 +120,7 @@ fun parseEquals(typeE1: DataType) {
     val typeE2 = parseExpression()
     checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_EQ)
     when (typeE1) {
-        DataType.int, DataType.intptr -> code.compareEquals()
+        DataType.int, DataType.memptr -> code.compareEquals()
         DataType.string -> code.compareStringEquals()
         else -> {}
     }
@@ -132,7 +132,7 @@ fun parseNotEquals(typeE1: DataType) {
     val typeE2 = parseExpression()
     checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_NE)
     when (typeE1) {
-        DataType.int, DataType.intptr -> code.compareNotEquals()
+        DataType.int, DataType.memptr -> code.compareNotEquals()
         DataType.string -> code.compareStringNotEquals()
         else -> {}
     }
@@ -144,7 +144,7 @@ fun parseLess(typeE1: DataType) {
     val typeE2 = parseExpression()
     checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_LT)
     when (typeE1) {
-        DataType.int, DataType.intptr -> code.compareLess()
+        DataType.int, DataType.memptr -> code.compareLess()
         else -> {}
     }
 }
@@ -155,7 +155,7 @@ fun parseLessEqual(typeE1: DataType) {
     val typeE2 = parseExpression()
     checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_LE)
     when (typeE1) {
-        DataType.int, DataType.intptr -> code.compareLessEqual()
+        DataType.int, DataType.memptr -> code.compareLessEqual()
         else -> {}
     }
 }
@@ -166,7 +166,7 @@ fun parseGreater(typeE1: DataType) {
     val typeE2 = parseExpression()
     checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_GT)
     when (typeE1) {
-        DataType.int, DataType.intptr -> code.compareGreater()
+        DataType.int, DataType.memptr -> code.compareGreater()
         else -> {}
     }
 }
@@ -177,7 +177,7 @@ fun parseGreaterEqual(typeE1: DataType) {
     val typeE2 = parseExpression()
     checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_GE)
     when (typeE1) {
-        DataType.int, DataType.intptr -> code.compareGreaterEqual()
+        DataType.int, DataType.memptr -> code.compareGreaterEqual()
         else -> {}
     }
 }

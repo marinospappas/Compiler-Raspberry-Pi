@@ -92,11 +92,13 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
     /** declare int array variable (64bit) */
     override fun declareIntArray(varName: String, length: String) {
         outputCodeTabNl("$varName:\t.space ${length.toInt()*INT_SIZE}")
+        outputCodeNl(".align 8")
     }
 
     /** declare byte array variable */
     override fun declareByteArray(varName: String, length: String) {
         outputCodeTabNl("$varName:\t.space ${length.toInt()}")
+        outputCodeNl(".align 8")
     }
 
     /** initial code for functions */
@@ -325,17 +327,33 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("shrq\t%cl, %rax")
     }
 
-    /** set accumulator to global variable value */
+    /** set accumulator to static int variable value */
     override fun setAccumulatorToVar(identifier: String) {
         outputCodeTabNl("movq\t${identifier}(%rip), %rax")
         outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
     }
 
+    /** set accumulator to static int array variable value */
     override fun setAccumulatorToArrayVar(identifier: String) {
         // index already in %rcx
         outputCodeTabNl("lea\t${identifier}(%rip), %rax")  // array address in %rax
         outputCodeTabNl("movq\t(%rax, %rcx, $INT_SIZE), %rax")  // get array element
         outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
+    }
+
+    /** set accumulator to static byte variable value */
+    override fun setAccumulatorToByteVar(identifier: String) {
+        outputCodeTabNl("movb\t${identifier}(%rip), %al")   // fetch 1 byte
+        outputCodeTabNl("andq\t$0xFF, %rax")     // zero rest of %rax and set flags - Z flag set = FALSE
+    }
+
+    /** set accumulator to static byte array variable value */
+    override fun setAccumulatorToByteArrayVar(identifier: String) {
+        // index already in %rcx
+        outputCodeTabNl("lea\t${identifier}(%rip), %rax")  // array address in %rax
+        outputCodeTabNl("movb\t(%rax, %rcx, 1), %al")  // get array element
+        outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
+        outputCodeTabNl("andq\t$0xFF, %rax")     // zero rest of %rax and set flags - Z flag set = FALSE
     }
 
     /** set accumulator to global variable address */
@@ -355,7 +373,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("movq\t(%rcx), %rax")
     }
 
-    /** set accumulator to local variable */
+    /** set accumulator to local int variable */
     override fun setAccumulatorToLocalVar(offset: Int) {
         outputCodeTab("movq\t")
         if (offset != 0)
@@ -372,6 +390,25 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeNl("(%rbp), %rax")            // array address in %rax
         outputCodeTabNl("movq\t(%rax, %rcx, $INT_SIZE), %rax")  // get array element
         outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
+    }
+
+    /** set accumulator to local byte variable */
+    override fun setAccumulatorToLocalByteVar(offset: Int) {
+        outputCodeTab("movb\t")
+        if (offset != 0)
+            outputCode("$offset")
+        outputCodeNl("(%rbp), %al")
+        outputCodeTabNl("andq\t$0xFF, %rax")     // zero rest of %rax and set flags - Z flag set = FALSE
+    }
+
+    override fun setAccumulatorToLocalByteArrayVar(offset: Int) {
+        // index already in %rcx
+        outputCodeTab("movq\t")
+        if (offset != 0)
+            outputCode("$offset")
+        outputCodeNl("(%rbp), %rax")            // array address in %rax
+        outputCodeTabNl("movb\t(%rax, %rcx, 1), %al")  // get array element
+        outputCodeTabNl("andq\t$0xFF, %rax")     // zero rest of %rax and set flags - Z flag set = FALSE
     }
 
     /** set accumulator to local variable address */
@@ -391,10 +428,10 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("ret")
     }
 
-    /** set variable to accumulator */
+    /** set int variable to accumulator */
     override fun assignment(identifier: String) = outputCodeTabNl("movq\t%rax, ${identifier}(%rip)")
 
-    /** set stack variable to accumulator */
+    /** set int stack variable to accumulator */
     override fun assignmentLocalVar(offset: Int) {
         outputCodeTab("movq\t%rax, ")
         if (offset != 0)
@@ -402,7 +439,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeNl("(%rbp)")
     }
 
-    /** set array element to accumulator */
+    /** set int array element to accumulator */
     override fun arrayAssignment(identifier: String) {
         // index already in %rcx
         outputCodeTabNl("movq\t%rax, %rbx")     // save value in %rbx
@@ -410,7 +447,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("movq\t%rbx, (%rax, %rcx, $INT_SIZE)")  // save array element
     }
 
-    /** set stack array element to accumulator */
+    /** set int stack array element to accumulator */
     override fun assignmentLocalArrayVar(offset: Int) {
         // index already in %rcx
         outputCodeTabNl("movq\t%rax, %rbx")     // save value in %rbx
@@ -419,6 +456,41 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
             outputCode("$offset")
         outputCodeNl("(%rbp), %rax")            // array start address in %rax
         outputCodeTabNl("movq\t%rbx, (%rax, %rcx, $INT_SIZE)")  // save array element
+    }
+
+    /** set byte variable to accumulator */
+    override fun assignmentByte(identifier: String) = outputCodeTabNl("movb\t%al, ${identifier}(%rip)")
+
+    /** set int stack variable to accumulator */
+    override fun assignmentLocalByteVar(offset: Int) {
+        outputCodeTab("movb\t%al, ")
+        if (offset != 0)
+            outputCode("$offset")
+        outputCodeNl("(%rbp)")
+    }
+
+    /** set byte array element to accumulator */
+    override fun arrayByteAssignment(identifier: String) {
+        // index already in %rcx
+        outputCodeTabNl("movb\t%al, %bl")     // save value in %rbx
+        outputCodeTabNl("lea\t${identifier}(%rip), %rax")  // array start address in %rax
+        outputCodeTabNl("movb\t%bl, (%rax, %rcx, 1)")  // save array element
+    }
+
+    /** set byte stack array element to accumulator */
+    override fun assignmentLocalByteArrayVar(offset: Int) {
+        // index already in %rcx
+        outputCodeTabNl("movb\t%al, %bl")     // save value in %rbx
+        outputCodeTab("movq\t")
+        if (offset != 0)
+            outputCode("$offset")
+        outputCodeNl("(%rbp), %rax")            // array start address in %rax
+        outputCodeTabNl("movb\t%bl, (%rax, %rcx, 1)")  // save array element
+    }
+
+    /** convert accumulator to byte */
+    override fun convertToByte() {
+        outputCodeTabNl("andq\t\$0xFF, %rax")
     }
 
     /** branch if false */

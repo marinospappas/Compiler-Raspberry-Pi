@@ -70,7 +70,7 @@ fun printExpressions() {
             decFmt = getPrintFormat()
         }
         when (exprType) {
-            DataType.int, DataType.intptr -> code.printInt(decFmt)
+            DataType.int, DataType.memptr, DataType.byte -> code.printInt(decFmt)
             DataType.string -> code.printStr()
             else -> {}
         }

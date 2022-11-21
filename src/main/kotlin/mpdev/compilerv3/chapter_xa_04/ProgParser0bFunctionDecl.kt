@@ -25,10 +25,13 @@ fun parseFunDecl() {
         var funType: DataType = DataType.void
         when (inp.lookahead().encToken) {
             Kwd.intType -> funType = DataType.int
-            Kwd.intPtrType -> funType = DataType.intptr
+            Kwd.byteType -> funType = DataType.byte
+            Kwd.intArrayType -> funType = DataType.intarray
+            Kwd.byteArrayType -> funType = DataType.bytearray
+            Kwd.memPtrType -> funType = DataType.memptr
             Kwd.stringType -> funType = DataType.string
             Kwd.voidType -> funType = DataType.void
-            else -> inp.expected("function type (int, string, intptr or void)")
+            else -> inp.expected("function type (int, byte, intarray, bytearray, string, pointer or void)")
         }
         inp.match()
         if (identifiersMap[functionName] != null)
@@ -67,9 +70,12 @@ fun parseOneFunParam(): FunctionParameter {
     var paramType = DataType.none
     when (inp.lookahead().encToken) {
         Kwd.intType -> paramType = DataType.int
-        Kwd.intPtrType -> paramType = DataType.intptr
+        Kwd.byteType -> paramType = DataType.byte
+        Kwd.intArrayType -> paramType = DataType.intarray
+        Kwd.byteArrayType -> paramType = DataType.bytearray
+        Kwd.memPtrType -> paramType = DataType.memptr
         Kwd.stringType -> paramType = DataType.string
-        else -> inp.expected("variable type (int, intptr or string)")
+        else -> inp.expected("variable type (int, byte, intarray, bytearray, string, pointer or void)")
     }
     inp.match()
     return FunctionParameter(paramName, paramType)
@@ -83,8 +89,8 @@ fun storeParamsToStack(functionName: String) {
         if (foundOffset < 0) {   // parameter in register
             val paramVarOffs = code.allocateStackVar(code.INT_SIZE)
             identifiersMap[paramsList[i].name] = IdentifierDecl(
-                TokType.variable, paramsList[i].type, initialised = true, size = code.INT_SIZE,
-                isStackVar = true, stackOffset = paramVarOffs, canAssign = false
+                TokType.variable, paramsList[i].type, initialised = true, size = code.INT_SIZE, isStackVar = true,
+                stackOffset = paramVarOffs, canAssign = setOf(DataType.intarray, DataType.bytearray).contains(paramsList[i].type)
             )
             code.storeFunParamToStack(i, paramVarOffs)
             code.outputCommentNl("parameter ${paramsList[i].name} offset from frame ${paramVarOffs}")

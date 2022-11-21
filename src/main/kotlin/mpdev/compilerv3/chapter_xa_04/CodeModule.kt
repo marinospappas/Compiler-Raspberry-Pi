@@ -123,6 +123,10 @@ interface CodeModule {
     fun setAccumulatorToVar(identifier: String)
     /** set accumulator to global array element value */
     fun setAccumulatorToArrayVar(identifier: String)
+    /** set accumulator to global variable value */
+    fun setAccumulatorToByteVar(identifier: String)
+    /** set accumulator to global array element value */
+    fun setAccumulatorToByteArrayVar(identifier: String)
     /** set accumulator to global variable address */
     fun setAccumulatorToVarAddress(identifier: String)
     /** save pointer value (currently in accumulator) for later use */
@@ -135,20 +139,34 @@ interface CodeModule {
     fun setAccumulatorToLocalVar(offset: Int)
     /** set accumulator to local variable value */
     fun setAccumulatorToLocalArrayVar(offset: Int)
+    /** set accumulator to local variable value */
+    fun setAccumulatorToLocalByteVar(offset: Int)
+    /** set accumulator to local variable value */
+    fun setAccumulatorToLocalByteArrayVar(offset: Int)
     /** set accumulator to local variable address */
     fun setAccumulatorToLocalVarAddress(offset: Int)
     /** call a function */
     fun callFunction(subroutine: String)
     /** return from function */
     fun returnFromCall()
-    /** set variable to accumulator */
+    /** set int variable to accumulator */
     fun assignment(identifier: String)
-    /** set stack variable to accumulator */
+    /** set int stack variable to accumulator */
     fun assignmentLocalVar(offset: Int)
-    /** set array element to accumulator */
+    /** set int array element to accumulator */
     fun arrayAssignment(identifier: String)
-    /** set stack array element to accumulator */
+    /** set int stack array element to accumulator */
     fun assignmentLocalArrayVar(offset: Int)
+    /** set byte variable to accumulator */
+    fun assignmentByte(identifier: String)
+    /** set byte stack variable to accumulator */
+    fun assignmentLocalByteVar(offset: Int)
+    /** set byte array element to accumulator */
+    fun arrayByteAssignment(identifier: String)
+    /** set byte stack array element to accumulator */
+    fun assignmentLocalByteArrayVar(offset: Int)
+    /** convert accumulator to byte */
+    fun convertToByte()
 
     /** branch if false */
     fun jumpIfFalse(label: String)

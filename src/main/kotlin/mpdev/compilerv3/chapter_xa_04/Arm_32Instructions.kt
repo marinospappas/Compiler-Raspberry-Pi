@@ -436,6 +436,14 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         TODO("Not yet implemented")
     }
 
+    override fun setAccumulatorToByteVar(identifier: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun setAccumulatorToByteArrayVar(identifier: String) {
+        TODO("Not yet implemented")
+    }
+
     /** set accumulator to global variable address */
     override fun setAccumulatorToVarAddress(identifier: String) {
         outputCodeTabNl("ldr\tr3, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
@@ -468,6 +476,14 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         TODO("Not yet implemented")
     }
 
+    override fun setAccumulatorToLocalByteVar(offset: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun setAccumulatorToLocalByteArrayVar(offset: Int) {
+        TODO("Not yet implemented")
+    }
+
     /** set accumulator to local variable  address */
     override fun setAccumulatorToLocalVarAddress(offset: Int) {
         outputCodeTabNl("add\tr3, fp, #${offset}")
@@ -489,6 +505,26 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     override fun assignmentLocalArrayVar(offset: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun assignmentByte(identifier: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun assignmentLocalByteVar(offset: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun arrayByteAssignment(identifier: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun assignmentLocalByteArrayVar(offset: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun convertToByte() {
         TODO("Not yet implemented")
     }
 

@@ -37,7 +37,7 @@ enum class Kwd {
     isGreater, isLess,
     isGreaterOrEq, isLessOrEq,
 
-    intType, stringType, intPtrType, intArrayType, byteType, byteArrayType, voidType,
+    intType, stringType, memPtrType, intArrayType, byteType, byteArrayType, voidType,
 
     arrayIndx,
 
@@ -119,7 +119,7 @@ fun initKeywords() {
     )
 
     languageTokens.add(
-        Token("intptr",     Kwd.intPtrType,       TokType.varType)
+        Token("memptr",     Kwd.memPtrType,       TokType.varType)
     )
     languageTokens.add(
         Token("intarray",     Kwd.intArrayType,       TokType.varType)

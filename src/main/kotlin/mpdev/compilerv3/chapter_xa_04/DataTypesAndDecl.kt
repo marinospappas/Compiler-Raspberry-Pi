@@ -7,7 +7,7 @@ package mpdev.compilerv3.chapter_xa_04
 // global vars
 
 /** our variable types */
-enum class DataType { int, string, intptr, intarray, byte, bytearray, void, none }
+enum class DataType { int, string, memptr, intarray, byte, bytearray, void, none }
 
 /** our variable scope
  *  packageGlobal: scope across program and all libraries in the package
@@ -69,9 +69,10 @@ fun declarePackageGlobalVar(name: String, type: DataType, initValue: String, siz
 fun declareGlobalVar(name: String, type: DataType, initValue: String, size: Int) {
     identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue!="", size)
     when (type) {
-        DataType.int, DataType.intptr -> code.declareInt(name, initValue)
+        DataType.int, DataType.memptr -> code.declareInt(name, initValue)
         DataType.byte -> code.declareByte(name, initValue)
         DataType.intarray -> code.declareIntArray(name, size.toString())
+        DataType.bytearray -> code.declareByteArray(name, size.toString())
         DataType.string -> code.declareString(name, initValue, size)
         else -> return
     }
@@ -82,13 +83,11 @@ fun declareLocalVar(name: String, type: DataType, initValue: String, length: Int
     val stackOffset: Int
     val lengthRoundedToWord = (length / code.INT_SIZE + 1) * code.INT_SIZE
     when (type) {
-        DataType.int, DataType.intptr -> {
+        DataType.int, DataType.memptr -> {
             stackOffset = code.allocateStackVar(code.INT_SIZE)
             initLocalIntVar(stackOffset, initValue)
         }
-        DataType.intarray -> {
-            stackOffset = code.allocateStackVar(length)
-        }
+        DataType.intarray, DataType.bytearray -> stackOffset = code.allocateStackVar(lengthRoundedToWord)
         DataType.string -> {
             stackOffset = code.allocateStackVar(code.PTR_SIZE)
             initLocalStringVar(name, stackOffset, initValue, lengthRoundedToWord)
@@ -188,11 +187,6 @@ val typesCompatibility = mapOf(
     // int with int allowed for all operations
     TypesAndOpsCombi(DataType.int, DataType.int, ALL_OPS) to true,
     TypesAndOpsCombi(DataType.int, DataType.none, ALL_OPS) to true,
-    // int with intarray allowed for all operations
-    TypesAndOpsCombi(DataType.int, DataType.intarray, ALL_OPS) to true,
-    TypesAndOpsCombi(DataType.intarray, DataType.intarray, ALL_OPS) to true,
-    TypesAndOpsCombi(DataType.intarray, DataType.int, ALL_OPS) to true,
-    TypesAndOpsCombi(DataType.intarray, DataType.none, ALL_OPS) to true,
     // string with string allowed only for assign, add, compare_eq compare_ne
     TypesAndOpsCombi(DataType.string, DataType.string, ASSIGN) to true,
     TypesAndOpsCombi(DataType.string, DataType.string, ADD) to true,
@@ -200,33 +194,33 @@ val typesCompatibility = mapOf(
     TypesAndOpsCombi(DataType.string, DataType.string, COMPARE_NE) to true,
     TypesAndOpsCombi(DataType.string, DataType.none, PRINT) to true,
     // pointer with int allowed only for assign add, subtract and comparisons
-    TypesAndOpsCombi(DataType.intptr, DataType.int, ADD) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.int, SUBTRACT) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.int, ASSIGN) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.string, ASSIGN) to true,
-    TypesAndOpsCombi(DataType.int, DataType.intptr, ASSIGN) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_EQ) to true,
-    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_EQ) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_NE) to true,
-    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_NE) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_LT) to true,
-    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_LT) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_GT) to true,
-    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_GT) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_LE) to true,
-    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_LE) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.int, COMPARE_GE) to true,
-    TypesAndOpsCombi(DataType.int, DataType.intptr, COMPARE_GE) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.none, PRINT) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.int, ADD) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.int, SUBTRACT) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.int, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.string, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.int, DataType.memptr, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.int, COMPARE_EQ) to true,
+    TypesAndOpsCombi(DataType.int, DataType.memptr, COMPARE_EQ) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.int, COMPARE_NE) to true,
+    TypesAndOpsCombi(DataType.int, DataType.memptr, COMPARE_NE) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.int, COMPARE_LT) to true,
+    TypesAndOpsCombi(DataType.int, DataType.memptr, COMPARE_LT) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.int, COMPARE_GT) to true,
+    TypesAndOpsCombi(DataType.int, DataType.memptr, COMPARE_GT) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.int, COMPARE_LE) to true,
+    TypesAndOpsCombi(DataType.int, DataType.memptr, COMPARE_LE) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.int, COMPARE_GE) to true,
+    TypesAndOpsCombi(DataType.int, DataType.memptr, COMPARE_GE) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.none, PRINT) to true,
     // pointer with pointer allowed only for subtract, assign and compare
-    TypesAndOpsCombi(DataType.intptr, DataType.intptr, SUBTRACT) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.intptr, ASSIGN) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_EQ) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_NE) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_LT) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_GT) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_LE) to true,
-    TypesAndOpsCombi(DataType.intptr, DataType.intptr, COMPARE_GE) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.memptr, SUBTRACT) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.memptr, ASSIGN) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.memptr, COMPARE_EQ) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.memptr, COMPARE_NE) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.memptr, COMPARE_LT) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.memptr, COMPARE_GT) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.memptr, COMPARE_LE) to true,
+    TypesAndOpsCombi(DataType.memptr, DataType.memptr, COMPARE_GE) to true,
     // all other combinations forbidden unless set here
 )
 
@@ -235,7 +229,15 @@ val typesCompatibility = mapOf(
  * if the specific operation is not defined in the compatibility map
  * check also the specific types against the ALL_OPS keyword
  */
-fun checkOperandTypeCompatibility(t1: DataType, t2: DataType, operation: String) {
+fun checkOperandTypeCompatibility(type1: DataType, type2: DataType, operation: String) {
+    val t1 = if (setOf(DataType.byte, DataType.bytearray, DataType.intarray).contains(type1))
+        DataType.int
+    else
+        type1
+    val t2 = if (setOf(DataType.byte, DataType.bytearray, DataType.intarray).contains(type2))
+        DataType.int
+    else
+        type2
     var typesAreCompatible = typesCompatibility[TypesAndOpsCombi(t1, t2, operation)] ?: false
     if (!typesAreCompatible)
         typesAreCompatible = typesCompatibility[TypesAndOpsCombi(t1, t2, ALL_OPS)] ?: false

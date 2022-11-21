@@ -32,11 +32,15 @@ fun parseAssignFunParams(functionName: String) {
         // all params but the last one are saved to temp registers
         // the last param remains in the accumulator
         if (i < paramTypeList.size - 1)
-            when (paramExprType) {
-                DataType.int, DataType.intptr -> code.setIntTempFunParam(i)      // the same code is used for int, intptr and for string parameters
-                DataType.string -> code.setIntTempFunParam(i)   // i.e. moves %rax to the appropriate register for this parameter
-                else -> {}
-            }
+            code.setIntTempFunParam(i)
+       //     when (paramExprType) {
+         //       DataType.int, DataType.byte, DataType.memptr -> code.setIntTempFunParam(i)      // the same code is used for int, memptr and for string parameters
+           //     DataType.intarray, DataType.bytearray -> {
+             //       code.setIntTempFunParam(i)
+               // }
+             //   DataType.string -> code.setIntTempFunParam(i)   // i.e. moves %rax to the appropriate register for this parameter
+               // else -> {}
+           // }
     }
 }
 
