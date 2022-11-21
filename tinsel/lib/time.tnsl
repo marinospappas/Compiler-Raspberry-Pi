@@ -48,7 +48,7 @@ fun timeout_sec(duration: int) :void {
 }
 
 // timeout for 0 - 999 millisecs
-fun timeout_millisec(duration: int) @global:void {
+fun timeout_millisec(duration: int) :void {
     var start_msec: int
     var msec_now: int
     var msec_difference: int
