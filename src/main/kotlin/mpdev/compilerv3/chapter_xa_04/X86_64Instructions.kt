@@ -352,7 +352,6 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         // index already in %rcx
         outputCodeTabNl("lea\t${identifier}(%rip), %rax")  // array address in %rax
         outputCodeTabNl("movb\t(%rax, %rcx, 1), %al")  // get array element
-        outputCodeTabNl("testq\t%rax, %rax")    // also set flags - Z flag set = FALSE
         outputCodeTabNl("andq\t$0xFF, %rax")     // zero rest of %rax and set flags - Z flag set = FALSE
     }
 
@@ -361,14 +360,17 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("lea\t${identifier}(%rip), %rax")
     }
 
+    /** save accumulator to a temp register for later use */
     override fun saveAccToTempReg() {
         outputCodeTabNl("movq\t%rax, %rcx")
     }
 
+    /** save accumulator to the previously saved address the pointer is pointing to */
     override fun pointerAssignment() {
         outputCodeTabNl("movq\t%rax, (%rcx)")
     }
 
+    /** set accumulator to the contents of the address already in accumulator */
     override fun setAccumulatorToPointerVar() {
         outputCodeTabNl("movq\t(%rcx), %rax")
     }
@@ -401,6 +403,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("andq\t$0xFF, %rax")     // zero rest of %rax and set flags - Z flag set = FALSE
     }
 
+    /** set accumulator to local byte array variable */
     override fun setAccumulatorToLocalByteArrayVar(offset: Int) {
         // index already in %rcx
         outputCodeTab("movq\t")
@@ -589,7 +592,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     /** print accumulator as integer */
     override fun printInt(fmt: String) {
-        //TODO: support various dec formats
+        //TODO: support various dec formats - call printf instead
         outputCodeTabNl("movq\t%rax, %rdi\t\t# value to be printed in rdi")
         outputCodeTabNl("call\twrite_i_")
     }

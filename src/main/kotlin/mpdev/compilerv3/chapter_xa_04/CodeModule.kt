@@ -129,7 +129,7 @@ interface CodeModule {
     fun setAccumulatorToByteArrayVar(identifier: String)
     /** set accumulator to global variable address */
     fun setAccumulatorToVarAddress(identifier: String)
-    /** save pointer value (currently in accumulator) for later use */
+    /** save accumulator to a temp register for later use */
     fun saveAccToTempReg()
     /** assignment to previously saved ptr */
     fun pointerAssignment()

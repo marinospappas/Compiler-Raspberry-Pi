@@ -84,13 +84,13 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeNl(".data")
         outputCodeNl(".align 4")
         // copyright message
-        outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 3.2 for Arm-32 (Raspberry Pi) November 2022 (c) M.Pappas\\n\"")
+        outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 4.0 for Arm-32 (Raspberry Pi) December 2022 (c) M.Pappas\\n\"")
         // newline string
         outputCodeTabNl("$NEWLINE: .asciz \"\\n\"")
         // int format for printf
         outputCodeTabNl("$DEF_INT_FMT: .asciz \"%d\"")
         // all 1s constant
-        outputCodeTabNl("$CONST_ALL_1S: .word 0xffffffff")
+        outputCodeTabNl("$CONST_ALL_1S: .word 0xFFFFFFFF")
         outputCodeNl(".align 4")
     }
 
@@ -103,17 +103,27 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         globalVarsList.add(varName)      // add var to the list
     }
 
+    /** declare byte variable (8bit) */
     override fun declareByte(varName: String, initValue: String) {
-        TODO("Not yet implemented")
+        if (initValue == "")
+            outputCodeTabNl("$varName:\t.byte 0")       // uninitialised global byte vars default to 0
+        else
+            outputCodeTabNl("$varName:\t.byte $initValue")
+        outputCodeNl(".align 8")
+        globalVarsList.add(varName)      // add var to the list
     }
 
-    /** declare int array variable (64bit) */
+    /** declare int array variable (32bit) */
     override fun declareIntArray(varName: String, length: String) {
         outputCodeTabNl("$varName:\t.space ${length.toInt()*INT_SIZE}")
+        globalVarsList.add(varName)      // add var to the list
     }
 
+    /** declare byte array variable */
     override fun declareByteArray(varName: String, length: String) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("$varName:\t.space ${length.toInt()}")
+        outputCodeNl(".align 8")
+        globalVarsList.add(varName)      // add var to the list
     }
 
     /** initial code for functions */
@@ -254,7 +264,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /** set the values of the int constants */
     private fun setIntConstants() {
         //TODO: same as with global variables, this has to be done after the end of each function
-        intConstants.forEach{ constName, value ->
+        intConstants.forEach{ (constName, value) ->
             outputCodeNl("${constName}:\t.word $value")
         }
     }
@@ -423,7 +433,8 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     override fun shiftAccumulatorRight() {
         outputCodeTabNl("ldr\tr2, [sp], #4")
         outputCodeTabNl("lsr\tr3, r2, r3")
-        outputCodeTabNl("tst\tr3, r3")    }
+        outputCodeTabNl("tst\tr3, r3")
+    }
 
     /** set accumulator to global variable */
     override fun setAccumulatorToVar(identifier: String) {
@@ -432,16 +443,27 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
+    /** set accumulator to global array variable */
     override fun setAccumulatorToArrayVar(identifier: String) {
-        TODO("Not yet implemented")
+        // index already in r1
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")  // array address in r2
+        outputCodeTabNl("ldr\tr3, [r2, r1, lsl #2]")  // get array element
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
+    /** set accumulator to global byte variable */
     override fun setAccumulatorToByteVar(identifier: String) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("ldr\tr3, [r2]")
+        outputCodeTabNl("ands\tr3, #0xFF")    // also set flags - Z flag set = FALSE
     }
 
+    /** set accumulator to global byte array variable */
     override fun setAccumulatorToByteArrayVar(identifier: String) {
-        TODO("Not yet implemented")
+        // index already in r1
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")  // array address in r2
+        outputCodeTabNl("ldrb\tr3, [r2, r1]")  // get array element
+        outputCodeTabNl("ands\tr3, #0xFF")    // also set flags - Z flag set = FALSE
     }
 
     /** set accumulator to global variable address */
@@ -455,7 +477,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("mov\tr1, r3")
     }
 
-    /** save accumulator to the previously saved address the pointer is pointing to */
+    /** save accumulator to a temp register for later use */
     override fun pointerAssignment() {
         // the pointer address was previously saved in r1
         outputCodeTabNl("str\tr3, [r1]")
@@ -472,16 +494,24 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
+    /** set accumulator to local array variable */
     override fun setAccumulatorToLocalArrayVar(offset: Int) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, [fp, #${offset}]")    // address of array in r2
+        outputCodeTabNl("ldr\tr3, [r2, r1, lsl #2]")    // index already in r1 times 4 for 32 bit int
+        outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
 
+    /** set accumulator to local byte variable */
     override fun setAccumulatorToLocalByteVar(offset: Int) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldrb\tr3, [fp, #${offset}]")
+        outputCodeTabNl("ands\tr3, #0xFF")    // also set flags - Z flag set = FALSE
     }
 
+    /** set accumulator to local byte array variable */
     override fun setAccumulatorToLocalByteArrayVar(offset: Int) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, [fp, #${offset}]")    // address of array in r2
+        outputCodeTabNl("ldr\tr3, [r2, r1]")    // index already in r1
+        outputCodeTabNl("ands\tr3, #0xFF")    // also set flags - Z flag set = FALSE
     }
 
     /** set accumulator to local variable  address */
@@ -500,32 +530,44 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("str\tr3, [fp, #${offset}]")
     }
 
+    /** set array variable to accumulator */
     override fun arrayAssignment(identifier: String) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("str\tr3, [r2, r1, lsl 2]")    // index already in r1 times 4 for 32 bit int
     }
 
+    /** set local array variable to accumulator */
     override fun assignmentLocalArrayVar(offset: Int) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, [fp, #${offset}]")    // address of array in r2
+        outputCodeTabNl("strb\tr3, [r2, r1, lsl 2]")    // index in r1 times 4 for 32 bit int
     }
 
+    /** set byte variable to accumulator */
     override fun assignmentByte(identifier: String) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("strb\tr3, [r2]")
     }
 
+    /** set local byte variable to accumulator */
     override fun assignmentLocalByteVar(offset: Int) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("strb\tr3, [fp, #${offset}]")
     }
 
+    /** set byte array variable to accumulator */
     override fun arrayByteAssignment(identifier: String) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("str\tr3, [r2, r1]")    // index already in r1
     }
 
+    /** set local byte array variable to accumulator */
     override fun assignmentLocalByteArrayVar(offset: Int) {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ldr\tr2, [fp, #${offset}]")    // address of array in r2
+        outputCodeTabNl("strb\tr3, [r2, r1]")    // index already in r1
     }
 
+    /** convert accumulator to byte */
     override fun convertToByte() {
-        TODO("Not yet implemented")
+        outputCodeTabNl("ands\tr3, #0xFF")
     }
 
     //////////////////////////////////// function calls ///////////////////////////////////
