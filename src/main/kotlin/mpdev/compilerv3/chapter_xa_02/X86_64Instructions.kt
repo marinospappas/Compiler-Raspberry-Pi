@@ -461,7 +461,6 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
 
     /** print accumulator as integer */
     override fun printInt(fmt: String) {
-        //TODO: support various dec formats
         outputCodeTabNl("movq\t%rax, %rdi\t\t# value to be printed in rdi")
         outputCodeTabNl("call\twrite_i_")
     }

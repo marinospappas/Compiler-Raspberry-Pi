@@ -90,7 +90,7 @@ fun storeParamsToStack(functionName: String) {
             val paramVarOffs = code.allocateStackVar(code.INT_SIZE)
             identifiersMap[paramsList[i].name] = IdentifierDecl(
                 TokType.variable, paramsList[i].type, initialised = true, size = code.INT_SIZE, isStackVar = true,
-                stackOffset = paramVarOffs, canAssign = setOf(DataType.intarray, DataType.bytearray).contains(paramsList[i].type)
+                stackOffset = paramVarOffs, canAssign = setOf(DataType.intarray, DataType.bytearray, DataType.memptr).contains(paramsList[i].type)
             )
             code.storeFunParamToStack(i, paramVarOffs)
             code.outputCommentNl("parameter ${paramsList[i].name} offset from frame ${paramVarOffs}")

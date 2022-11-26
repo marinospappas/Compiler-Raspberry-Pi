@@ -1,1 +1,1 @@
-jar cvfm tinsel_v3.jar META-INF/MANIFEST.MF -C out/production/CompilerV3-X86-Arm .
+jar cvfm tinsel_v4.jar META-INF/MANIFEST.MF -C out/production/CompilerV3-X86-Arm .

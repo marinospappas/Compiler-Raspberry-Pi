@@ -226,7 +226,6 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set the addresses of the global vars in the .text section */
     private fun setGlobalVarAddresses() {
-        //TODO: this has to be done after each function for those references used in that function
         val globalVarNamesList = globalVarsList + stringConstants.keys +
                 listOf(TINSEL_MSG, NEWLINE, DEF_INT_FMT, CONST_ALL_1S, STRING_BUFFER)
         outputCodeNl("")
@@ -239,8 +238,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set the values of the int constants */
     private fun setIntConstants() {
-        //TODO: same as with global variables, this has to be done after the end of each function
-        intConstants.forEach{ constName, value ->
+        intConstants.forEach{ (constName, value) ->
             outputCodeNl("${constName}:\t.word $value")
         }
     }
