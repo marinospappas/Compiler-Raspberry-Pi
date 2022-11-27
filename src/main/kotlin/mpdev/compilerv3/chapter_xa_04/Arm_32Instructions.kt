@@ -7,7 +7,28 @@ import java.lang.System.out
 import java.util.Date
 import javax.print.attribute.IntegerSyntax
 
-/** this class implements all the instructions for the target machine */
+/**
+ * this class implements the instructions for ARM architecture - 32 bit
+ * used by the Tinsel Compiler
+ *
+ * Register usage:
+ * r0: function return value
+ *     auxiliary register in modulo operation
+ *     auxiliary register in readString and readStringLocal
+ * r1: Pointer value or Array index temporary hold when a pointer or array value is retrieved to the accumulator
+ * r2: Second operand in binary operations
+ * r3: Accumulator
+ * Also: r0-r3: input parameters to a function (the first 4 - params 5 and 6 will go to the stack)
+ * r4: Pointer value or Array index temporary hold for assignment
+ *     (pointer or array var will be set to the accumulator value)
+ * r5: not used atm
+ * r6-r11: temporary hold for the function param values (up to 6) while they are evaluated
+ *         before they are moved to the function input registers
+ *
+ * r0-r3: caller save registers
+ * r4-r11: callee save registers
+ */
+
 class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     private val CODE_ID = "Arm-32 Assembly Code - Raspberry Pi"
@@ -221,7 +242,9 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("main program")
         outputLabel(MAIN_ENTRYPOINT)
         outputCodeTab("stmdb\tsp!, {fp, lr}\t\t")
-        outputCommentNl("save registers")
+        outputCommentNl("save registers fp and lr")
+        outputCodeTab("stmdb\tsp!, {r4, r5}\t\t")
+        outputCommentNl("also save r4 and r5 (used in pointer and array assignment)")
         newStackFrame()
         outputCommentNl("print hello message")
         outputCodeTabNl("ldr\tr0, ${TINSEL_MSG}${GLOBAL_VARS_ADDR_SUFFIX}")
@@ -238,6 +261,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
         outputCommentNl("exit code 0")
         outputCodeTab("sub\tsp, fp, #4\t\t")
         outputCommentNl("restore stack pointer")
+        outputCodeTabNl("ldmia\tsp!, {r4, r5}")
         outputCodeTabNl("ldmia\tsp!, {fp, lr}")
         outputCodeTabNl("bx\tlr")
     }
@@ -473,14 +497,17 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** save address a pointer is pointing to for later use */
     override fun saveAccToTempReg() {
-        // the address the pointer points to is saved in r1
         outputCodeTabNl("mov\tr1, r3")
     }
 
+    override fun saveAccToTempAssigmentReg() {
+        // array index or pointer address saved in r4 to be used in assignment
+        outputCodeTabNl("mov\tr4, r3")    }
+
     /** save accumulator to a temp register for later use */
     override fun pointerAssignment() {
-        // the pointer address was previously saved in r1
-        outputCodeTabNl("str\tr3, [r1]")
+        // the pointer address was previously saved in r4
+        outputCodeTabNl("str\tr3, [r4]")
     }
 
     /** set accumulator to the contents of the address already in accumulator */
@@ -533,13 +560,13 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /** set array variable to accumulator */
     override fun arrayAssignment(identifier: String) {
         outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
-        outputCodeTabNl("str\tr3, [r2, r1, lsl 2]")    // index already in r1 times 4 for 32 bit int
+        outputCodeTabNl("str\tr3, [r2, r4, lsl 2]")    // index already in r4 times 4 for 32 bit int
     }
 
     /** set local array variable to accumulator */
     override fun assignmentLocalArrayVar(offset: Int) {
         outputCodeTabNl("ldr\tr2, [fp, #${offset}]")    // address of array in r2
-        outputCodeTabNl("strb\tr3, [r2, r1, lsl 2]")    // index in r1 times 4 for 32 bit int
+        outputCodeTabNl("strb\tr3, [r2, r4, lsl 2]")    // index in r4 times 4 for 32 bit int
     }
 
     /** set byte variable to accumulator */
@@ -556,13 +583,13 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     /** set byte array variable to accumulator */
     override fun arrayByteAssignment(identifier: String) {
         outputCodeTabNl("ldr\tr2, ${identifier}${GLOBAL_VARS_ADDR_SUFFIX}")
-        outputCodeTabNl("str\tr3, [r2, r1]")    // index already in r1
+        outputCodeTabNl("str\tr3, [r2, r4]")    // index already in r4
     }
 
     /** set local byte array variable to accumulator */
     override fun assignmentLocalByteArrayVar(offset: Int) {
         outputCodeTabNl("ldr\tr2, [fp, #${offset}]")    // address of array in r2
-        outputCodeTabNl("strb\tr3, [r2, r1]")    // index already in r1
+        outputCodeTabNl("strb\tr3, [r2, r4]")    // index already in r4
     }
 
     /** convert accumulator to byte */

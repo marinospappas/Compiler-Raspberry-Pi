@@ -13,8 +13,10 @@ fun parseAssignment() {
     val identName: String = inp.match(Kwd.identifier).value
     checkCanAssign(identName)
     val typeVar = getType(identName)
-    if (setOf(DataType.intarray, DataType.bytearray).contains(typeVar))
+    if (setOf(DataType.intarray, DataType.bytearray).contains(typeVar)) {
         parseArrayIndex()
+        code.saveAccToTempAssigmentReg()
+    }
     inp.match(Kwd.equalsOp)
     val typeExp = parseBooleanExpression()
     checkOperandTypeCompatibility(typeVar, typeExp, ASSIGN)
@@ -35,6 +37,7 @@ fun parseAssignment() {
  */
 fun parsePtrAssignment() {
     val ptrType = parsePtrExpression()
+    code.saveAccToTempAssigmentReg()
     inp.match(Kwd.equalsOp)
     val typeExp = parseBooleanExpression()
     checkOperandTypeCompatibility(ptrType, typeExp, ASSIGN)
@@ -196,6 +199,7 @@ fun parseAddressOfVar(): DataType {
 /** parse Pointer - returns the value a pointer points to */
 fun parsePointer(): DataType {
     val expType = parsePtrExpression()
+    code.saveAccToTempReg()
     code.setAccumulatorToPointerVar()
     return expType
 }
@@ -209,7 +213,6 @@ fun parsePtrExpression(): DataType {
     val expType = parseExpression()
     if (expType != DataType.memptr)
         abort("line ${inp.currentLineNumber}: expected pointer expression, found ${expType}")
-    code.saveAccToTempReg()
     inp.match(Kwd.ptrClose)
     return if (expType == DataType.memptr) DataType.int else DataType.none
 }
@@ -224,7 +227,6 @@ fun parseArrayIndex() {
     if (expType != DataType.int)
         abort("line ${inp.currentLineNumber}: expected int array index, found ${expType}")
     inp.match(Kwd.arrayIndx)
-    code.saveAccToTempReg()
 }
 
 /**
@@ -235,6 +237,7 @@ fun parseArrayElement(): DataType {
     var arrayName = inp.match().value
     if (inp.lookahead().encToken == Kwd.arrayIndx) {
         parseArrayIndex()
+        code.saveAccToTempReg()
         return parseArrayVariable(arrayName)
     }
     else {
@@ -251,6 +254,7 @@ fun parseByteArrayElement(): DataType {
     val arrayName = inp.match().value
     if (inp.lookahead().encToken == Kwd.arrayIndx) {
         parseArrayIndex()
+        code.saveAccToTempReg()
         return parseByteArrayVariable(arrayName)
     }
     else {

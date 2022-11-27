@@ -6,7 +6,27 @@ import java.lang.System.err
 import java.lang.System.out
 import java.util.Date
 
-/** this class implements all the instructions for the target machine */
+/**
+ * this class implements the instructions for x86 architecture - 64 bit
+ * used by the Tinsel Compiler
+ *
+ * Register usage:
+ * %rax: Accumulator
+ *       function return value
+ * %rbx: second operand in binary operations
+ * %rcx: pointer value or Array index temporary hold when a pointer or array value is retrieved to the accumulator
+ *       second operand for shift operation
+ * %rdx: used in divide and modulo
+ * %rdi,%rsi,%rdx,%rcx,%r8,%r9: input parameters to a function (up to 6)
+ * %r10: Pointer value or Array index temporary hold for assignment
+ *      (pointer or array var will be set to the accumulator value)
+ * %rbx,%r12-%r15,%rax: temporary hold for the function param values (up to 6) while they are evaluated
+ *                       before they are moved to the function input registers
+ *
+ * %rax,%rcx,%rdx,%rdi,%rsi,%rsp,%r8-%r11: caller save registers
+ * %rbx,%rbp,%r12-r15: callee save registers
+ */
+
 class X86_64Instructions(outFile: String = ""): CodeModule {
 
     private val CODE_ID = "x86-64 Assembly Code - AT&T format"
@@ -365,9 +385,14 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         outputCodeTabNl("movq\t%rax, %rcx")
     }
 
+    /** save accumulator to a temp register for assignment later */
+    override fun saveAccToTempAssigmentReg() {
+        outputCodeTabNl("movq\t%rax, %r10")
+    }
+
     /** save accumulator to the previously saved address the pointer is pointing to */
     override fun pointerAssignment() {
-        outputCodeTabNl("movq\t%rax, (%rcx)")
+        outputCodeTabNl("movq\t%rax, (%r10)")
     }
 
     /** set accumulator to the contents of the address already in accumulator */
@@ -447,7 +472,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         // index already in %rcx
         outputCodeTabNl("movq\t%rax, %rbx")     // save value in %rbx
         outputCodeTabNl("lea\t${identifier}(%rip), %rax")  // array start address in %rax
-        outputCodeTabNl("movq\t%rbx, (%rax, %rcx, $INT_SIZE)")  // save array element
+        outputCodeTabNl("movq\t%rbx, (%rax, %r10, $INT_SIZE)")  // save array element
     }
 
     /** set int stack array element to accumulator */
@@ -458,7 +483,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         if (offset != 0)
             outputCode("$offset")
         outputCodeNl("(%rbp), %rax")            // array start address in %rax
-        outputCodeTabNl("movq\t%rbx, (%rax, %rcx, $INT_SIZE)")  // save array element
+        outputCodeTabNl("movq\t%rbx, (%rax, %r10, $INT_SIZE)")  // save array element
     }
 
     /** set byte variable to accumulator */
@@ -477,7 +502,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         // index already in %rcx
         outputCodeTabNl("movb\t%al, %bl")     // save value in %rbx
         outputCodeTabNl("lea\t${identifier}(%rip), %rax")  // array start address in %rax
-        outputCodeTabNl("movb\t%bl, (%rax, %rcx, 1)")  // save array element
+        outputCodeTabNl("movb\t%bl, (%rax, %r10, 1)")  // save array element
     }
 
     /** set byte stack array element to accumulator */
@@ -488,7 +513,7 @@ class X86_64Instructions(outFile: String = ""): CodeModule {
         if (offset != 0)
             outputCode("$offset")
         outputCodeNl("(%rbp), %rax")            // array start address in %rax
-        outputCodeTabNl("movb\t%bl, (%rax, %rcx, 1)")  // save array element
+        outputCodeTabNl("movb\t%bl, (%rax, %r10, 1)")  // save array element
     }
 
     /** convert accumulator to byte */

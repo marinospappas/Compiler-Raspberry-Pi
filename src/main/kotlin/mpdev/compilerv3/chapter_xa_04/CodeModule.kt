@@ -131,6 +131,8 @@ interface CodeModule {
     fun setAccumulatorToVarAddress(identifier: String)
     /** save accumulator to a temp register for later use */
     fun saveAccToTempReg()
+    /** save accumulator to a temp register for assignment later */
+    fun saveAccToTempAssigmentReg()
     /** assignment to previously saved ptr */
     fun pointerAssignment()
     /** get value from pointer to accumulator */
