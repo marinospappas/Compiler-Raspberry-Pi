@@ -1,0 +1,63 @@
+/*
+ * i2c module
+ * version 1.0 November 2022
+ * communication between the raspberry pi and peripherals via the i2c protocol
+ * only write supported in this version
+ */
+library i2c
+
+var I2C_DEVICE: string = "/dev/i2c-1",
+    O_RDWR: int = 0x02
+var i2cfd: int
+var I2C_SLAVE: int = 0x0703
+
+fun open(file:string, options:int) @external:int
+fun ioctl(fd:int, request: int, data: int) @external:int
+fun write(fd:int, buf: memptr, count: int) @external:int
+fun close(fd:int) @external:int
+
+//
+// i2c init
+// initialiases the i2c device
+//
+fun i2c_init() @global:int {
+    i2cfd = open(I2C_DEVICE, O_RDWR)
+    if (i2cfd < 0) {
+        println "could not open i2c device ", I2C_DEVICE
+        return -1
+    }
+    return 1
+}
+
+//
+// i2c write
+// writes a number of bytes to a peripheral with specific slave address
+//
+fun i2c_write(slave_addr: int, buffer: memptr, numbytes: int) @global:int {
+    var res: int
+    if (ioctl(i2cfd, I2C_SLAVE, slave_addr) < 0) {
+        println "could not set peripheral address ", slave_addr
+        return -1
+    }
+    res = write(i2cfd, buffer, numbytes)
+	if (res != numbytes) {
+		println "could not write to i2c device - requested ", numbytes, " but wrote ", res
+  		return -1
+	}
+    return res
+}
+
+// TODO: i2c read to be implemented
+fun i2c_read(slave_addr: int, buffer: bytearray, buflen: int) @global:int {
+    return -1
+}
+
+//
+// i2c close
+// closes the i2c device
+//
+fun i2c_close(): void {
+    close(i2cfd)
+    return
+}
+endlibrary

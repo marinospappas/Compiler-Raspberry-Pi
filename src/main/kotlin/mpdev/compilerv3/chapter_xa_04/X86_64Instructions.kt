@@ -14,7 +14,7 @@ import java.util.Date
  * %rax: Accumulator
  *       function return value
  * %rbx: second operand in binary operations
- * %rcx: pointer value or Array index temporary hold when a pointer or array value is retrieved to the accumulator
+ * %rcx: pointer value or Array index when a pointer or array value is retrieved to the accumulator
  *       second operand for shift operation
  * %rdx: used in divide and modulo
  * %rdi,%rsi,%rdx,%rcx,%r8,%r9: input parameters to a function (up to 6)

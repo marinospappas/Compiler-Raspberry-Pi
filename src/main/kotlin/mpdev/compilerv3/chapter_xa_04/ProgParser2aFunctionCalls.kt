@@ -38,6 +38,7 @@ fun parseAssignFunParams(functionName: String) {
 
 /** set the registers to pass the parameter values as per assembler spec */
 fun setInpFunParams(functionName: String) {
+    code.outputCommentNl("\tset input parameters")
     val paramTypeList = funParamsMap[functionName] ?: listOf()
     if (paramTypeList.size > 0)
         code.setFunParamRegFromAcc(paramTypeList.size-1)    // last param is still in accumulator

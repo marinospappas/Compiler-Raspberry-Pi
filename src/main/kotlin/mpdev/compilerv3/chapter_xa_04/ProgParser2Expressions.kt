@@ -241,7 +241,10 @@ fun parseArrayElement(): DataType {
         return parseArrayVariable(arrayName)
     }
     else {
-        code.setAccumulatorToVarAddress(arrayName)
+        if (identifiersMap[arrayName]?.isStackVar == true)
+            identifiersMap[arrayName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
+        else
+            code.setAccumulatorToVarAddress(arrayName)
         return DataType.intarray
     }
 }
@@ -258,7 +261,10 @@ fun parseByteArrayElement(): DataType {
         return parseByteArrayVariable(arrayName)
     }
     else {
-        code.setAccumulatorToVarAddress(arrayName)
+        if (identifiersMap[arrayName]?.isStackVar == true)
+            identifiersMap[arrayName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
+        else
+            code.setAccumulatorToVarAddress(arrayName)
         return DataType.bytearray
     }
 }

@@ -15,7 +15,7 @@ import javax.print.attribute.IntegerSyntax
  * r0: function return value
  *     auxiliary register in modulo operation
  *     auxiliary register in readString and readStringLocal
- * r1: Pointer value or Array index temporary hold when a pointer or array value is retrieved to the accumulator
+ * r1: Pointer value or Array index when a pointer or array value is retrieved to the accumulator
  * r2: Second operand in binary operations
  * r3: Accumulator
  * Also: r0-r3: input parameters to a function (the first 4 - params 5 and 6 will go to the stack)
@@ -543,7 +543,7 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
 
     /** set accumulator to local variable  address */
     override fun setAccumulatorToLocalVarAddress(offset: Int) {
-        outputCodeTabNl("add\tr3, fp, #${offset}")
+        outputCodeTabNl("ldr\tr3, [fp, #${offset}]")
     }
 
     /** set variable to accumulator */
