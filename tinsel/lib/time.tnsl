@@ -7,19 +7,36 @@
 library time
 
 var CLOCK_REALTIME: int = 0
-var tv: int,
-    tv1: int
-var t_ptr: intptr
+var tv: intarray(2)
 
 var UNIT_SEC: int = 2,
     UNIT_MILLISEC: int = 1,
     UNIT_MICROSEC: int = 0
 
+var tm: bytearray(80)
 var time_epoch: int
 
-fun clock_gettime(clock: int, time_now: intptr) @external:void
-fun time(time_t: intptr) @external:void
-fun ctime(time_t: intptr) @external:string
+fun clock_gettime(clock: int, time_now: intarray) @external:void
+fun time(time_t: memptr) @external:void
+fun ctime(time_t: memptr) @external:string
+fun localtime_r(timep: memptr, result: bytearray) @external:void
+
+//
+// get local time
+// returns local time in a byte array parameter
+// format h:m:s d.m.y
+//
+fun getlocaltime(cur_time: bytearray) @global:void {
+    time(addr(time_epoch))
+    localtime_r(addr(time_epoch), tm)
+    cur_time\0\ = tm\8\
+    cur_time\1\ = tm\4\
+    cur_time\2\ = tm\0\
+    cur_time\3\ = tm\12\
+    cur_time\4\ = tm\16\ + 1
+    cur_time\5\ = tm\20\
+    return
+}
 
 // timeout for secs
 fun timeout_sec(duration: int) :void {
@@ -29,14 +46,13 @@ fun timeout_sec(duration: int) :void {
         nsec_now: int,
         sec_difference: int,
         nsec_difference: int
-    t_ptr = addr(tv)
-    clock_gettime(CLOCK_REALTIME, t_ptr)
-    start_time = tv
-    start_nsec = tv1
+    clock_gettime(CLOCK_REALTIME, tv)
+    start_time = tv\0\
+    start_nsec = tv\1\
     while (1) {
-        clock_gettime(CLOCK_REALTIME, t_ptr)
-        time_now = tv
-        nsec_now = tv1
+        clock_gettime(CLOCK_REALTIME, tv)
+        time_now = tv\0\
+        nsec_now = tv\1\
         sec_difference = time_now - start_time
         nsec_difference = nsec_now - start_nsec
         if (sec_difference >= duration) {
@@ -52,12 +68,11 @@ fun timeout_millisec(duration: int) :void {
     var start_msec: int
     var msec_now: int
     var msec_difference: int
-    t_ptr = addr(tv)
-    clock_gettime(CLOCK_REALTIME, t_ptr)
-    start_msec = tv1 / 1000000
+    clock_gettime(CLOCK_REALTIME, tv)
+    start_msec = tv\1\ / 1000000
     while (1) {
-        clock_gettime(CLOCK_REALTIME, t_ptr)
-        msec_now = tv1 / 1000000
+        clock_gettime(CLOCK_REALTIME, tv)
+        msec_now = tv\1\ / 1000000
         msec_difference = msec_now - start_msec
         if (msec_difference < 0) {
 		    msec_difference = msec_difference + 1000
@@ -73,12 +88,11 @@ fun timeout_microsec(duration: int) :void {
     var start_usec: int
     var usec_now: int
     var usec_difference: int
-    t_ptr = addr(tv)
-    clock_gettime(CLOCK_REALTIME, t_ptr)
-    start_usec = tv1 / 1000
+    clock_gettime(CLOCK_REALTIME, tv)
+    start_usec = tv\1\ / 1000
     while (1) {
-        clock_gettime(CLOCK_REALTIME, t_ptr)
-        usec_now = tv1 / 1000
+        clock_gettime(CLOCK_REALTIME, tv)
+        usec_now = tv\1\ / 1000
         usec_difference = usec_now - start_usec
         if (usec_difference < 0) {
 		    usec_difference = usec_difference + 1000000

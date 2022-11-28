@@ -11,6 +11,7 @@ var seg_a: int = 0x01, seg_b: int = 0x02, seg_c: int = 0x04, seg_d: int = 0x08,
 var SEGMENTS_MAP: bytearray(10)
 var DISPLAY_ADDR: int = 0x70
 var DIGITS_ADDR: intarray(4)
+var COLON_ADDR: int
 //TODO: make buf local variable - needs debugging
 var buf: bytearray(16)
 
@@ -38,6 +39,7 @@ fun seven_segment_init() @global:int {
 
     DIGITS_ADDR\0\ = 0
     DIGITS_ADDR\1\ = 2
+    COLON_ADDR     = 4
     DIGITS_ADDR\2\ = 6
     DIGITS_ADDR\3\ = 8
 
@@ -80,6 +82,19 @@ fun seven_segment_set_digit(digit: int, value: int) @global:int {
     else {
         buf\1\ = SEGMENTS_MAP\value\
     }
+    res = i2c_write(DISPLAY_ADDR, buf, 2)
+    return res
+}
+
+//
+// seven segment set colon
+// sets the colon leds on or off
+// values: 0 off, 1 middle colon on, 2 left colon on, 3 both on
+//
+fun seven_segment_set_colon(value: int) @global:int {
+    var res: int
+    buf\0\ = COLON_ADDR
+	buf\1\ = value * 2
     res = i2c_write(DISPLAY_ADDR, buf, 2)
     return res
 }

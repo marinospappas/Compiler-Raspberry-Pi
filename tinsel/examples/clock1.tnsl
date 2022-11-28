@@ -1,0 +1,100 @@
+program test7segment
+
+var BLINK_2: int = 3,
+    BLINK_1: int = 5,
+    BLINK_0_5: int = 7,
+    BLINK_OFF: int = 1
+var COL_MID: int = 1
+
+var mytime: bytearray(20)
+
+fun seven_segment_init() @external:int
+fun seven_segment_set_digit(digit: int, value: int) @external:int
+fun seven_segment_set_colon(value: int) @external:int
+fun seven_segment_control(command: int) @external:int
+fun seven_segment_close() @external:int
+fun timeout(duration: int, units: int) @external:void
+fun getlocaltime(cur_time: bytearray) @external:void
+
+fun show_date(dd: int, mm: int): void {
+    if (dd / 10 == 0) {
+        seven_segment_set_digit(1, 0x100)
+    }
+    else {
+        seven_segment_set_digit(1, dd/10)
+    }
+    seven_segment_set_digit(2, dd%10)
+    if (mm / 10 == 0) {
+        seven_segment_set_digit(3, 0x100)
+    }
+    else {
+        seven_segment_set_digit(3, mm/10)
+    }
+    seven_segment_set_digit(4, mm%10)
+    seven_segment_set_colon(0)
+    timeout(5,2)
+    return
+}
+
+main {
+
+    var secs: int = 99
+
+    seven_segment_init()
+
+    timeout(500,1)
+    for (d = 1 to 4) {
+        seven_segment_set_digit(d,0x100)
+    }
+    timeout(500,1)
+
+    for (d = 1 to 4) {
+      var seg: int = 1
+      for (v = 1 to 7) {
+        seven_segment_set_digit(d,0x100 | seg)
+        timeout(200,1)
+	seg = seg << 1 | 1
+      }
+    }
+    timeout(500,1)
+    seven_segment_control(BLINK_2)
+    timeout(2500,1)
+    seven_segment_control(BLINK_OFF)
+    timeout(1,2)
+
+    while (true) {
+        var hh: int, mm: int, ss: int
+
+        getlocaltime(mytime)
+	hh = mytime\0\
+        mm = mytime\1\
+        ss = mytime\2\
+
+        if (ss == 15 or ss == 45) {
+            show_date(mytime\3\, mytime\4\)
+            continue
+        }
+
+	if (hh / 10 == 0) {
+            seven_segment_set_digit(1, 0x100)
+        }
+        else {
+            seven_segment_set_digit(1, hh/10)
+        }
+        seven_segment_set_digit(2, hh%10)
+        seven_segment_set_digit(3, mm/10)
+        seven_segment_set_digit(4, mm%10)
+
+        if (ss != secs) {
+            seven_segment_set_colon(COL_MID)
+            timeout(500, 1)
+        }
+        seven_segment_set_colon(0)
+
+	secs = ss
+    }
+
+    seven_segment_close()
+}
+
+endprogram
