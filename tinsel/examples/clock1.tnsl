@@ -4,6 +4,8 @@ var BLINK_2: int = 3,
     BLINK_1: int = 5,
     BLINK_0_5: int = 7,
     BLINK_OFF: int = 1
+var DIM_MIN_BRIGHT: int = 0x60,
+    DIM_MAX_BRIGHT: int = 0x6F
 var COL_MID: int = 1
 
 var mytime: bytearray(20)
@@ -15,7 +17,10 @@ fun seven_segment_control(command: int) @external:int
 fun seven_segment_close() @external:int
 fun timeout(duration: int, units: int) @external:void
 fun getlocaltime(cur_time: bytearray) @external:void
+fun getlocaltimestr() @external:string
 
+////////////////////////////////
+/* display date for 5 seconds */
 fun show_date(dd: int, mm: int): void {
     if (dd / 10 == 0) {
         seven_segment_set_digit(1, 0x100)
@@ -32,14 +37,42 @@ fun show_date(dd: int, mm: int): void {
     }
     seven_segment_set_digit(4, mm%10)
     seven_segment_set_colon(0)
-    timeout(5,2)
+    timeout(4,2)
     return
 }
 
-main {
+////////////////////////////////
+/* display the year for 1 sec */
+fun show_year(year: int): void {
+    var cent: int
+    var yr: int
+    cent = year / 100
+    yr = year - cent * 100
+    seven_segment_set_digit(1, cent/10)
+    seven_segment_set_digit(2, cent%10)
+    seven_segment_set_digit(3, yr/10)
+    seven_segment_set_digit(4, yr%10)
+    timeout(1,2)
+    return
+}
 
-    var secs: int = 99
+////////////////////////////////////////////
+/* adjust the brightness during the night */
+fun adjust_brightness(hour: int): void {
+    if (hour >= 22 and hour <= 8) {
+        seven_segment_control(DIM_MIN_BRIGHT)
+    }
+    else {
+        seven_segment_control(DIM_MAX_BRIGHT)
+    }
+    return
+}
 
+//////////////////////
+/* initialise clock */
+fun init_clock(): void {
+
+    println getlocaltimestr(), " starting clock"
     seven_segment_init()
 
     timeout(500,1)
@@ -49,33 +82,48 @@ main {
     timeout(500,1)
 
     for (d = 1 to 4) {
-      var seg: int = 1
-      for (v = 1 to 7) {
-        seven_segment_set_digit(d,0x100 | seg)
-        timeout(200,1)
-	seg = seg << 1 | 1
-      }
+        var seg: int = 1
+        for (v = 1 to 7) {
+            seven_segment_set_digit(d,0x100 | seg)
+            timeout(200,1)
+	        seg = seg << 1 | 1
+        }
     }
     timeout(500,1)
     seven_segment_control(BLINK_2)
-    timeout(2500,1)
+    timeout(2000,1)
     seven_segment_control(BLINK_OFF)
+    for (d = 1 to 4) {
+        seven_segment_set_digit(d,0x100)
+    }
+
     timeout(1,2)
+    return
+}
+
+///////////////////
+/* main          */
+main {
+
+    var secs: int = 99
+
+    init_clock()
 
     while (true) {
         var hh: int, mm: int, ss: int
 
         getlocaltime(mytime)
-	hh = mytime\0\
+	    hh = mytime\0\
         mm = mytime\1\
         ss = mytime\2\
 
         if (ss == 15 or ss == 45) {
             show_date(mytime\3\, mytime\4\)
+            show_year(mytime\5\+1900)
             continue
         }
 
-	if (hh / 10 == 0) {
+	    if (hh / 10 == 0) {
             seven_segment_set_digit(1, 0x100)
         }
         else {
@@ -91,7 +139,9 @@ main {
         }
         seven_segment_set_colon(0)
 
-	secs = ss
+	    secs = ss
+
+	    adjust_brightness(hh)
     }
 
     seven_segment_close()

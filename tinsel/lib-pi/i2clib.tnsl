@@ -56,7 +56,7 @@ fun i2c_read(slave_addr: int, buffer: bytearray, buflen: int) @global:int {
 // i2c close
 // closes the i2c device
 //
-fun i2c_close(): void {
+fun i2c_close() @global:void {
     close(i2cfd)
     return
 }
