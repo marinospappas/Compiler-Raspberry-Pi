@@ -8,7 +8,7 @@ library sevensegment
 
 var seg_a: int = 0x01, seg_b: int = 0x02, seg_c: int = 0x04, seg_d: int = 0x08,
     seg_e: int = 0x10, seg_f: int = 0x20, seg_g: int = 0x40
-var SEGMENTS_MAP: bytearray(10)
+var SEGMENTS_MAP: bytearray(256)
 var DISPLAY_ADDR: int = 0x70
 var DIGITS_ADDR: intarray(4)
 var COLON_ADDR: int
@@ -26,16 +26,19 @@ fun timeout(duration: int, units: int) @external:int
 //
 fun seven_segment_init() @global:int {
     if (i2c_init() < 0) { return -1 }
-    SEGMENTS_MAP\0\ = seg_a | seg_b | seg_c | seg_d | seg_e | seg_f
-    SEGMENTS_MAP\1\ =         seg_b | seg_c
-    SEGMENTS_MAP\2\ = seg_a | seg_b |         seg_d | seg_e |         seg_g
-    SEGMENTS_MAP\3\ = seg_a | seg_b | seg_c | seg_d |                 seg_g
-    SEGMENTS_MAP\4\ =         seg_b | seg_c |                 seg_f | seg_g
-    SEGMENTS_MAP\5\ = seg_a |         seg_c | seg_d |         seg_f | seg_g
-    SEGMENTS_MAP\6\ = seg_a |         seg_c | seg_d | seg_e | seg_f | seg_g
-    SEGMENTS_MAP\7\ = seg_a | seg_b | seg_c
-    SEGMENTS_MAP\8\ = seg_a | seg_b | seg_c | seg_d | seg_e | seg_f | seg_g
-    SEGMENTS_MAP\9\ = seg_a | seg_b | seg_c | seg_d |         seg_f | seg_g
+    // numbers
+    SEGMENTS_MAP\48\ = seg_a | seg_b | seg_c | seg_d | seg_e | seg_f            // '0'
+    SEGMENTS_MAP\49\ =         seg_b | seg_c
+    SEGMENTS_MAP\50\ = seg_a | seg_b |         seg_d | seg_e |         seg_g
+    SEGMENTS_MAP\51\ = seg_a | seg_b | seg_c | seg_d |                 seg_g
+    SEGMENTS_MAP\52\ =         seg_b | seg_c |                 seg_f | seg_g
+    SEGMENTS_MAP\53\ = seg_a |         seg_c | seg_d |         seg_f | seg_g
+    SEGMENTS_MAP\54\ = seg_a |         seg_c | seg_d | seg_e | seg_f | seg_g
+    SEGMENTS_MAP\55\ = seg_a | seg_b | seg_c
+    SEGMENTS_MAP\56\ = seg_a | seg_b | seg_c | seg_d | seg_e | seg_f | seg_g
+    SEGMENTS_MAP\57\ = seg_a | seg_b | seg_c | seg_d |         seg_f | seg_g    // '9'
+    // alphabet
+
 
     DIGITS_ADDR\0\ = 0
     DIGITS_ADDR\1\ = 2
@@ -70,8 +73,8 @@ fun seven_segment_init() @global:int {
 
 //
 // seven segment set digit
-// sets specific digit (1-4) to number
-// for values >= 0x100 the lower byte is sent to the digit as is
+// sets specific digit (1-4) to the segments mapping for ascii code (value)
+// for values >= 0x100 the lower byte of (value) is sent to the digit as is
 //
 fun seven_segment_set_digit(digit: int, value: int) @global:int {
     var res: int

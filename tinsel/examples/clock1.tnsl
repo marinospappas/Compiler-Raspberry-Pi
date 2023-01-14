@@ -19,6 +19,10 @@ fun timeout(duration: int, units: int) @external:void
 fun getlocaltime(cur_time: bytearray) @external:void
 fun getlocaltimestr() @external:string
 
+fun to_ascii(i: int): int {
+    return i + 48
+}
+
 ////////////////////////////////
 /* display date for 5 seconds */
 fun show_date(dd: int, mm: int): void {
@@ -26,16 +30,16 @@ fun show_date(dd: int, mm: int): void {
         seven_segment_set_digit(1, 0x100)
     }
     else {
-        seven_segment_set_digit(1, dd/10)
+        seven_segment_set_digit(1, to_ascii(dd/10))
     }
-    seven_segment_set_digit(2, dd%10)
+    seven_segment_set_digit(2, to_ascii(dd%10))
     if (mm / 10 == 0) {
         seven_segment_set_digit(3, 0x100)
     }
     else {
-        seven_segment_set_digit(3, mm/10)
+        seven_segment_set_digit(3, to_ascii(mm/10))
     }
-    seven_segment_set_digit(4, mm%10)
+    seven_segment_set_digit(4, to_ascii(mm%10))
     seven_segment_set_colon(0)
     timeout(4,2)
     return
@@ -48,10 +52,10 @@ fun show_year(year: int): void {
     var yr: int
     cent = year / 100
     yr = year - cent * 100
-    seven_segment_set_digit(1, cent/10)
-    seven_segment_set_digit(2, cent%10)
-    seven_segment_set_digit(3, yr/10)
-    seven_segment_set_digit(4, yr%10)
+    seven_segment_set_digit(1, to_ascii(cent/10))
+    seven_segment_set_digit(2, to_ascii(cent%10))
+    seven_segment_set_digit(3, to_ascii(yr/10))
+    seven_segment_set_digit(4, to_ascii(yr%10))
     timeout(1,2)
     return
 }
@@ -59,7 +63,7 @@ fun show_year(year: int): void {
 ////////////////////////////////////////////
 /* adjust the brightness during the night */
 fun adjust_brightness(hour: int): void {
-    if (hour >= 22 and hour <= 8) {
+    if (hour >= 22 or hour <= 8) {
         seven_segment_control(DIM_MIN_BRIGHT)
     }
     else {
@@ -127,11 +131,11 @@ main {
             seven_segment_set_digit(1, 0x100)
         }
         else {
-            seven_segment_set_digit(1, hh/10)
+            seven_segment_set_digit(1, to_ascii(hh/10))
         }
-        seven_segment_set_digit(2, hh%10)
-        seven_segment_set_digit(3, mm/10)
-        seven_segment_set_digit(4, mm%10)
+        seven_segment_set_digit(2, to_ascii(hh%10))
+        seven_segment_set_digit(3, to_ascii(mm/10))
+        seven_segment_set_digit(4, to_ascii(mm%10))
 
         if (ss != secs) {
             seven_segment_set_colon(COL_MID)
