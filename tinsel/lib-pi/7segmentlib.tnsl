@@ -110,6 +110,15 @@ fun seven_segment_control(command: int) @global:int {
 }
 
 //
+// seven segments clear digit
+//
+fun seven_segment_clear_digit(digit: int) @global:int {
+    var res: int;
+    res = seven_segment_set_digit(digit, 0x100)
+    return res
+}
+
+//
 // seven segment close
 // switches off display
 // and closes the i2c device
