@@ -135,14 +135,20 @@ class Arm_32Instructions(outFile: String = ""): CodeModule {
     }
 
     /** declare int array variable (32bit) */
-    override fun declareIntArray(varName: String, length: String) {
-        outputCodeTabNl("$varName:\t.space ${length.toInt()*INT_SIZE}")
+    override fun declareIntArray(varName: String, length: String, initValues: String) {
+        if (initValues == "")
+            outputCodeTabNl("$varName:\t.space ${length.toInt()*INT_SIZE}")
+        else
+            outputCodeTabNl("$varName:\t.word $initValues")
         globalVarsList.add(varName)      // add var to the list
     }
 
     /** declare byte array variable */
-    override fun declareByteArray(varName: String, length: String) {
-        outputCodeTabNl("$varName:\t.space ${length.toInt()}")
+    override fun declareByteArray(varName: String, length: String, initValues: String) {
+        if (initValues == "")
+            outputCodeTabNl("$varName:\t.space ${length.toInt()}")
+        else
+            outputCodeTabNl("$varName:\t.byte $initValues")
         outputCodeNl(".align 8")
         globalVarsList.add(varName)      // add var to the list
     }

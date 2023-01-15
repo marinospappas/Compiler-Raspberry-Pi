@@ -8,7 +8,16 @@ library sevensegment
 
 var seg_a: int = 0x01, seg_b: int = 0x02, seg_c: int = 0x04, seg_d: int = 0x08,
     seg_e: int = 0x10, seg_f: int = 0x20, seg_g: int = 0x40
-var SEGMENTS_MAP: bytearray(256)
+var SEGMENTS_MAP: bytearray(128) = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    63, 6, 91, 79, 102, 109, 125, 7, 127, 111, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 119, 124, 57, 94, 121, 113, 61, 118, 48, 14, 116, 56, 55, 84, 63,
+    115, 63, 80, 109, 120, 62, 28, 62, 102, 114, 91, 0, 0, 0, 0, 0
+}
 var DISPLAY_ADDR: int = 0x70
 var DIGITS_ADDR: intarray(4)
 var COLON_ADDR: int
@@ -26,19 +35,6 @@ fun timeout(duration: int, units: int) @external:int
 //
 fun seven_segment_init() @global:int {
     if (i2c_init() < 0) { return -1 }
-    // numbers
-    SEGMENTS_MAP\48\ = seg_a | seg_b | seg_c | seg_d | seg_e | seg_f            // '0'
-    SEGMENTS_MAP\49\ =         seg_b | seg_c
-    SEGMENTS_MAP\50\ = seg_a | seg_b |         seg_d | seg_e |         seg_g
-    SEGMENTS_MAP\51\ = seg_a | seg_b | seg_c | seg_d |                 seg_g
-    SEGMENTS_MAP\52\ =         seg_b | seg_c |                 seg_f | seg_g
-    SEGMENTS_MAP\53\ = seg_a |         seg_c | seg_d |         seg_f | seg_g
-    SEGMENTS_MAP\54\ = seg_a |         seg_c | seg_d | seg_e | seg_f | seg_g
-    SEGMENTS_MAP\55\ = seg_a | seg_b | seg_c
-    SEGMENTS_MAP\56\ = seg_a | seg_b | seg_c | seg_d | seg_e | seg_f | seg_g
-    SEGMENTS_MAP\57\ = seg_a | seg_b | seg_c | seg_d |         seg_f | seg_g    // '9'
-    // alphabet
-
 
     DIGITS_ADDR\0\ = 0
     DIGITS_ADDR\1\ = 2
