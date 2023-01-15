@@ -6,6 +6,8 @@ var BLINK_2: int = 3,
     BLINK_OFF: int = 1
 var DIM_MIN_BRIGHT: int = 0x60,
     DIM_MAX_BRIGHT: int = 0x6F
+var DISPLAY_OFF: int = 0x80,
+    DISPLAY_ON: int = 0x81
 var COL_MID: int = 1
 
 var mytime: bytearray(20)
@@ -19,47 +21,20 @@ fun seven_segment_close() @external:int
 fun timeout(duration: int, units: int) @external:void
 fun getlocaltime(cur_time: bytearray) @external:void
 fun getlocaltimestr() @external:string
-fun ticker_display(message: bytearray, msg_size: int, rate: int) @external:void
-
-// convert 0-9 number to ascii char
-fun to_ascii(i: int): int {
-    return i + 48
-}
+fun ticker_display(message: string, msg_size: int, rate: int) @external:void
+fun digit2ascii(i: int) @external:int
+fun int2string(n: int, s: string) @external:void
+fun month2string(month: int, s: string) @external:void
 
 ////////////////////////////////
-/* display date for 5 seconds */
-fun show_date(dd: int, mm: int): void {
-    if (dd / 10 == 0) {
-        seven_segment_clear_digit(1)
-    }
-    else {
-        seven_segment_set_digit(1, to_ascii(dd/10))
-    }
-    seven_segment_set_digit(2, to_ascii(dd%10))
-    if (mm / 10 == 0) {
-        seven_segment_clear_digit(3)
-    }
-    else {
-        seven_segment_set_digit(3, to_ascii(mm/10))
-    }
-    seven_segment_set_digit(4, to_ascii(mm%10))
-    seven_segment_set_colon(0)
-    timeout(4,2)
-    return
-}
-
-////////////////////////////////
-/* display the year for 1 sec */
-fun show_year(year: int): void {
-    var cent: int
-    var yr: int
-    cent = year / 100
-    yr = year - cent * 100
-    seven_segment_set_digit(1, to_ascii(cent/10))
-    seven_segment_set_digit(2, to_ascii(cent%10))
-    seven_segment_set_digit(3, to_ascii(yr/10))
-    seven_segment_set_digit(4, to_ascii(yr%10))
-    timeout(1,2)
+/* display date as running ticker */
+fun show_date(dd: int, mm: int, yyyy: int): void {
+    var disp_msg: string(32), day_str: string(25), month_str: string(5), year_str: string(8)
+    int2string(dd, day_str)
+    month2string(mm, month_str)
+    int2string(yyyy, year_str)
+    disp_msg = "    " + day_str + " " + month_str + " " + year_str + "     "
+    ticker_display(disp_msg, 19, 200)
     return
 }
 
@@ -100,11 +75,15 @@ fun init_clock(): void {
     seven_segment_control(BLINK_2)
     timeout(2000,1)
     seven_segment_control(BLINK_OFF)
+    timeout(200,1)
     for (d = 1 to 4) {
         seven_segment_clear_digit(d)
     }
-
-    timeout(1,2)
+    timeout(300,1)
+    var msg: string(32);
+    msg = "    hello people    "
+    ticker_display(msg, 20, 200)
+    timeout(200,1)
     return
 }
 
@@ -125,8 +104,7 @@ main {
         ss = mytime\2\
 
         if (ss == 15 or ss == 45) {
-            show_date(mytime\3\, mytime\4\)
-            show_year(mytime\5\+1900)
+            show_date(mytime\3\, mytime\4\, mytime\5\+1900)
             continue
         }
 
@@ -134,11 +112,11 @@ main {
             seven_segment_clear_digit(1)
         }
         else {
-            seven_segment_set_digit(1, to_ascii(hh/10))
+            seven_segment_set_digit(1, digit2ascii(hh/10))
         }
-        seven_segment_set_digit(2, to_ascii(hh%10))
-        seven_segment_set_digit(3, to_ascii(mm/10))
-        seven_segment_set_digit(4, to_ascii(mm%10))
+        seven_segment_set_digit(2, digit2ascii(hh%10))
+        seven_segment_set_digit(3, digit2ascii(mm/10))
+        seven_segment_set_digit(4, digit2ascii(mm%10))
 
         if (ss != secs) {
             seven_segment_set_colon(COL_MID)

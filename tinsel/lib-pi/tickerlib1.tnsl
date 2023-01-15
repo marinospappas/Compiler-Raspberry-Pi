@@ -14,9 +14,9 @@ fun seven_segment_clear_digit(digit: int) @external:int
 fun timeout(duration: int, unit: int) @external:void
 
 fun ticker_display(message: bytearray, msg_size: int, scroll_rate: int) @global:void {
-    for (i = 1 to 4) { seven_segment_clear_digit(i) }
+    for (i = 1 to NUM_OF_CHARS) { seven_segment_clear_digit(i) }
     // first 4 chars
-    for (i = 1 to 4) {
+    for (i = 1 to NUM_OF_CHARS) {
         if (i > msg_size) { break }
         current_char = i - 1
         seven_segment_set_digit(i, message\current_char\)
@@ -24,12 +24,12 @@ fun ticker_display(message: bytearray, msg_size: int, scroll_rate: int) @global:
     timeout(scroll_rate,1)
     // then scroll through the message
     while (current_char < msg_size - 1) {
-        current_char = current_char - 3
-        for (i = 1 to 4) {
+        current_char = current_char - NUM_OF_CHARS + 1
+        for (i = 1 to NUM_OF_CHARS) {
             current_char = current_char + 1
             seven_segment_set_digit(i, message\current_char\)
         }
-            timeout(scroll_rate,1)
+        timeout(scroll_rate,1)
     }
     return
 }
