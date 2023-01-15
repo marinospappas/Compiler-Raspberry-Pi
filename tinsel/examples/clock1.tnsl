@@ -26,7 +26,7 @@ fun digit2ascii(i: int) @external:int
 fun int2string(n: int, s: string) @external:void
 fun month2string(month: int, s: string) @external:void
 
-////////////////////////////////
+////////////////////////////////////
 /* display date as running ticker */
 fun show_date(dd: int, mm: int, yyyy: int): void {
     var disp_msg: string(32), day_str: string(25), month_str: string(5), year_str: string(8)
@@ -35,6 +35,21 @@ fun show_date(dd: int, mm: int, yyyy: int): void {
     int2string(yyyy, year_str)
     disp_msg = "    " + day_str + " " + month_str + " " + year_str + "     "
     ticker_display(disp_msg, 19, 200)
+    return
+}
+
+//////////////////////
+/* display the time */
+fun show_time(hh: int, mm: int): void {
+    if (hh / 10 == 0) {
+        seven_segment_clear_digit(1)
+    }
+    else {
+        seven_segment_set_digit(1, digit2ascii(hh/10))
+    }
+    seven_segment_set_digit(2, digit2ascii(hh%10))
+    seven_segment_set_digit(3, digit2ascii(mm/10))
+    seven_segment_set_digit(4, digit2ascii(mm%10))
     return
 }
 
@@ -92,12 +107,16 @@ fun init_clock(): void {
 main {
 
     var secs: int = 99
+    var hh: int, mm: int, ss: int
 
     init_clock()
+    getlocaltime(mytime)
+    hh = mytime\0\
+    mm = mytime\1\
+    ss = mytime\2\
+    show_time(hh, mm)
 
     while (true) {
-        var hh: int, mm: int, ss: int
-
         getlocaltime(mytime)
 	    hh = mytime\0\
         mm = mytime\1\
@@ -107,16 +126,7 @@ main {
             show_date(mytime\3\, mytime\4\, mytime\5\+1900)
             continue
         }
-
-	    if (hh / 10 == 0) {
-            seven_segment_clear_digit(1)
-        }
-        else {
-            seven_segment_set_digit(1, digit2ascii(hh/10))
-        }
-        seven_segment_set_digit(2, digit2ascii(hh%10))
-        seven_segment_set_digit(3, digit2ascii(mm/10))
-        seven_segment_set_digit(4, digit2ascii(mm%10))
+        show_time(hh, mm)
 
         if (ss != secs) {
             seven_segment_set_colon(COL_MID)
