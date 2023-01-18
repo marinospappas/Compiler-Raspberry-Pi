@@ -110,11 +110,6 @@ main {
     var hh: int, mm: int, ss: int
 
     init_clock()
-    getlocaltime(mytime)
-    hh = mytime\0\
-    mm = mytime\1\
-    ss = mytime\2\
-    show_time(hh, mm)
 
     while (true) {
         getlocaltime(mytime)
@@ -122,9 +117,11 @@ main {
         mm = mytime\1\
         ss = mytime\2\
 
-        if (ss == 15 or ss == 45) {
-            show_date(mytime\3\, mytime\4\, mytime\5\+1900)
-            continue
+        if (hour >= 22 or hour <= 8) {
+            if (ss == 15 or ss == 45) {
+                show_date(dd, MM, yyyy)
+                continue
+            }
         }
         show_time(hh, mm)
 
