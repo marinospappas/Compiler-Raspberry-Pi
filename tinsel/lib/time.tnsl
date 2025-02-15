@@ -50,6 +50,10 @@ fun timeout_sec(duration: int) :void {
     start_time = tv\0\
     start_nsec = tv\1\
     while (1) {
+
+        //TODO: introduce system call sleep to free up the cpu (let it cool down)
+        // same in the other timeout_xxx functions
+
         clock_gettime(CLOCK_REALTIME, tv)
         time_now = tv\0\
         nsec_now = tv\1\
