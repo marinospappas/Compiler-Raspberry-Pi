@@ -1,0 +1,17 @@
+program testdelay
+
+var mytime: string(30)
+
+fun getlocaltimestr() @external:string
+fun timeout(duration: int, units: int) @external:void
+
+/* main          */
+main {
+    while (true) {
+        mytime = getlocaltimestr()
+	    println mytime
+	    timeout(1000,1)
+    }
+}
+
+endprogram

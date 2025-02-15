@@ -1,4 +1,4 @@
-program test7segment
+program clock
 
 var BLINK_2: int = 3,
     BLINK_1: int = 5,
