@@ -45,9 +45,9 @@ interface CodeModule {
     /** declare byte variable */
     fun declareByte(varName: String, initValue: String)
     /** declare int array */
-    fun declareIntArray(varName: String, length: String)
+    fun declareIntArray(varName: String, length: String, initValues: String)
     /** declare byte array */
-    fun declareByteArray(varName: String, length: String)
+    fun declareByteArray(varName: String, length: String, initValues: String)
     /** initial code for functions */
     fun funInit()
     /** declare function */
@@ -131,6 +131,8 @@ interface CodeModule {
     fun setAccumulatorToVarAddress(identifier: String)
     /** save accumulator to a temp register for later use */
     fun saveAccToTempReg()
+    /** save accumulator to a temp register for assignment later */
+    fun saveAccToTempAssigmentReg()
     /** assignment to previously saved ptr */
     fun pointerAssignment()
     /** get value from pointer to accumulator */

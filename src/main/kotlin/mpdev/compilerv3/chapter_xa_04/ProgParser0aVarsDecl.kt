@@ -52,7 +52,8 @@ fun parseOneArrayDecl(varName: String, scope: VarScope, type: DataType) {
     inp.match(Kwd.leftParen)
     val size = inp.match(Kwd.number).value
     inp.match(Kwd.rightParen)
-    declareVar(varName, type, "", size.toInt(), scope)
+    val initValues = initArrayVar(size.toInt())
+    declareVar(varName, type, initValues, size.toInt(), scope)
 }
 
 /** parse one string var declaration */
@@ -95,4 +96,28 @@ fun initIntVar(): String {
 /** initialisation for string vars */
 fun initStringVar(): String {
     return inp.match(Kwd.string).value
+}
+
+/** initialisation for array vars (int or byte) */
+fun initArrayVar(size: Int): String {
+    if (inp.lookahead().encToken != Kwd.equalsOp)
+        return ""
+    inp.match()
+    inp.match(Kwd.startBlock)
+    var initValues = ""
+    for (i in 1..size) {
+        var sign = ""
+        if (inp.lookahead().type == TokType.addOps) {
+            val plusMinus = inp.match().value
+            if (plusMinus == "-")
+                sign = "-"
+        }
+        initValues += sign + inp.match(Kwd.number).value
+        if (i < size) {
+            inp.match(Kwd.commaToken)
+            initValues += ", "
+        }
+    }
+    inp.match(Kwd.endBlock)
+    return initValues
 }

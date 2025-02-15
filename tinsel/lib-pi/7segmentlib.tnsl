@@ -1,0 +1,133 @@
+/*
+ * seven segment module
+ * version 1.0 November 2022
+ * drives a 7-segment display using the i2c library
+ * only write supported in this version
+ */
+library sevensegment
+
+var seg_a: int = 0x01, seg_b: int = 0x02, seg_c: int = 0x04, seg_d: int = 0x08,
+    seg_e: int = 0x10, seg_f: int = 0x20, seg_g: int = 0x40
+var SEGMENTS_MAP: bytearray(128) = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 73, 0, 0, 64, 0, 0,
+    63, 6, 91, 79, 102, 109, 125, 7, 127, 111, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 119, 124, 57, 94, 121, 113, 61, 118, 48, 14, 116, 56, 84, 55, 63,
+    115, 63, 80, 109, 120, 28, 62, 62, 102, 114, 91, 0, 0, 0, 0, 0
+}
+var DISPLAY_ADDR: int = 0x70
+var DIGITS_ADDR: intarray(4)
+var COLON_ADDR: int
+//TODO: make buf local variable - needs debugging
+var buf: bytearray(16)
+
+fun i2c_init() @external:int
+fun i2c_write(slave_addr: int, buffer: bytearray, numbytes: int) @external:int
+fun i2c_close() @external:int
+fun timeout(duration: int, units: int) @external:int
+
+//
+// seven segment init
+// initialiases the 7-segment library and the i2c device
+//
+fun seven_segment_init() @global:int {
+    if (i2c_init() < 0) { return -1 }
+
+    DIGITS_ADDR\0\ = 0
+    DIGITS_ADDR\1\ = 2
+    COLON_ADDR     = 4
+    DIGITS_ADDR\2\ = 6
+    DIGITS_ADDR\3\ = 8
+
+    // switch off display
+    buf\0\ = 0x80
+    if (i2c_write(DISPLAY_ADDR, buf, 1) < 0) { return -1 }
+    buf\0\ = 0x20
+    if (i2c_write(DISPLAY_ADDR, buf, 1) < 0) { return -1 }
+    // all segments off
+    for (i = 0 to 15) { buf\i\ = 0 }
+    if (i2c_write(DISPLAY_ADDR, buf, 16) < 0) { return -1 }
+    timeout(200, 1)
+    // clock on
+    buf\0\ = 0x21
+    if (i2c_write(DISPLAY_ADDR, buf, 1) < 0) { return -1 }
+    // set display driver
+    buf\0\ = 0xA0
+    if (i2c_write(DISPLAY_ADDR, buf, 1) < 0) { return -1 }
+    // maximum brightness
+    buf\0\ = 0xEF
+    if (i2c_write(DISPLAY_ADDR, buf, 1) < 0) { return -1 }
+    // display on
+    buf\0\ = 0x81
+    if (i2c_write(DISPLAY_ADDR, buf, 1) < 0) { return -1 }
+    timeout(200, 1)
+    return 1
+}
+
+//
+// seven segment set digit
+// sets specific digit (1-4) to the segments mapping for ascii code (value)
+// for values >= 0x100 the lower byte of (value) is sent to the digit as is
+//
+fun seven_segment_set_digit(digit: int, value: int) @global:int {
+    var res: int
+    buf\0\ = DIGITS_ADDR\digit-1\
+    if (value >= 0x100) {
+	    buf\1\ = value & 0xFF
+    }
+    else {
+        buf\1\ = SEGMENTS_MAP\value\
+    }
+    res = i2c_write(DISPLAY_ADDR, buf, 2)
+    return res
+}
+
+//
+// seven segment set colon
+// sets the colon leds on or off
+// values: 0 off, 1 middle colon on, 2 left colon on, 3 both on
+//
+fun seven_segment_set_colon(value: int) @global:int {
+    var res: int
+    buf\0\ = COLON_ADDR
+	buf\1\ = value * 2
+    res = i2c_write(DISPLAY_ADDR, buf, 2)
+    return res
+}
+
+// 
+// seven segments control
+// sends control commands to the display
+//
+fun seven_segment_control(command: int) @global:int {
+    var res: int
+    buf\0\ = 0x80 | command
+    res = i2c_write(DISPLAY_ADDR, buf, 1)
+    return res
+}
+
+//
+// seven segments clear digit
+//
+fun seven_segment_clear_digit(digit: int) @global:int {
+    var res: int;
+    res = seven_segment_set_digit(digit, 0x100)
+    return res
+}
+
+//
+// seven segment close
+// switches off display
+// and closes the i2c device
+//
+fun seven_segment_close() @global:int {
+    // switch off display
+    buf\0\ = 0x80
+    if (i2c_write(DISPLAY_ADDR, buf, 1) < 0) { return -1 }
+    return i2c_close()
+}
+
+endlibrary

@@ -69,8 +69,8 @@ fun declareGlobalVar(name: String, type: DataType, initValue: String, size: Int)
     when (type) {
         DataType.int, DataType.memptr -> code.declareInt(name, initValue)
         DataType.byte -> code.declareByte(name, initValue)
-        DataType.intarray -> code.declareIntArray(name, size.toString())
-        DataType.bytearray -> code.declareByteArray(name, size.toString())
+        DataType.intarray -> code.declareIntArray(name, size.toString(), initValue)
+        DataType.bytearray -> code.declareByteArray(name, size.toString(), initValue)
         DataType.string -> code.declareString(name, initValue, size)
         else -> return
     }

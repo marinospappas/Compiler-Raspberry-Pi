@@ -6,7 +6,7 @@
  */
 library gpiolib
 
-var gpio: intptr = 0
+var gpio: memptr = 0
 // GPIO registers
 var GPFUNSEL0: int = 0
 var GPSET0: int = 7
@@ -15,7 +15,7 @@ var GPLEV0: int = 13
 
 fun open(file:string, options:int) @external:int
 fun close(fd:int) @external:int
-fun mmap(address:intptr, length:int, prot:int, flags:int, fd:int, offset:intptr) @external:intptr
+fun mmap(address:memptr, length:int, prot:int, flags:int, fd:int, offset:memptr) @external:memptr
 
 fun read_gpio_reg(reg: int): int {
     var value: int;
@@ -41,12 +41,12 @@ fun gpio_init() @global:int {
         return -1
     }
 
-    var ADDR :intptr = 0
+    var ADDR :memptr = 0
     var BLOCK_SIZE :int = 4096
     var PROT_READ :int = 0x1
     var PROT_WRITE :int = 0x2
     var MAP_SHARED :int = 0x01
-    var GPIO_BASE: intptr = 0x00200000
+    var GPIO_BASE: memptr = 0x00200000
     gpio = mmap(ADDR, BLOCK_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, GPIO_BASE)
     if (gpio == -1) {
         println "could not map memory"

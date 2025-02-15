@@ -1,0 +1,37 @@
+/*
+ * module that displays ticker (running message)
+ * on 7 segment display
+ * uses best effort to map the alphabetic characters to the 7 segment display
+ * version 1.0 January 2023
+ */
+library tickerlib1
+
+var NUM_OF_CHARS: int = 4
+var current_char: int = 0
+
+fun seven_segment_set_digit(digit: int, value: int) @external:int
+fun seven_segment_clear_digit(digit: int) @external:int
+fun timeout(duration: int, unit: int) @external:void
+
+fun ticker_display(message: bytearray, msg_size: int, scroll_rate: int) @global:void {
+    for (i = 1 to NUM_OF_CHARS) { seven_segment_clear_digit(i) }
+    // first 4 chars
+    for (i = 1 to NUM_OF_CHARS) {
+        if (i > msg_size) { break }
+        current_char = i - 1
+        seven_segment_set_digit(i, message\current_char\)
+    }
+    timeout(scroll_rate,1)
+    // then scroll through the message
+    while (current_char < msg_size - 1) {
+        current_char = current_char - NUM_OF_CHARS + 1
+        for (i = 1 to NUM_OF_CHARS) {
+            current_char = current_char + 1
+            seven_segment_set_digit(i, message\current_char\)
+        }
+        timeout(scroll_rate,1)
+    }
+    return
+}
+
+endlibrary

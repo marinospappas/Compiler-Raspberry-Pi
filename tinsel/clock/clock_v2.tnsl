@@ -1,0 +1,163 @@
+program test7segment
+
+var BLINK_2: int = 3,
+    BLINK_1: int = 5,
+    BLINK_0_5: int = 7,
+    BLINK_OFF: int = 1
+var DIM_MIN_BRIGHT: int = 0x60,
+    DIM_MAX_BRIGHT: int = 0x6F
+var DISPLAY_OFF: int = 0x80,
+    DISPLAY_ON: int = 0x81
+var COL_MID: int = 1
+var SPECIAL_DATE_1: int = 10,
+    SPECIAL_MONTH_1: int = 3
+
+var mytime: bytearray(20)
+
+fun seven_segment_init() @external:int
+fun seven_segment_set_digit(digit: int, value: int) @external:int
+fun seven_segment_set_colon(value: int) @external:int
+fun seven_segment_control(command: int) @external:int
+fun seven_segment_clear_digit(digit: int) @external:int
+fun seven_segment_close() @external:int
+fun timeout(duration: int, units: int) @external:void
+fun getlocaltime(cur_time: bytearray) @external:void
+fun getlocaltimestr() @external:string
+fun ticker_display(message: string, msg_size: int, rate: int) @external:void
+fun digit2ascii(i: int) @external:int
+fun int2string(n: int, s: string) @external:void
+fun month2string(month: int, s: string) @external:void
+
+////////////////////////////////////////////
+/* display special message 1 - anniversary */
+fun show_special_message1(dd: int, mm: int, yyyy: int): void {
+    var disp_msg: string(128), this_year_str: string(8), years_str: string(8)
+    int2string(yyyy, this_year_str)
+    int2string(yyyy-1983, years_str)
+    disp_msg = "    *** happy anniversary effie-marinos " + years_str + " years ***     "
+    ticker_display(disp_msg, 56, 400)
+    return
+}
+
+////////////////////////////////////
+/* display date as running ticker */
+fun show_date(dd: int, mm: int, yyyy: int): void {
+    var disp_msg: string(32), day_str: string(25), month_str: string(5), year_str: string(8)
+    int2string(dd, day_str)
+    month2string(mm, month_str)
+    int2string(yyyy, year_str)
+    disp_msg = "    -- " + year_str + " " + month_str + " " + day_str + " --     "
+    ticker_display(disp_msg, 24, 300)
+    return
+}
+
+//////////////////////
+/* display the time */
+fun show_time(hh: int, mm: int): void {
+    if (hh / 10 == 0) {
+        seven_segment_clear_digit(1)
+    }
+    else {
+        seven_segment_set_digit(1, digit2ascii(hh/10))
+    }
+    seven_segment_set_digit(2, digit2ascii(hh%10))
+    seven_segment_set_digit(3, digit2ascii(mm/10))
+    seven_segment_set_digit(4, digit2ascii(mm%10))
+    return
+}
+
+////////////////////////////////////////////
+/* adjust the brightness during the night */
+fun adjust_brightness(hour: int): void {
+    if (hour >= 22 or hour <= 8) {
+        seven_segment_control(DIM_MIN_BRIGHT)
+    }
+    else {
+        seven_segment_control(DIM_MAX_BRIGHT)
+    }
+    return
+}
+
+//////////////////////
+/* initialise clock */
+fun init_clock(): void {
+
+    println getlocaltimestr(), " starting clock"
+    seven_segment_init()
+
+    timeout(500,1)
+    for (d = 1 to 4) {
+        seven_segment_clear_digit(d)
+    }
+    timeout(500,1)
+
+    for (d = 1 to 4) {
+        var seg: int = 1
+        for (v = 1 to 7) {
+            seven_segment_set_digit(d,0x100 | seg)
+            timeout(200,1)
+	        seg = seg << 1 | 1
+        }
+    }
+    timeout(500,1)
+    seven_segment_control(BLINK_2)
+    timeout(2000,1)
+    seven_segment_control(BLINK_OFF)
+    timeout(200,1)
+    for (d = 1 to 4) {
+        seven_segment_clear_digit(d)
+    }
+    timeout(300,1)
+    var msg: string(32);
+    msg = "    hello people    "
+    ticker_display(msg, 20, 200)
+    timeout(200,1)
+    return
+}
+
+///////////////////
+/* main          */
+main {
+
+    var secs: int = 99
+    var hh: int, mm: int, ss: int
+
+    init_clock()
+
+    while (true) {
+        var dd: int, MM: int, yyyy: int
+
+        getlocaltime(mytime)
+	    hh = mytime\0\
+        mm = mytime\1\
+        ss = mytime\2\
+
+        dd = mytime\3\
+        MM = mytime\4\
+        yyyy = mytime\5\+1900
+        if (hour >= 22 or hour <= 8) {
+            if (ss == 15 or ss == 45) {
+                show_date(dd, MM, yyyy)
+                continue
+            }
+        }
+        if (ss == 25 and dd == SPECIAL_DATE_1 and MM == SPECIAL_MONTH_1) {
+            show_special_message1(dd,MM,yyyy)
+        }
+        show_time(hh, mm)
+
+        if (ss != secs) {
+            seven_segment_set_colon(COL_MID)
+            timeout(500, 1)
+        }
+        seven_segment_set_colon(0)
+
+	    secs = ss
+
+	    adjust_brightness(hh)
+    }
+
+    seven_segment_close()
+}
+
+endprogram
