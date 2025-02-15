@@ -28,7 +28,7 @@ fun digit2ascii(i: int) @external:int
 fun int2string(n: int, s: string) @external:void
 fun month2string(month: int, s: string) @external:void
 
-/////////////////////////////////////////////
+////////////////////////////////////////////
 /* display special message 1 - anniversary */
 fun show_special_message1(dd: int, mm: int, yyyy: int): void {
     var disp_msg: string(128), this_year_str: string(8), years_str: string(8)
