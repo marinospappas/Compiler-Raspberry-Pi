@@ -1,13 +1,19 @@
 package mpdev.compilerv5.parser.operations
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.scanner.*
 
 class StringAssignmentParser(val context: CompilerContext) {
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+    }
 
     /** parse string assignment */
     fun parseStringAssignment(varName: String) {

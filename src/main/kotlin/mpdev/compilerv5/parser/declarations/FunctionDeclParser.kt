@@ -1,8 +1,11 @@
 package mpdev.compilerv5.parser.declarations
 
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.parser.control_structures.ControlStructureParser
+import mpdev.compilerv5.parser.labels.LabelHandler
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
@@ -11,11 +14,19 @@ class FunctionDeclParser(private val context: CompilerContext) {
     var funName: String = ""
     var hasReturn: Boolean = false
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
-    private val labelHandler = Config.labelHandler
-    private val contrStructParser = Config.controlStructureParser
-    private val declarationUtils = DeclarationUtils()
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+    private lateinit var labelHandler: LabelHandler
+    private lateinit var contrStructParser: ControlStructureParser
+    private lateinit var declarationUtils: DeclarationUtils
+
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+        labelHandler = Config.labelHandler
+        contrStructParser = Config.controlStructureParser
+        declarationUtils = DeclarationUtils()
+    }
 
     /**
      * parse a function declaration

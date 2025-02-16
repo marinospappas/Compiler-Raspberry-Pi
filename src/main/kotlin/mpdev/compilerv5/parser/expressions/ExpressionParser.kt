@@ -1,7 +1,12 @@
 package mpdev.compilerv5.parser.expressions
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.parser.function_calls.FunctionCallParser
+import mpdev.compilerv5.parser.operations.NumericAssignementParser
+import mpdev.compilerv5.parser.operations.OperationsParser
+import mpdev.compilerv5.parser.operations.StringAssignmentParser
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
@@ -12,13 +17,23 @@ import mpdev.compilerv5.util.Utils.Companion.abort
 
 class ExpressionParser(val context: CompilerContext) {
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
-    private val booleanExprParser = Config.booleanExpressionParser
-    private val operationsParser = Config.operationsParser
-    private val funCallParser = Config.functionCallParser
-    private val numAssgnmtParser = Config.numericAssgnmtParser
-    private val strAssgnmtParser = Config.stringAssgnmtParser
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+    private lateinit var booleanExprParser: BooleanExpressionParser
+    private lateinit var operationsParser: OperationsParser
+    private lateinit var funCallParser: FunctionCallParser
+    private lateinit var numAssgnmtParser: NumericAssignementParser
+    private lateinit var strAssgnmtParser: StringAssignmentParser
+
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+        booleanExprParser = Config.booleanExpressionParser
+        operationsParser = Config.operationsParser
+        funCallParser = Config.functionCallParser
+        numAssgnmtParser = Config.numericAssgnmtParser
+        strAssgnmtParser = Config.stringAssgnmtParser
+    }
 
     /**
      * parse assignment

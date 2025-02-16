@@ -1,5 +1,6 @@
 package mpdev.compilerv5.parser.expressions
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.config.Constants.Companion.BOOLEAN_TRUE
@@ -28,9 +29,15 @@ import mpdev.compilerv5.scanner.*
  */
 class BooleanExpressionParser(val context: CompilerContext) {
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
-    private val exprParser = Config.expressionParser
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+    private lateinit var exprParser: ExpressionParser
+
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+        exprParser = Config.expressionParser
+    }
 
     /** parse a Boolean expression */
     fun parse(): DataType {

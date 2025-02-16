@@ -29,7 +29,6 @@ class Config {
 
         lateinit var scanner: InputProgramScanner
         lateinit var codeModule: AsmInstructions
-        lateinit var debugger: CompilerDebugger
         lateinit var programParser: MainProgramParser
         lateinit var controlStructureParser: ControlStructureParser
         lateinit var variablesDeclParser: VariablesDeclParser
@@ -51,7 +50,6 @@ class Config {
                 CPUArch.arm -> Arm_32Instructions(context.outFile)
             }
             scanner = InputProgramScanner(context)
-            debugger = CompilerDebugger(context)
             programParser = MainProgramParser(context)
             controlStructureParser = ControlStructureParser(context)
             variablesDeclParser = VariablesDeclParser(context)
@@ -66,6 +64,22 @@ class Config {
             stringAssgnmtParser = StringAssignmentParser(context)
             inputOutputParser = InputOutputParser(context)
             labelHandler = LabelHandler()
+
+            scanner.initialise()
+            programParser.initialise()
+            controlStructureParser.initialise()
+            variablesDeclParser.initialise()
+            functionDeclParser.initialise()
+            loopParser.initialise()
+            forLoopParser.initialise()
+            functionCallParser.initialise()
+            expressionParser.initialise()
+            booleanExpressionParser.initialise()
+            operationsParser.initialise()
+            numericAssgnmtParser.initialise()
+            stringAssgnmtParser.initialise()
+            inputOutputParser.initialise()
+            labelHandler.initialise()
         }
     }
 }

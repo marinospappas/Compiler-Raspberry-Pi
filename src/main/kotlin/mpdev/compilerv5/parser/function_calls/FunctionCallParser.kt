@@ -1,11 +1,13 @@
 package mpdev.compilerv5.parser.function_calls
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
-import mpdev.compilerv5.scanner.DataType
-import mpdev.compilerv5.scanner.Kwd
-import mpdev.compilerv5.scanner.funParamsMap
-import mpdev.compilerv5.scanner.getType
+import mpdev.compilerv5.parser.expressions.BooleanExpressionParser
+import mpdev.compilerv5.parser.operations.NumericAssignementParser
+import mpdev.compilerv5.parser.operations.OperationsParser
+import mpdev.compilerv5.parser.operations.StringAssignmentParser
+import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
 /**
@@ -15,9 +17,15 @@ import mpdev.compilerv5.util.Utils.Companion.abort
  */
 class FunctionCallParser(val context: CompilerContext) {
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
-    private val booleanExprParser = Config.booleanExpressionParser
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+    private lateinit var booleanExprParser: BooleanExpressionParser
+
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+        booleanExprParser = Config.booleanExpressionParser
+    }
 
     fun parse(): DataType {
         val funcName = scanner.match(Kwd.identifier).value

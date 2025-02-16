@@ -40,8 +40,7 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
     private var commentString = ""
     private lateinit var startOfComment: String
 
-    /** initialisation code - class InputProgramScanner */
-    init {
+    fun initialise() {
         try {
             // read the whole program into a string
             // add a newline at the end to deal with end of input easier

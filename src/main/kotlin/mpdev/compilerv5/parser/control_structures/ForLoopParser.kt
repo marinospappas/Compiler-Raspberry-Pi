@@ -1,9 +1,13 @@
 package mpdev.compilerv5.parser.control_structures
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.parser.expressions.ExpressionParser
+import mpdev.compilerv5.parser.labels.LabelHandler
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
+import javax.naming.ldap.Control
 
 /**
  * parse for in a separate class/file due to increased complexity
@@ -11,11 +15,11 @@ import mpdev.compilerv5.util.Utils.Companion.abort
  */
 class ForLoopParser(val context: CompilerContext) {
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
-    private val labelHandler = Config.labelHandler
-    private val contrStructParser = Config.controlStructureParser
-    private val exprParser = Config.expressionParser
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+    private lateinit var labelHandler: LabelHandler
+    private lateinit var contrStructParser: ControlStructureParser
+    private lateinit var exprParser: ExpressionParser
 
     private var controlVarName = ""
     private var ctrlVarOffs = 0
@@ -23,6 +27,14 @@ class ForLoopParser(val context: CompilerContext) {
     private var toOffs = 0
     private var hasStep = false
     private var stepOffs = 0
+
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+        labelHandler = Config.labelHandler
+        contrStructParser = Config.controlStructureParser
+        exprParser = Config.expressionParser
+    }
 
     /** for parser function */
     fun parseFor() {

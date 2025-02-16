@@ -2,14 +2,23 @@ package mpdev.compilerv5.parser.operations
 
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.parser.expressions.ExpressionParser
+import mpdev.compilerv5.parser.input_output.InputOutputParser
 import mpdev.compilerv5.scanner.*
 
 class OperationsParser(val context: CompilerContext) {
 
-    private val inp = Config.scanner
-    private val exprParser = Config.expressionParser
-    private val opsNumeric = OpsNumeric()
-    private val opsStrings = OpsStrings()
+    private lateinit var inp: InputProgramScanner
+    private lateinit var exprParser: ExpressionParser
+    private lateinit var opsNumeric: OpsNumeric
+    private lateinit var opsStrings: OpsStrings
+
+    fun initialise() {
+        inp = Config.scanner
+        exprParser = Config.expressionParser
+        opsNumeric = OpsNumeric()
+        opsStrings = OpsStrings()
+    }
 
     /** parse an addition */
     fun add(typeT1: DataType) {

@@ -1,5 +1,6 @@
 package mpdev.compilerv5.parser.declarations
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.scanner.*
@@ -11,9 +12,15 @@ import mpdev.compilerv5.util.Utils.Companion.abort
  */
 class VariablesDeclParser(val context: CompilerContext) {
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
-    private val declarationUtils = DeclarationUtils()
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+    private lateinit var declarationUtils: DeclarationUtils
+
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+        declarationUtils = DeclarationUtils()
+    }
 
     fun parse(scope: VarScope = VarScope.global, blockName: String = "") {
         while (scanner.lookahead().encToken == Kwd.varDecl) {

@@ -1,8 +1,16 @@
 package mpdev.compilerv5.parser.control_structures
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.config.Constants.Companion.MAIN_BLOCK
+import mpdev.compilerv5.parser.declarations.FunctionDeclParser
+import mpdev.compilerv5.parser.declarations.VariablesDeclParser
+import mpdev.compilerv5.parser.expressions.BooleanExpressionParser
+import mpdev.compilerv5.parser.expressions.ExpressionParser
+import mpdev.compilerv5.parser.function_calls.FunctionCallParser
+import mpdev.compilerv5.parser.input_output.InputOutputParser
+import mpdev.compilerv5.parser.labels.LabelHandler
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
@@ -16,18 +24,31 @@ class ControlStructureParser(val context: CompilerContext) {
         const val BLOCK_NAME = "block_"
     }
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
-    private val labelHandler = Config.labelHandler
-    private val variableParser = Config.variablesDeclParser
-    private val functionParser = Config.functionDeclParser
-    private val loopParser = Config.loopParser
-    private val forLoopParser = Config.forLoopParser
-    private val functionCallParser = Config.functionCallParser
-    private val expressionParser = Config.expressionParser
-    private val booleanExprParser = Config.booleanExpressionParser
-    private val inputOutputParser = Config.inputOutputParser
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+    private lateinit var labelHandler: LabelHandler
+    private lateinit var variableParser: VariablesDeclParser
+    private lateinit var functionParser: FunctionDeclParser
+    private lateinit var loopParser: LoopParser
+    private lateinit var forLoopParser: ForLoopParser
+    private lateinit var functionCallParser: FunctionCallParser
+    private lateinit var expressionParser: ExpressionParser
+    private lateinit var booleanExprParser: BooleanExpressionParser
+    private lateinit var inputOutputParser: InputOutputParser
 
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+        labelHandler = Config.labelHandler
+        variableParser = Config.variablesDeclParser
+        functionParser = Config.functionDeclParser
+        loopParser = Config.loopParser
+        forLoopParser = Config.forLoopParser
+        functionCallParser = Config.functionCallParser
+        expressionParser = Config.expressionParser
+        booleanExprParser = Config.booleanExpressionParser
+        inputOutputParser = Config.inputOutputParser
+    }
     //TODO: check where these vars should be - local or in then context?
     var blockId = 0
     var mustRestoreSP = false

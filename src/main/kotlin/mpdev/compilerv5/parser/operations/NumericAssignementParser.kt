@@ -1,15 +1,22 @@
 package mpdev.compilerv5.parser.operations
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.scanner.DataType
+import mpdev.compilerv5.scanner.InputProgramScanner
 import mpdev.compilerv5.scanner.Kwd
 import mpdev.compilerv5.scanner.identifiersMap
 
 class NumericAssignementParser(val context: CompilerContext) {
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+    }
 
     /** process assignment to numeric var (int) */
     fun parseNumAssignment(varName: String) {

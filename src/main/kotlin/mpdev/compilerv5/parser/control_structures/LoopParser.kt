@@ -1,23 +1,34 @@
 package mpdev.compilerv5.parser.control_structures
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.parser.expressions.BooleanExpressionParser
+import mpdev.compilerv5.parser.labels.LabelHandler
+import mpdev.compilerv5.scanner.InputProgramScanner
 import mpdev.compilerv5.scanner.Kwd
 import mpdev.compilerv5.util.Utils.Companion.abort
 
-
-/**
- * parse while statement
- * <while> ::= while ( <b-expression> ) <block>
- */
 class LoopParser(val context: CompilerContext) {
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
-    private val labelHandler = Config.labelHandler
-    private val contrStructParser = Config.controlStructureParser
-    private val booleanExprParser = Config.booleanExpressionParser
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+    private lateinit var labelHandler: LabelHandler
+    private lateinit var contrStructParser: ControlStructureParser
+    private lateinit var booleanExprParser: BooleanExpressionParser
 
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+        labelHandler = Config.labelHandler
+        contrStructParser = Config.controlStructureParser
+        booleanExprParser = Config.booleanExpressionParser
+    }
+
+    /**
+     * parse while statement
+     * <while> ::= while ( <b-expression> ) <block>
+     */
     fun parseWhile() {
         scanner.match()
         val label1 = labelHandler.newLabel()

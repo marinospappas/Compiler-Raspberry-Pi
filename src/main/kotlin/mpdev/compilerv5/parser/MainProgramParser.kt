@@ -1,10 +1,15 @@
 package mpdev.compilerv5.parser
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.config.Constants.Companion.MAIN_BLOCK
+import mpdev.compilerv5.parser.control_structures.ControlStructureParser
 import mpdev.compilerv5.parser.declarations.FunctionDeclParser
 import mpdev.compilerv5.parser.declarations.VariablesDeclParser
+import mpdev.compilerv5.parser.expressions.BooleanExpressionParser
+import mpdev.compilerv5.parser.function_calls.FunctionCallParser
+import mpdev.compilerv5.parser.labels.LabelHandler
 import mpdev.compilerv5.scanner.*
 
 /**
@@ -13,17 +18,24 @@ import mpdev.compilerv5.scanner.*
  */
 class MainProgramParser(val context: CompilerContext) {
 
-    private val scanner = Config.scanner
-    private val code = Config.codeModule
-    private val controlStructParser = Config.controlStructureParser
-    private val labelHandler = Config.labelHandler
+    private lateinit var scanner: InputProgramScanner
+    private lateinit var code: AsmInstructions
+    private lateinit var controlStructParser: ControlStructureParser
+    private lateinit var labelHandler: LabelHandler
+    private lateinit var variablesDeclParser: VariablesDeclParser
+    private lateinit var functionsParser: FunctionDeclParser
 
-    /** program / library flag */
+    fun initialise() {
+        scanner = Config.scanner
+        code = Config.codeModule
+        controlStructParser = Config.controlStructureParser
+        labelHandler = Config.labelHandler
+        variablesDeclParser = Config.variablesDeclParser
+        functionsParser = Config.functionDeclParser
+    }
+
+    // program / library flag
     private var isLibrary = false
-
-    // the next level of parsers
-    private val variablesDeclParser = VariablesDeclParser(context)
-    private val functionsParser = FunctionDeclParser(context)
 
     /**
      * parse a program
