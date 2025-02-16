@@ -1,7 +1,7 @@
 package mpdev.compilerv5.code_module
 
+import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
-import mpdev.compilerv5.scanner.stringConstants
 import java.io.File
 import java.io.PrintStream
 import java.lang.System.err
@@ -30,7 +30,7 @@ import java.util.Date
  * r4-r11: callee save registers
  */
 
-class Arm_32Instructions(outFile: String = ""): AsmInstructions {
+class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
 
     private val CODE_ID = "Arm-32 Assembly Code - Raspberry Pi"
     override val COMMENT = "@"
@@ -70,6 +70,7 @@ class Arm_32Instructions(outFile: String = ""): AsmInstructions {
 
     /** initialisation code - class InputProgramScanner */
     init {
+        val outFile = context.outFile
         if (outFile != "") {
             try {
                 outStream = PrintStream(File(outFile))
@@ -284,7 +285,7 @@ class Arm_32Instructions(outFile: String = ""): AsmInstructions {
     /** set the addresses of the global vars in the .text section */
     private fun setGlobalVarAddresses() {
         //TODO: this has to be done after each function for those references used in that function
-        val globalVarNamesList = globalVarsList + stringConstants.keys +
+        val globalVarNamesList = globalVarsList + context.stringConstants.keys +
                 listOf(TINSEL_MSG, NEWLINE, DEF_INT_FMT, CONST_ALL_1S, STRING_BUFFER)
         outputCodeNl("")
         outputCodeNl(".align 4")

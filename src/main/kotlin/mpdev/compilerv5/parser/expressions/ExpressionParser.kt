@@ -8,6 +8,7 @@ import mpdev.compilerv5.parser.operations.NumericAssignementParser
 import mpdev.compilerv5.parser.operations.OperationsParser
 import mpdev.compilerv5.parser.operations.StringAssignmentParser
 import mpdev.compilerv5.scanner.*
+import mpdev.compilerv5.scanner.Operation.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
 /**
@@ -24,6 +25,7 @@ class ExpressionParser(val context: CompilerContext) {
     private lateinit var funCallParser: FunctionCallParser
     private lateinit var numAssgnmtParser: NumericAssignementParser
     private lateinit var strAssgnmtParser: StringAssignmentParser
+    private lateinit var scannerUtil: ScannerUtil
 
     fun initialise() {
         scanner = Config.scanner
@@ -33,6 +35,7 @@ class ExpressionParser(val context: CompilerContext) {
         funCallParser = Config.functionCallParser
         numAssgnmtParser = Config.numericAssgnmtParser
         strAssgnmtParser = Config.stringAssgnmtParser
+        scannerUtil = ScannerUtil(context)
     }
 
     /**
@@ -42,14 +45,14 @@ class ExpressionParser(val context: CompilerContext) {
     fun parseAssignment() {
         val identName: String = scanner.match(Kwd.identifier).value
         checkCanAssign(identName)
-        val typeVar = getType(identName)
+        val typeVar = scannerUtil.getType(identName)
         if (setOf(DataType.intarray, DataType.bytearray).contains(typeVar)) {
             parseArrayIndex()
             code.saveAccToTempAssigmentReg()
         }
         scanner.match(Kwd.equalsOp)
         val typeExp = booleanExprParser.parse()
-        checkOperandTypeCompatibility(typeVar, typeExp, ASSIGN)
+        scannerUtil.checkOperandTypeCompatibility(typeVar, typeExp, ASSIGN)
         when (typeVar) {
             DataType.int, DataType.memptr -> numAssgnmtParser.parseNumAssignment(identName)
             DataType.byte -> numAssgnmtParser.parseByteNumAssignment(identName)
@@ -70,13 +73,13 @@ class ExpressionParser(val context: CompilerContext) {
         code.saveAccToTempAssigmentReg()
         scanner.match(Kwd.equalsOp)
         val typeExp = booleanExprParser.parse()
-        checkOperandTypeCompatibility(ptrType, typeExp, ASSIGN)
+        scannerUtil.checkOperandTypeCompatibility(ptrType, typeExp, ASSIGN)
         code.pointerAssignment()
     }
 
     /** check if variable can be assigned a value */
     private fun checkCanAssign(identName: String) {
-        if (!getCanAssign(identName))
+        if (!scannerUtil.getCanAssign(identName))
             abort("line ${scanner.currentLineNumber}: variable/parameter $identName cannot be assigned a value")
     }
 
@@ -142,17 +145,17 @@ class ExpressionParser(val context: CompilerContext) {
             scanner.match()
             if (scanner.lookahead().encToken == Kwd.number) {
                 factType = DataType.int
-                checkOperandTypeCompatibility(factType, DataType.none, SIGNED)
+                scannerUtil.checkOperandTypeCompatibility(factType, DataType.none, SIGNED)
                 code.setAccumulator("-${scanner.match(Kwd.number).value}")
             } else {
                 factType = parseFactor()
-                checkOperandTypeCompatibility(factType, DataType.none, SIGNED)
+                scannerUtil.checkOperandTypeCompatibility(factType, DataType.none, SIGNED)
                 code.negateAccumulator()
             }
         } else if (scanner.lookahead().encToken == Kwd.notOp) {
             scanner.match()
             factType = parseFactor()
-            checkOperandTypeCompatibility(factType, DataType.none, NOT)
+            scannerUtil.checkOperandTypeCompatibility(factType, DataType.none, NOT)
             code.notAccumulator()
         } else
             factType = parseFactor()
@@ -215,8 +218,8 @@ class ExpressionParser(val context: CompilerContext) {
         val varName = nextToken.value
         if (nextToken.type != TokType.variable)
             abort("line ${scanner.currentLineNumber}: expected variable name, found ${varName}")
-        if (identifiersMap[varName]?.isStackVar == true)
-            identifiersMap[varName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
+        if (context.identifiersMap[varName]?.isStackVar == true)
+            context.identifiersMap[varName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
         else
             code.setAccumulatorToVarAddress(varName)
         scanner.match(Kwd.rightParen)
@@ -267,8 +270,8 @@ class ExpressionParser(val context: CompilerContext) {
             code.saveAccToTempReg()
             return numAssgnmtParser.parseArrayVariable(arrayName)
         } else {
-            if (identifiersMap[arrayName]?.isStackVar == true)
-                identifiersMap[arrayName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
+            if (context.identifiersMap[arrayName]?.isStackVar == true)
+                context.identifiersMap[arrayName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
             else
                 code.setAccumulatorToVarAddress(arrayName)
             return DataType.intarray
@@ -286,8 +289,8 @@ class ExpressionParser(val context: CompilerContext) {
             code.saveAccToTempReg()
             return numAssgnmtParser.parseByteArrayVariable(arrayName)
         } else {
-            if (identifiersMap[arrayName]?.isStackVar == true)
-                identifiersMap[arrayName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
+            if (context.identifiersMap[arrayName]?.isStackVar == true)
+                context.identifiersMap[arrayName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
             else
                 code.setAccumulatorToVarAddress(arrayName)
             return DataType.bytearray
@@ -300,7 +303,7 @@ class ExpressionParser(val context: CompilerContext) {
      * returns the data type of the variable
      */
     private fun parseVariable(): DataType {
-        return when (getType(scanner.lookahead().value)) {
+        return when (scannerUtil.getType(scanner.lookahead().value)) {
             DataType.int -> numAssgnmtParser.parseNumVariable(DataType.int)
             DataType.byte -> numAssgnmtParser.parseNumByteVariable()
             DataType.memptr -> numAssgnmtParser.parseNumVariable(DataType.memptr)

@@ -64,7 +64,7 @@ main {
     println ""
     println "3. loops"
     println "enter two small integers, one between 1 and 5 and one between 1 and 30"
-    read x1, x2
+    readln x1, x2
     loops(x1, x2)
 
     exit

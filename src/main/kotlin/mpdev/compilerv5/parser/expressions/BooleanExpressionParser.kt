@@ -5,6 +5,7 @@ import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.config.Constants.Companion.BOOLEAN_TRUE
 import mpdev.compilerv5.scanner.*
+import mpdev.compilerv5.scanner.Operation.*
 
 /**
  * Program parsing - module 3
@@ -32,11 +33,13 @@ class BooleanExpressionParser(val context: CompilerContext) {
     private lateinit var scanner: InputProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var exprParser: ExpressionParser
+    private lateinit var scannerUtil: ScannerUtil
 
     fun initialise() {
         scanner = Config.scanner
         code = Config.codeModule
         exprParser = Config.expressionParser
+        scannerUtil = ScannerUtil(context)
     }
 
     /** parse a Boolean expression */
@@ -71,7 +74,7 @@ class BooleanExpressionParser(val context: CompilerContext) {
         if (scanner.lookahead().encToken == Kwd.boolNotOp) {
             scanner.match()
             typeF = parseBooleanFactor()
-            checkOperandTypeCompatibility(typeF, DataType.none, BOOL_NOT)
+            scannerUtil.checkOperandTypeCompatibility(typeF, DataType.none, BOOL_NOT)
             code.booleanNotAccumulator()
         } else
             typeF = parseBooleanFactor()
@@ -116,7 +119,7 @@ class BooleanExpressionParser(val context: CompilerContext) {
     private fun boolOr(typeE1: DataType) {
         scanner.match()
         val typeE2 = parseBooleanTerm()
-        checkOperandTypeCompatibility(typeE1, typeE2, BOOL_OR)
+        scannerUtil.checkOperandTypeCompatibility(typeE1, typeE2, BOOL_OR)
         code.booleanOrAccumulator()
     }
 
@@ -124,7 +127,7 @@ class BooleanExpressionParser(val context: CompilerContext) {
     private fun boolAnd(typeF1: DataType) {
         scanner.match()
         val typeF2 = parseNotFactor()
-        checkOperandTypeCompatibility(typeF1, typeF2, BOOL_AND)
+        scannerUtil.checkOperandTypeCompatibility(typeF1, typeF2, BOOL_AND)
         code.booleanAndAccumulator()
     }
 
@@ -132,7 +135,7 @@ class BooleanExpressionParser(val context: CompilerContext) {
     private fun parseEquals(typeE1: DataType) {
         scanner.match()
         val typeE2 = exprParser.parseExpression()
-        checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_EQ)
+        scannerUtil.checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_EQ)
         when (typeE1) {
             DataType.int, DataType.memptr -> code.compareEquals()
             DataType.string -> code.compareStringEquals()
@@ -144,7 +147,7 @@ class BooleanExpressionParser(val context: CompilerContext) {
     private fun parseNotEquals(typeE1: DataType) {
         scanner.match()
         val typeE2 = exprParser.parseExpression()
-        checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_NE)
+        scannerUtil.checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_NE)
         when (typeE1) {
             DataType.int, DataType.memptr -> code.compareNotEquals()
             DataType.string -> code.compareStringNotEquals()
@@ -156,7 +159,7 @@ class BooleanExpressionParser(val context: CompilerContext) {
     private fun parseLess(typeE1: DataType) {
         scanner.match()
         val typeE2 = exprParser.parseExpression()
-        checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_LT)
+        scannerUtil.checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_LT)
         when (typeE1) {
             DataType.int, DataType.memptr -> code.compareLess()
             else -> {}
@@ -167,7 +170,7 @@ class BooleanExpressionParser(val context: CompilerContext) {
     private fun parseLessEqual(typeE1: DataType) {
         scanner.match()
         val typeE2 = exprParser.parseExpression()
-        checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_LE)
+        scannerUtil.checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_LE)
         when (typeE1) {
             DataType.int, DataType.memptr -> code.compareLessEqual()
             else -> {}
@@ -178,7 +181,7 @@ class BooleanExpressionParser(val context: CompilerContext) {
     private fun parseGreater(typeE1: DataType) {
         scanner.match()
         val typeE2 = exprParser.parseExpression()
-        checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_GT)
+        scannerUtil.checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_GT)
         when (typeE1) {
             DataType.int, DataType.memptr -> code.compareGreater()
             else -> {}
@@ -189,7 +192,7 @@ class BooleanExpressionParser(val context: CompilerContext) {
     private fun parseGreaterEqual(typeE1: DataType) {
         scanner.match()
         val typeE2 = exprParser.parseExpression()
-        checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_GE)
+        scannerUtil.checkOperandTypeCompatibility(typeE1, typeE2, COMPARE_GE)
         when (typeE1) {
             DataType.int, DataType.memptr -> code.compareGreaterEqual()
             else -> {}

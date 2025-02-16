@@ -3,6 +3,12 @@ package mpdev.compilerv5.config
 class Constants {
 
     companion object {
+        // the buffer for string operations
+        const val STRING_BUFFER = "string_buffer_"
+
+        // string constants section in output file
+        const val STRING_CONST_PREFIX = "STRCNST_"
+
         ///////////////// Tokens
 
         // the null char is used as end of input mark

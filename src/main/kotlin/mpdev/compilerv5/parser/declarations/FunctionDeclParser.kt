@@ -4,6 +4,7 @@ package mpdev.compilerv5.parser.declarations
 import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.config.FunctionParameter
 import mpdev.compilerv5.parser.control_structures.ControlStructureParser
 import mpdev.compilerv5.parser.labels.LabelHandler
 import mpdev.compilerv5.scanner.*
@@ -25,7 +26,7 @@ class FunctionDeclParser(private val context: CompilerContext) {
         code = Config.codeModule
         labelHandler = Config.labelHandler
         contrStructParser = Config.controlStructureParser
-        declarationUtils = DeclarationUtils()
+        declarationUtils = DeclarationUtils(context)
     }
 
     /**
@@ -62,9 +63,9 @@ class FunctionDeclParser(private val context: CompilerContext) {
                 else -> scanner.expected("function type (int, byte, intarray, bytearray, string, pointer or void)")
             }
             scanner.match()
-            if (identifiersMap[functionName] != null)
-                abort("line ${scanner.currentLineNumber}: identifier $functionName already declared")
-            identifiersMap[functionName] = IdentifierDecl(TokType.function, funType)
+            if (context.identifiersMap[functionName] != null)
+                abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: identifier $functionName already declared")
+            context.identifiersMap[functionName] = IdentifierDecl(TokType.function, funType)
             if (!isExternal) {    // external functions do not have body
                 declarationUtils.declareFun(functionName, isPackageGlobal)
                 storeParamsToStack(functionName)
@@ -80,20 +81,20 @@ class FunctionDeclParser(private val context: CompilerContext) {
         if (scanner.lookahead().encToken == Kwd.identifier) {
             do {
                 if (paramCount++ >= code.MAX_FUN_PARAMS)
-                    abort("line ${scanner.currentLineNumber}: a function can have only up to ${code.MAX_FUN_PARAMS} parameters maximum")
+                    abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: a function can have only up to ${code.MAX_FUN_PARAMS} parameters maximum")
                 if (scanner.lookahead().encToken == Kwd.commaToken)
                     scanner.match()
                 paramTypesList.add(parseOneFunParam())
             } while (scanner.lookahead().encToken == Kwd.commaToken)
         }
-        funParamsMap[functionName] = paramTypesList
+        context.funParamsMap[functionName] = paramTypesList
     }
 
     /** parse one function parameter - returns the type for this parameter */
     private fun parseOneFunParam(): FunctionParameter {
         val paramName = scanner.match(Kwd.identifier).value
-        if (identifiersMap[paramName] != null)
-            abort("line ${scanner.currentLineNumber}: parameter name $paramName has already been declared")
+        if (context.identifiersMap[paramName] != null)
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: parameter name $paramName has already been declared")
         scanner.match(Kwd.colonToken)
         var paramType = DataType.none
         when (scanner.lookahead().encToken) {
@@ -111,12 +112,12 @@ class FunctionDeclParser(private val context: CompilerContext) {
 
     /** transfer the function parameters to stack */
     private fun storeParamsToStack(functionName: String) {
-        val paramsList = funParamsMap[functionName] ?: listOf()
+        val paramsList = context.funParamsMap[functionName] ?: listOf()
         for (i in paramsList.indices) {
             val foundOffset = code.isFunParamInStack(i)
             if (foundOffset < 0) {   // parameter in register
                 val paramVarOffs = code.allocateStackVar(code.INT_SIZE)
-                identifiersMap[paramsList[i].name] = IdentifierDecl(
+                context.identifiersMap[paramsList[i].name] = IdentifierDecl(
                     TokType.variable,
                     paramsList[i].type,
                     initialised = true,
@@ -130,7 +131,7 @@ class FunctionDeclParser(private val context: CompilerContext) {
                 code.storeFunParamToStack(i, paramVarOffs)
                 code.outputCommentNl("parameter ${paramsList[i].name} offset from frame ${paramVarOffs}")
             } else {          // parameter in stack already
-                identifiersMap[paramsList[i].name] = IdentifierDecl(
+                context.identifiersMap[paramsList[i].name] = IdentifierDecl(
                     TokType.variable, paramsList[i].type, initialised = true, size = code.INT_SIZE,
                     isStackVar = true, stackOffset = foundOffset, canAssign = false
                 )
@@ -146,6 +147,6 @@ class FunctionDeclParser(private val context: CompilerContext) {
         if (!hasReturn)
             abort("line ${scanner.currentLineNumber}: function $funName has no ${scanner.decodeToken(Kwd.retToken)}")
         // clean up declarations of parameters so that the names can be reused in other functions
-        funParamsMap[funName]?.forEach { identifiersMap.remove(it.name) }
+        context.funParamsMap[funName]?.forEach { context.identifiersMap.remove(it.name) }
     }
 }

@@ -35,6 +35,7 @@ class ControlStructureParser(val context: CompilerContext) {
     private lateinit var expressionParser: ExpressionParser
     private lateinit var booleanExprParser: BooleanExpressionParser
     private lateinit var inputOutputParser: InputOutputParser
+    private lateinit var scannerUtil: ScannerUtil
 
     fun initialise() {
         scanner = Config.scanner
@@ -48,6 +49,7 @@ class ControlStructureParser(val context: CompilerContext) {
         expressionParser = Config.expressionParser
         booleanExprParser = Config.booleanExpressionParser
         inputOutputParser = Config.inputOutputParser
+        scannerUtil = ScannerUtil(context)
     }
     //TODO: check where these vars should be - local or in then context?
     var blockId = 0
@@ -74,14 +76,14 @@ class ControlStructureParser(val context: CompilerContext) {
      */
     private fun releaseLocalVars(blockName: String, restoreSP: Boolean) {
         var localVarSize = 0
-        localVarsMap[blockName]?.forEach {
+        context.localVarsMap[blockName]?.forEach {
             localVarSize +=
-                when (identifiersMap[it]?.type) {
+                when (context.identifiersMap[it]?.type) {
                     DataType.int -> code.INT_SIZE
-                    DataType.string -> code.PTR_SIZE + identifiersMap[it]?.size!!
+                    DataType.string -> code.PTR_SIZE + context.identifiersMap[it]?.size!!
                     else -> code.INT_SIZE
                 }
-            identifiersMap.remove(it)
+            context.identifiersMap.remove(it)
         }
         if (localVarSize > 0 && restoreSP)
             code.releaseStackVar(localVarSize)
@@ -109,7 +111,7 @@ class ControlStructureParser(val context: CompilerContext) {
             Kwd.identifier -> {
                 if (scanner.lookahead().type == TokType.variable) expressionParser.parseAssignment()
                 else if (scanner.lookahead().type == TokType.function) functionCallParser.parse()
-                else abort("line ${scanner.currentLineNumber}: identifier ${scanner.lookahead().value} not declared")
+                else abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: identifier ${scanner.lookahead().value} not declared")
             }
             Kwd.ptrOpen -> expressionParser.parsePtrAssignment()
             Kwd.exitToken -> parseExit()
@@ -159,7 +161,7 @@ class ControlStructureParser(val context: CompilerContext) {
         if (labelHandler.labelPrefix == MAIN_BLOCK)
             abort("line ${scanner.currentLineNumber}: return is not allowed in [main]")
         functionParser.hasReturn = true       // set the return flag for this function
-        val funType = getType(functionParser.funName)
+        val funType = scannerUtil.getType(functionParser.funName)
         if (funType != DataType.void) {
             val expType = expressionParser.parseExpression()
             if (expType != funType)

@@ -136,7 +136,7 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
                     languageTokens[indx]  // keyword found
                 else {
                     // function, variable or other identifier found (determined by Token type)
-                    Token(name, Kwd.identifier, identifiersMap[name]?.fv ?: TokType.none)
+                    Token(name, Kwd.identifier, context.identifiersMap[name]?.fv ?: TokType.none)
                 }
     }
 
@@ -409,7 +409,7 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
                 "${nextToken.encToken} "
             else
                 ""
-        abort("line $currentLineNumber: expected [$expMsg] found $tokType[${nextToken.value}]")
+        abort("(${this.javaClass.simpleName}) line $currentLineNumber: expected [$expMsg] found $tokType[${nextToken.value}]")
     }
 
     /** debug functions */

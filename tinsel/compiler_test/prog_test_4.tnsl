@@ -36,7 +36,7 @@ main {
     println ""
     println "4. strings"
     println "enter two strings"
-    read s1, s2
+    readln s1, s2
     strings(s1, s2)
 
     exit

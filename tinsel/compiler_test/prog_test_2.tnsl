@@ -58,7 +58,7 @@ main {
     println ""
     println "2. boolean expressions and if-else"
     println "enter 3 small integers (hit <enter> after each one): "
-    read x1, x2, x3
+    readln x1, x2, x3
     bool_expression(x1, x2, x3)
 
     exit

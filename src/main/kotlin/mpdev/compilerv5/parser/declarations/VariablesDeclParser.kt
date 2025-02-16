@@ -19,7 +19,7 @@ class VariablesDeclParser(val context: CompilerContext) {
     fun initialise() {
         scanner = Config.scanner
         code = Config.codeModule
-        declarationUtils = DeclarationUtils()
+        declarationUtils = DeclarationUtils(context)
     }
 
     fun parse(scope: VarScope = VarScope.global, blockName: String = "") {
@@ -57,9 +57,9 @@ class VariablesDeclParser(val context: CompilerContext) {
             else -> scanner.expected("variable type (int, byte, intarray, bytearray, pointer or string)")
         }
         if (scope == VarScope.local) {      // add any local vars to the local vars map for this block
-            val localVarsList: MutableList<String> = localVarsMap[blockName] ?: mutableListOf()
+            val localVarsList: MutableList<String> = context.localVarsMap[blockName] ?: mutableListOf()
             localVarsList.add(varName)
-            localVarsMap[blockName] = localVarsList
+            context.localVarsMap[blockName] = localVarsList
         }
     }
 

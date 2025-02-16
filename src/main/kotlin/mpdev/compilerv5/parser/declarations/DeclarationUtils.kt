@@ -1,13 +1,15 @@
 package mpdev.compilerv5.parser.declarations
 
+import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.config.Constants.Companion.STRING_CONST_PREFIX
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
 /**
  * Support for variables and functions declarations
  */
-class DeclarationUtils {
+class DeclarationUtils(val context: CompilerContext) {
 
     private val scanner = Config.scanner
     private val code = Config.codeModule
@@ -18,8 +20,8 @@ class DeclarationUtils {
     /** process a variable declaration */
     fun declareVar(name: String, type: DataType, initValue: String, size: Int, scope: VarScope) {
         // check for duplicate var declaration
-        if (identifiersMap[name] != null)
-            abort("line ${scanner.currentLineNumber}: identifier $name already declared")
+        if (context.identifiersMap[name] != null)
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: identifier $name already declared")
         when (scope) {
             VarScope.packageGlobal -> declarePackageGlobalVar(name, type, initValue, size)
             VarScope.global -> declareGlobalVar(name, type, initValue, size)
@@ -44,7 +46,7 @@ class DeclarationUtils {
 
     /** declare a global variable */
     private fun declareGlobalVar(name: String, type: DataType, initValue: String, size: Int) {
-        identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue != "", size)
+        context.identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue != "", size)
         when (type) {
             DataType.int, DataType.memptr -> code.declareInt(name, initValue)
             DataType.byte -> code.declareByte(name, initValue)
@@ -73,7 +75,7 @@ class DeclarationUtils {
 
             else -> return
         }
-        identifiersMap[name] = IdentifierDecl(
+        context.identifiersMap[name] = IdentifierDecl(
             TokType.variable,
             type,
             initialised = true,
@@ -86,7 +88,7 @@ class DeclarationUtils {
 
     /** declare an external variable */
     private fun declareExternalVar(name: String, type: DataType, initValue: String, length: Int) {
-        identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue != "", length)
+        context.identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue != "", length)
     }
 
     /** initialise a local int var */
@@ -102,11 +104,11 @@ class DeclarationUtils {
             abort("line ${scanner.currentLineNumber}: local variable $name is not initialised")
         var constStringAddress = ""
         // check for the constant string init value
-        stringConstants.forEach { (k, v) -> if (v == initValue) constStringAddress = k }
+        context.stringConstants.forEach { (k, v) -> if (v == initValue) constStringAddress = k }
         if (constStringAddress == "") {  // if not found
             // save the string in the map of constant strings
-            constStringAddress = STRING_CONST_PREFIX + (++stringCnstIndx).toString()
-            stringConstants[constStringAddress] = initValue
+            constStringAddress = STRING_CONST_PREFIX + (++context.stringCnstIndx).toString()
+            context.stringConstants[constStringAddress] = initValue
         }
         val stringDataOffset = code.allocateStackVar(length)
         code.initStackVarString(stackOffset, stringDataOffset, constStringAddress)

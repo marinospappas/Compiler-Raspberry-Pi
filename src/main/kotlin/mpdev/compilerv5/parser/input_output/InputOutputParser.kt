@@ -5,6 +5,7 @@ import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.parser.expressions.BooleanExpressionParser
 import mpdev.compilerv5.scanner.*
+import mpdev.compilerv5.scanner.Operation.PRINT
 import mpdev.compilerv5.util.Utils.Companion.abort
 
 /**
@@ -16,11 +17,13 @@ class InputOutputParser(val context: CompilerContext) {
     private lateinit var scanner: InputProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var booleanExprParser: BooleanExpressionParser
+    private lateinit var scannerUtil: ScannerUtil
 
     fun initialise() {
         scanner = Config.scanner
         code = Config.codeModule
         booleanExprParser = Config.booleanExpressionParser
+        scannerUtil = ScannerUtil(context)
     }
 
     fun parseRead() {
@@ -33,8 +36,8 @@ class InputOutputParser(val context: CompilerContext) {
             if (varToken.type != TokType.variable)
                 abort("line ${scanner.currentLineNumber}: identifier ${varToken.value} is not a variable")
             val identName = varToken.value
-            val strLen = identifiersMap[identName]?.size!!
-            when (getType(identName)) {
+            val strLen = context.identifiersMap[identName]?.size!!
+            when (scannerUtil.getType(identName)) {
                 DataType.int -> parseReadInt(identName)
                 DataType.string -> parseReadString(identName, strLen)
                 else -> {}
@@ -44,9 +47,9 @@ class InputOutputParser(val context: CompilerContext) {
 
     /** parse a read int instruction */
     private fun parseReadInt(identName: String) {
-        if (identifiersMap[identName]?.isStackVar!!) {
-            code.readIntLocal(identifiersMap[identName]?.stackOffset!!)
-            code.assignmentLocalVar(identifiersMap[identName]?.stackOffset!!)
+        if (context.identifiersMap[identName]?.isStackVar!!) {
+            code.readIntLocal(context.identifiersMap[identName]?.stackOffset!!)
+            code.assignmentLocalVar(context.identifiersMap[identName]?.stackOffset!!)
         } else {
             code.readInt(identName)
             code.assignment(identName)
@@ -55,8 +58,8 @@ class InputOutputParser(val context: CompilerContext) {
 
     /** parse a read string instruction */
     private fun parseReadString(identName: String, strLen: Int) {
-        if (identifiersMap[identName]?.isStackVar!!)
-            code.readStringLocal(identifiersMap[identName]?.stackOffset!!, strLen)
+        if (context.identifiersMap[identName]?.isStackVar!!)
+            code.readStringLocal(context.identifiersMap[identName]?.stackOffset!!, strLen)
         else
             code.readString(identName, strLen)
     }
@@ -83,7 +86,7 @@ class InputOutputParser(val context: CompilerContext) {
             if (scanner.lookahead().encToken == Kwd.commaToken)
                 scanner.match() // skip the comma
             val exprType = booleanExprParser.parse()
-            checkOperandTypeCompatibility(exprType, DataType.none, PRINT)
+            scannerUtil.checkOperandTypeCompatibility(exprType, DataType.none, PRINT)
             if (scanner.lookahead().encToken == Kwd.colonToken) {
                 scanner.match()
                 decFmt = getPrintFormat()
@@ -111,11 +114,11 @@ class InputOutputParser(val context: CompilerContext) {
         fmt = "%$fmtLen$fmtType"
         // fmt must be added to the map of constant strings
         var fmtStringName = ""
-        stringConstants.forEach { (k, v) -> if (v == fmt) fmtStringName = k }
+        context.stringConstants.forEach { (k, v) -> if (v == fmt) fmtStringName = k }
         if (fmtStringName == "") {  // if not found
             // save the string in the map of constant strings
             fmtStringName = "${code.INT_FMT}_${fmt.substring(1)}"
-            stringConstants[fmtStringName] = fmt
+            context.stringConstants[fmtStringName] = fmt
         }
         return fmtStringName
     }

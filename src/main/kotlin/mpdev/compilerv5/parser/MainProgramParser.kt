@@ -98,11 +98,11 @@ class MainProgramParser(val context: CompilerContext) {
     private fun generatePostMainCode() {
         code.createRelativeAddresses()
         code.stringConstantsDataSpace()
-        if (stringConstants.isEmpty())
+        if (context.stringConstants.isEmpty())
             return
         code.outputCommentNl("constant string values go here")
-        for (s in stringConstants.keys) {
-            stringConstants[s]?.let {
+        for (s in context.stringConstants.keys) {
+            context.stringConstants[s]?.let {
                 if (it.isNotEmpty() && it[0] >= ' ')
                     code.declareString(s, it, 0)
                 else

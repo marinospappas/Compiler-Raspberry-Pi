@@ -4,9 +4,6 @@ import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.parser.expressions.BooleanExpressionParser
-import mpdev.compilerv5.parser.operations.NumericAssignementParser
-import mpdev.compilerv5.parser.operations.OperationsParser
-import mpdev.compilerv5.parser.operations.StringAssignmentParser
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
@@ -20,11 +17,13 @@ class FunctionCallParser(val context: CompilerContext) {
     private lateinit var scanner: InputProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var booleanExprParser: BooleanExpressionParser
+    private lateinit var scannerUtil: ScannerUtil
 
     fun initialise() {
         scanner = Config.scanner
         code = Config.codeModule
         booleanExprParser = Config.booleanExpressionParser
+        scannerUtil = ScannerUtil(context)
     }
 
     fun parse(): DataType {
@@ -36,7 +35,7 @@ class FunctionCallParser(val context: CompilerContext) {
         code.callFunction(funcName)
         restoreFunctionStackParams(funcName)
         restoreParamRegisters(funcName)
-        return getType(funcName)
+        return scannerUtil.getType(funcName)
     }
 
     /**
@@ -44,7 +43,7 @@ class FunctionCallParser(val context: CompilerContext) {
      * <parameter> ::= <boolean expression>
      */
     private fun parseAssignFunParams(functionName: String) {
-        val paramTypeList = funParamsMap[functionName] ?: listOf()
+        val paramTypeList = context.funParamsMap[functionName] ?: listOf()
         for (i in paramTypeList.indices) {
             if (i > 0)
                 scanner.match(Kwd.commaToken)
@@ -61,8 +60,8 @@ class FunctionCallParser(val context: CompilerContext) {
     /** set the registers to pass the parameter values as per assembler spec */
     private fun setInpFunParams(functionName: String) {
         code.outputCommentNl("\tset input parameters")
-        val paramTypeList = funParamsMap[functionName] ?: listOf()
-        if (paramTypeList.size > 0)
+        val paramTypeList = context.funParamsMap[functionName] ?: listOf()
+        if (paramTypeList.isNotEmpty())
             code.setFunParamRegFromAcc(paramTypeList.size - 1)    // last param is still in accumulator
         for (i in 0 until paramTypeList.size - 1)
             code.setFunParamRegFromTempReg(i)
@@ -70,14 +69,14 @@ class FunctionCallParser(val context: CompilerContext) {
 
     /** restore the cpu registers used for the function params that were saved before the call */
     private fun restoreParamRegisters(functionName: String) {
-        val paramTypeList = funParamsMap[functionName] ?: listOf()
+        val paramTypeList = context.funParamsMap[functionName] ?: listOf()
         for (i in 0 until paramTypeList.size - 1)
             code.restoreFunTempParamReg(paramTypeList.size - i - 2)
     }
 
     /** recover the space taken by any stack parameters */
     private fun restoreFunctionStackParams(functionName: String) {
-        val paramTypeList = funParamsMap[functionName] ?: listOf()
+        val paramTypeList = context.funParamsMap[functionName] ?: listOf()
         for (i in paramTypeList.indices)
             code.restoreFunStackParam(paramTypeList.size - i - 1)
     }

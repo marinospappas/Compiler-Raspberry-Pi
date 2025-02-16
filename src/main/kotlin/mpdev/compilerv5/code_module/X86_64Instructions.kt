@@ -1,5 +1,6 @@
 package mpdev.compilerv5.code_module
 
+import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import java.io.File
 import java.io.PrintStream
@@ -28,7 +29,7 @@ import java.util.Date
  * %rbx,%rbp,%r12-r15: callee save registers
  */
 
-class X86_64Instructions(outFile: String = ""): AsmInstructions {
+class X86_64Instructions(context: CompilerContext): AsmInstructions {
 
     private val CODE_ID = "x86-64 Assembly Code - AT&T format"
     override val COMMENT = "#"
@@ -59,6 +60,7 @@ class X86_64Instructions(outFile: String = ""): AsmInstructions {
 
     /** initialisation code - class InputProgramScanner */
     init {
+        val outFile = context.outFile
         if (outFile != "") {
             try {
                 outStream = PrintStream(File(outFile))

@@ -66,19 +66,19 @@ class ForLoopParser(val context: CompilerContext) {
     private fun parseCtrlVar() {
         // get control var
         controlVarName = scanner.match(Kwd.identifier).value
-        if (identifiersMap[controlVarName] != null)
-            abort("line ${scanner.currentLineNumber}: identifier $controlVarName already declared")
+        if (context.identifiersMap[controlVarName] != null)
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: identifier $controlVarName already declared")
         scanner.match(Kwd.equalsOp)
         // allocate space in the stack for the ctrl var
         ctrlVarOffs = code.allocateStackVar(code.INT_SIZE)
-        identifiersMap[controlVarName] = IdentifierDecl(
+        context.identifiersMap[controlVarName] = IdentifierDecl(
             TokType.variable, DataType.int, initialised = true, size = code.INT_SIZE,
             isStackVar = true, stackOffset = ctrlVarOffs, canAssign = false
         )
         // set the ctrl var to FROM
         val expType = exprParser.parseExpression()
         if (expType != DataType.int)
-            abort("line ${scanner.currentLineNumber}: expected integer expression found $expType")
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: expected integer expression found $expType")
         code.assignmentLocalVar(ctrlVarOffs)
     }
 
@@ -97,7 +97,7 @@ class ForLoopParser(val context: CompilerContext) {
         toOffs = code.allocateStackVar(code.INT_SIZE)
         val expType = exprParser.parseExpression()
         if (expType != DataType.int)
-            abort("line ${scanner.currentLineNumber}: expected integer expression found $expType")
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: expected integer expression found $expType")
         code.assignmentLocalVar(toOffs)
     }
 
@@ -110,7 +110,7 @@ class ForLoopParser(val context: CompilerContext) {
             stepOffs = code.allocateStackVar(code.INT_SIZE)
             val expType = exprParser.parseExpression()
             if (expType != DataType.int)
-                abort("line ${scanner.currentLineNumber}: expected integer expression found $expType")
+                abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: expected integer expression found $expType")
             code.assignmentLocalVar(stepOffs)
         }
     }
@@ -161,7 +161,7 @@ class ForLoopParser(val context: CompilerContext) {
     private fun cleanUpStack() {
         if (hasStep)
             code.releaseStackVar(code.INT_SIZE)
-        identifiersMap.remove(controlVarName)
+        context.identifiersMap.remove(controlVarName)
         code.releaseStackVar(2* code.INT_SIZE)
     }
 }

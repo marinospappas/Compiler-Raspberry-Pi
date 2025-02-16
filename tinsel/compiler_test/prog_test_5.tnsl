@@ -44,7 +44,7 @@ main {
     println "enter two integers"
     read v1, v2
     println "enter two strings"
-    read c1, c2
+    readln c1, c2
     global_vars()
 
     exit

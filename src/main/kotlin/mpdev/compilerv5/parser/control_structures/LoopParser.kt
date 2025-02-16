@@ -68,7 +68,7 @@ class LoopParser(val context: CompilerContext) {
     fun parseBreak(label: String) {
         scanner.match()
         if (label == "")
-            abort("line ${scanner.currentLineNumber}: no loop to break of")
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: no loop to break of")
         code.jump(label)
     }
 
@@ -79,7 +79,7 @@ class LoopParser(val context: CompilerContext) {
     fun parseContinue(label: String) {
         scanner.match()
         if (label == "")
-            abort("line ${scanner.currentLineNumber}: no loop to continue")
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: no loop to continue")
         code.jump(label)
     }
 }

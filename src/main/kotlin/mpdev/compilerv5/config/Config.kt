@@ -46,8 +46,8 @@ class Config {
 
         fun setCompilerModules(context: CompilerContext) {
             codeModule = when (context.cpuArchitecture) {
-                CPUArch.x86 -> X86_64Instructions(context.outFile)
-                CPUArch.arm -> Arm_32Instructions(context.outFile)
+                CPUArch.x86 -> X86_64Instructions(context)
+                CPUArch.arm -> Arm_32Instructions(context)
             }
             scanner = InputProgramScanner(context)
             programParser = MainProgramParser(context)

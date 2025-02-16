@@ -35,7 +35,7 @@ main {
     println ""
     println "1. numeric expressions"
     println "enter 4 integers (hit <enter> after each one): "
-    read x1, x2, x3, x4
+    readln x1, x2, x3, x4
     num_expression(x1, x2, x3, x4)
 
     exit
