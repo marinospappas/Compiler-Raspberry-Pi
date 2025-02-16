@@ -2,7 +2,6 @@ package mpdev.compilerv5.parser.control_structures
 
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
-import mpdev.compilerv5.parser.expressions.parseExpression
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
@@ -10,12 +9,13 @@ import mpdev.compilerv5.util.Utils.Companion.abort
  * parse for in a separate class/file due to increased complexity
  * <for> ::= for ( <identifier> = <expression> [ down ] to <expression> [ step <expression> ] ) <block>
  */
-class ForLoopParser(context: CompilerContext) {
+class ForLoopParser(val context: CompilerContext) {
 
     private val scanner = Config.scanner
     private val code = Config.codeModule
     private val labelHandler = Config.labelHandler
     private val contrStructParser = Config.controlStructureParser
+    private val exprParser = Config.expressionParser
 
     private var controlVarName = ""
     private var ctrlVarOffs = 0
@@ -64,7 +64,7 @@ class ForLoopParser(context: CompilerContext) {
             isStackVar = true, stackOffset = ctrlVarOffs, canAssign = false
         )
         // set the ctrl var to FROM
-        val expType = parseExpression()
+        val expType = exprParser.parseExpression()
         if (expType != DataType.int)
             abort("line ${scanner.currentLineNumber}: expected integer expression found $expType")
         code.assignmentLocalVar(ctrlVarOffs)
@@ -83,7 +83,7 @@ class ForLoopParser(context: CompilerContext) {
         // get TO value and store in the stack
         scanner.match(Kwd.toToken)
         toOffs = code.allocateStackVar(code.INT_SIZE)
-        val expType = parseExpression()
+        val expType = exprParser.parseExpression()
         if (expType != DataType.int)
             abort("line ${scanner.currentLineNumber}: expected integer expression found $expType")
         code.assignmentLocalVar(toOffs)
@@ -96,7 +96,7 @@ class ForLoopParser(context: CompilerContext) {
             hasStep = true
             // allocate space in the stack and save step value
             stepOffs = code.allocateStackVar(code.INT_SIZE)
-            val expType = parseExpression()
+            val expType = exprParser.parseExpression()
             if (expType != DataType.int)
                 abort("line ${scanner.currentLineNumber}: expected integer expression found $expType")
             code.assignmentLocalVar(stepOffs)

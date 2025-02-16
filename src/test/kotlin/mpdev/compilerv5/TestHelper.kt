@@ -1,10 +1,9 @@
-package mpdev.compilerv3.chapter_xa_01
+package mpdev.compilerv5
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestReporter
 import java.io.File
 import java.lang.System.err
-import java.nio.file.Files
 import java.util.stream.Stream
 
 var PROJECT_DIR: String = "."

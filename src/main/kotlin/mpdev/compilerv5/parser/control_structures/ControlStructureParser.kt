@@ -3,14 +3,6 @@ package mpdev.compilerv5.parser.control_structures
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.config.Constants.Companion.MAIN_BLOCK
-import mpdev.compilerv5.parser.expressions.parseAssignment
-import mpdev.compilerv5.parser.expressions.parseBooleanExpression
-import mpdev.compilerv5.parser.expressions.parseExpression
-import mpdev.compilerv5.parser.expressions.parsePtrAssignment
-import mpdev.compilerv5.parser.function_calls.parseFunctionCall
-import mpdev.compilerv5.parser.input_output.parsePrint
-import mpdev.compilerv5.parser.input_output.parsePrintLn
-import mpdev.compilerv5.parser.input_output.parseRead
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
@@ -18,7 +10,7 @@ import mpdev.compilerv5.util.Utils.Companion.abort
  * Program parsing - module 1
  * Control Structures
  */
-class ControlStructureParser(context: CompilerContext) {
+class ControlStructureParser(val context: CompilerContext) {
 
     companion object {
         const val BLOCK_NAME = "block_"
@@ -27,14 +19,16 @@ class ControlStructureParser(context: CompilerContext) {
     private val scanner = Config.scanner
     private val code = Config.codeModule
     private val labelHandler = Config.labelHandler
-    private val variableParser = Config.variablesParser
-    private val functionParser = Config.functionParser
+    private val variableParser = Config.variablesDeclParser
+    private val functionParser = Config.functionDeclParser
     private val loopParser = Config.loopParser
     private val forLoopParser = Config.forLoopParser
+    private val functionCallParser = Config.functionCallParser
+    private val expressionParser = Config.expressionParser
+    private val booleanExprParser = Config.booleanExpressionParser
+    private val inputOutputParser = Config.inputOutputParser
 
-    // global vars
-    var labelIndx: Int = 0
-    var labelPrefix = ""
+    //TODO: check where these vars should be - local or in then context?
     var blockId = 0
     var mustRestoreSP = false
 
@@ -88,16 +82,15 @@ class ControlStructureParser(context: CompilerContext) {
             Kwd.breakToken -> loopParser.parseBreak(breakLabel)
             Kwd.continueToken -> loopParser.parseContinue(continueLabel)
             Kwd.retToken -> parseReturn()
-            Kwd.readToken -> parseRead()
-            Kwd.printToken -> parsePrint()
-            Kwd.printLnToken -> parsePrintLn()
+            Kwd.readToken -> inputOutputParser.parseRead()
+            Kwd.printToken -> inputOutputParser.parsePrint()
+            Kwd.printLnToken -> inputOutputParser.parsePrintLn()
             Kwd.identifier -> {
-                if (scanner.lookahead().type == TokType.variable) parseAssignment()
-                else if (scanner.lookahead().type == TokType.function) parseFunctionCall()
+                if (scanner.lookahead().type == TokType.variable) expressionParser.parseAssignment()
+                else if (scanner.lookahead().type == TokType.function) functionCallParser.parse()
                 else abort("line ${scanner.currentLineNumber}: identifier ${scanner.lookahead().value} not declared")
             }
-
-            Kwd.ptrOpen -> parsePtrAssignment()
+            Kwd.ptrOpen -> expressionParser.parsePtrAssignment()
             Kwd.exitToken -> parseExit()
             Kwd.semiColonToken -> scanner.match()   // semicolons are simply ignored
             else -> scanner.expected("valid keyword, semicolon or identifier")
@@ -120,7 +113,7 @@ class ControlStructureParser(context: CompilerContext) {
     private fun parseIf(breakLabel: String, continueLabel: String) {
         scanner.match()
         scanner.match(Kwd.leftParen)
-        parseBooleanExpression()
+        booleanExprParser.parse()
         scanner.match(Kwd.rightParen)
         val label1 = labelHandler.newLabel()
         code.jumpIfFalse(label1)
@@ -142,12 +135,12 @@ class ControlStructureParser(context: CompilerContext) {
      */
     private fun parseReturn() {
         scanner.match()
-        if (labelPrefix == MAIN_BLOCK)
+        if (labelHandler.labelPrefix == MAIN_BLOCK)
             abort("line ${scanner.currentLineNumber}: return is not allowed in [main]")
         functionParser.hasReturn = true       // set the return flag for this function
         val funType = getType(functionParser.funName)
         if (funType != DataType.void) {
-            val expType = parseExpression()
+            val expType = expressionParser.parseExpression()
             if (expType != funType)
                 abort("line ${scanner.currentLineNumber}: $funType function cannot return $expType")
         }

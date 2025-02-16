@@ -2,6 +2,15 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.1.10'
 }
 
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
 repositories {
     mavenCentral()
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }

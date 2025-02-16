@@ -1,7 +1,5 @@
 package mpdev.compilerv3._legacy.chapter_xa_04
 
-import mpdev.compilerv3.abort
-import mpdev.compilerv3.code
 import java.io.File
 import kotlin.math.min
 

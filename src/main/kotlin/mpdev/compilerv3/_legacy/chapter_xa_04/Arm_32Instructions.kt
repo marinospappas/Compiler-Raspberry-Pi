@@ -1,10 +1,5 @@
 package mpdev.compilerv3._legacy.chapter_xa_04
 
-import mpdev.compilerv3.code
-import mpdev.compilerv3.scanner.MAIN_BLOCK
-import mpdev.compilerv3.scanner.STRING_BUFFER
-import mpdev.compilerv3.scanner.STR_BUF_SIZE
-import mpdev.compilerv3.scanner.stringConstants
 import java.io.File
 import java.io.PrintStream
 import java.lang.System.err

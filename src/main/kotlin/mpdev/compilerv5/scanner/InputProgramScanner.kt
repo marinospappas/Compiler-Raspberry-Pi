@@ -2,6 +2,9 @@ package mpdev.compilerv5.scanner
 
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.config.Constants.Companion.END_OF_INPUT
+import mpdev.compilerv5.config.Constants.Companion.NO_TOKEN
+import mpdev.compilerv5.config.Constants.Companion.NULL_CHAR
 import mpdev.compilerv5.util.Utils.Companion.abort
 import java.io.File
 import kotlin.math.min
@@ -18,7 +21,7 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
     private var cursor = 0
 
     // end of input mark
-    private val endOfInput = nullChar.toChar()
+    private val endOfInput = NULL_CHAR.toChar()
 
     // the next character from input
     // this is our lookahead character

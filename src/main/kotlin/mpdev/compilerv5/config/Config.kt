@@ -9,9 +9,16 @@ import mpdev.compilerv5.parser.MainProgramParser
 import mpdev.compilerv5.parser.control_structures.ControlStructureParser
 import mpdev.compilerv5.parser.control_structures.ForLoopParser
 import mpdev.compilerv5.parser.control_structures.LoopParser
-import mpdev.compilerv5.parser.declarations.FunctionParser
-import mpdev.compilerv5.parser.declarations.VariablesParser
+import mpdev.compilerv5.parser.declarations.FunctionDeclParser
+import mpdev.compilerv5.parser.declarations.VariablesDeclParser
+import mpdev.compilerv5.parser.expressions.BooleanExpressionParser
+import mpdev.compilerv5.parser.expressions.ExpressionParser
+import mpdev.compilerv5.parser.function_calls.FunctionCallParser
+import mpdev.compilerv5.parser.input_output.InputOutputParser
 import mpdev.compilerv5.parser.labels.LabelHandler
+import mpdev.compilerv5.parser.operations.NumericAssignementParser
+import mpdev.compilerv5.parser.operations.OperationsParser
+import mpdev.compilerv5.parser.operations.StringAssignmentParser
 import mpdev.compilerv5.scanner.InputProgramScanner
 
 class Config {
@@ -25,25 +32,39 @@ class Config {
         lateinit var debugger: CompilerDebugger
         lateinit var programParser: MainProgramParser
         lateinit var controlStructureParser: ControlStructureParser
-        lateinit var variablesParser: VariablesParser
-        lateinit var functionParser: FunctionParser
+        lateinit var variablesDeclParser: VariablesDeclParser
+        lateinit var functionDeclParser: FunctionDeclParser
         lateinit var loopParser: LoopParser
         lateinit var forLoopParser: ForLoopParser
+        lateinit var functionCallParser: FunctionCallParser
+        lateinit var expressionParser: ExpressionParser
+        lateinit var booleanExpressionParser: BooleanExpressionParser
+        lateinit var operationsParser: OperationsParser
+        lateinit var numericAssgnmtParser: NumericAssignementParser
+        lateinit var stringAssgnmtParser: StringAssignmentParser
+        lateinit var inputOutputParser: InputOutputParser
         lateinit var labelHandler: LabelHandler
 
-        fun setCompilerModules(context: mpdev.compilerv5.config.CompilerContext) {
-            scanner = InputProgramScanner(context)
+        fun setCompilerModules(context: CompilerContext) {
             codeModule = when (context.cpuArchitecture) {
                 CPUArch.x86 -> X86_64Instructions(context.outFile)
                 CPUArch.arm -> Arm_32Instructions(context.outFile)
             }
+            scanner = InputProgramScanner(context)
             debugger = CompilerDebugger(context)
             programParser = MainProgramParser(context)
             controlStructureParser = ControlStructureParser(context)
-            variablesParser = VariablesParser(context)
-            functionParser = FunctionParser(context)
+            variablesDeclParser = VariablesDeclParser(context)
+            functionDeclParser = FunctionDeclParser(context)
             loopParser = LoopParser(context)
             forLoopParser = ForLoopParser(context)
+            functionCallParser = FunctionCallParser(context)
+            expressionParser = ExpressionParser(context)
+            booleanExpressionParser = BooleanExpressionParser(context)
+            operationsParser = OperationsParser(context)
+            numericAssgnmtParser = NumericAssignementParser(context)
+            stringAssgnmtParser = StringAssignmentParser(context)
+            inputOutputParser = InputOutputParser(context)
             labelHandler = LabelHandler()
         }
     }

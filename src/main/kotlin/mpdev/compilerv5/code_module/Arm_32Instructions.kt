@@ -1,6 +1,7 @@
 package mpdev.compilerv5.code_module
 
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.scanner.stringConstants
 import java.io.File
 import java.io.PrintStream
 import java.lang.System.err

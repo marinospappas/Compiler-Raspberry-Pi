@@ -2,7 +2,6 @@ package mpdev.compilerv5.parser.control_structures
 
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
-import mpdev.compilerv5.parser.expressions.parseBooleanExpression
 import mpdev.compilerv5.scanner.Kwd
 import mpdev.compilerv5.util.Utils.Companion.abort
 
@@ -11,12 +10,13 @@ import mpdev.compilerv5.util.Utils.Companion.abort
  * parse while statement
  * <while> ::= while ( <b-expression> ) <block>
  */
-class LoopParser(context: CompilerContext) {
+class LoopParser(val context: CompilerContext) {
 
     private val scanner = Config.scanner
     private val code = Config.codeModule
     private val labelHandler = Config.labelHandler
     private val contrStructParser = Config.controlStructureParser
+    private val booleanExprParser = Config.booleanExpressionParser
 
     fun parseWhile() {
         scanner.match()
@@ -24,7 +24,7 @@ class LoopParser(context: CompilerContext) {
         val label2 = labelHandler.newLabel()
         labelHandler.postLabel(label1)
         scanner.match(Kwd.leftParen)
-        parseBooleanExpression()
+        booleanExprParser.parse()
         scanner.match(Kwd.rightParen)
         code.jumpIfFalse(label2)
         contrStructParser.parseBlock(label2, label1)
@@ -44,7 +44,7 @@ class LoopParser(context: CompilerContext) {
         contrStructParser.parseBlock(label2, label1)
         scanner.match(Kwd.untilToken)
         scanner.match(Kwd.leftParen)
-        parseBooleanExpression()
+        booleanExprParser.parse()
         scanner.match(Kwd.rightParen)
         code.jumpIfFalse(label1)
         labelHandler.postLabel(label2)

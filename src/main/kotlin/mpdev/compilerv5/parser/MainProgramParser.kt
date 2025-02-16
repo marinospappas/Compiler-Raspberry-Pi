@@ -3,18 +3,18 @@ package mpdev.compilerv5.parser
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.config.Constants.Companion.MAIN_BLOCK
-import mpdev.compilerv5.parser.declarations.FunctionParser
-import mpdev.compilerv5.parser.declarations.VariablesParser
+import mpdev.compilerv5.parser.declarations.FunctionDeclParser
+import mpdev.compilerv5.parser.declarations.VariablesDeclParser
 import mpdev.compilerv5.scanner.*
 
 /**
  * Program parsing - module 0
  * Top Level - program structure
  */
-class MainProgramParser(context: CompilerContext) {
+class MainProgramParser(val context: CompilerContext) {
 
-    val scanner = Config.scanner
-    val code = Config.codeModule
+    private val scanner = Config.scanner
+    private val code = Config.codeModule
     private val controlStructParser = Config.controlStructureParser
     private val labelHandler = Config.labelHandler
 
@@ -22,8 +22,8 @@ class MainProgramParser(context: CompilerContext) {
     private var isLibrary = false
 
     // the next level of parsers
-    private val variablesParser = VariablesParser(context)
-    private val functionsParser = FunctionParser(context)
+    private val variablesDeclParser = VariablesDeclParser(context)
+    private val functionsParser = FunctionDeclParser(context)
 
     /**
      * parse a program
@@ -32,7 +32,7 @@ class MainProgramParser(context: CompilerContext) {
     fun parse() {
         parseProgHeader()
         if (scanner.lookahead().encToken == Kwd.varDecl)
-            variablesParser.parse()
+            variablesDeclParser.parse()
         code.funInit()
         if (scanner.lookahead().encToken == Kwd.funDecl)
             functionsParser.parse()

@@ -11,6 +11,7 @@ class Compiler(val context: CompilerContext) {
         println("TINSEL(c) compiler v5.0 February 2025, Copyright M.Pappas")
         processCmdLineArgs(args, context)
         println("Target architecture: ${if (context.cpuArchitecture == CPUArch.x86) "x86-64" else "Arm-32"}\n")
+        Config.setCompilerModules(context)
     }
 
     /** the actual compiler */

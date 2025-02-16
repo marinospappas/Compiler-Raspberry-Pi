@@ -1,6 +1,7 @@
 package mpdev.compilerv5.scanner
 
-import mpdev.compilerv3.util.Utils.Companion.abort
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.util.Utils.Companion.abort
 
 //TODO: implement sizeof
 
@@ -18,6 +19,7 @@ enum class VarScope { packageGlobal, global, local, external }
 class IdentifierDecl(var fv: TokType, var type: DataType, var initialised: Boolean = false, var size: Int = 0,
                      var isStackVar: Boolean = false, var stackOffset: Int = 0, var canAssign: Boolean = true)
 
+//TODO: move these global variables to the CompilerContext
 // the identifiers space map
 val identifiersMap = mutableMapOf<String, IdentifierDecl>()
 
@@ -133,6 +135,7 @@ val typesCompatibility = mapOf(
  * check also the specific types against the ALL_OPS keyword
  */
 fun checkOperandTypeCompatibility(type1: DataType, type2: DataType, operation: String) {
+    val scanner = Config.scanner
     val t1 = if (setOf(DataType.byte, DataType.bytearray, DataType.intarray).contains(type1))
         DataType.int
     else
@@ -145,7 +148,7 @@ fun checkOperandTypeCompatibility(type1: DataType, type2: DataType, operation: S
     if (!typesAreCompatible)
         typesAreCompatible = typesCompatibility[TypesAndOpsCombi(t1, t2, ALL_OPS)] ?: false
     if (!typesAreCompatible) {
-        var message = "line ${inp.currentLineNumber}: $operation $t1 "
+        var message = "line ${scanner.currentLineNumber}: $operation $t1 "
         if (t2 != DataType.none)
             message += "with $t2 "
         message += "not supported"

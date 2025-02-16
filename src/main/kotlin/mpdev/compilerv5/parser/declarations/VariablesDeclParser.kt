@@ -9,7 +9,7 @@ import mpdev.compilerv5.util.Utils.Companion.abort
  * parse variables declarations
  * <variable declarations> ::= var <identifier> [ = <value> ] [ , <identifier> [ = <value> ] ] *
  */
-class VariablesParser(context: CompilerContext) {
+class VariablesDeclParser(val context: CompilerContext) {
 
     private val scanner = Config.scanner
     private val code = Config.codeModule

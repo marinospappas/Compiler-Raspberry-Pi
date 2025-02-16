@@ -6,7 +6,7 @@ import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
 
-class FunctionParser(private val context: CompilerContext) {
+class FunctionDeclParser(private val context: CompilerContext) {
 
     var funName: String = ""
     var hasReturn: Boolean = false
