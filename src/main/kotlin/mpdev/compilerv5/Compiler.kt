@@ -1,11 +1,11 @@
 package mpdev.compilerv5
 
 import mpdev.compilerv5.config.CompilerContext
-import mpdev.compilerv3.config.Config
-import mpdev.compilerv3.util.Utils.Companion.processCmdLineArgs
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.util.Utils.Companion.processCmdLineArgs
 import kotlin.system.measureTimeMillis
 
-class Compiler(val context: mpdev.compilerv5.config.CompilerContext) {
+class Compiler(val context: CompilerContext) {
     /** compiler initialisation */
     fun init(args: Array<String>) {
         println("TINSEL(c) compiler v5.0 February 2025, Copyright M.Pappas")

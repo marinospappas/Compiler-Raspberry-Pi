@@ -1,12 +1,12 @@
 package mpdev.compilerv5.debugger
 
 import mpdev.compilerv5.config.CompilerContext
-import mpdev.compilerv3.config.Config
-import mpdev.compilerv3.scanner.Kwd
-import mpdev.compilerv3.scanner.Token
-import mpdev.compilerv3.util.Utils.Companion.exit
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.scanner.Kwd
+import mpdev.compilerv5.scanner.Token
+import mpdev.compilerv5.util.Utils.Companion.exit
 
-class CompilerDebugger(val context: mpdev.compilerv5.config.CompilerContext) {
+class CompilerDebugger(val context: CompilerContext) {
 
     /** analyse tokens - debug mode */
     fun printDebugInfo() {

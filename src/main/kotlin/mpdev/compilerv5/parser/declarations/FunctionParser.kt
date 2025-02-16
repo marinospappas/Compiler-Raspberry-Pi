@@ -1,20 +1,21 @@
 package mpdev.compilerv5.parser.declarations
 
 
-import mpdev.compilerv3.CompilerContext
-import mpdev.compilerv3.parser.control_structures.labelIndx
-import mpdev.compilerv3.parser.control_structures.labelPrefix
-import mpdev.compilerv3.parser.control_structures.parseBlock
-import mpdev.compilerv3.scanner.*
-import mpdev.compilerv3.util.Utils.Companion.abort
+import mpdev.compilerv5.config.CompilerContext
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.scanner.*
+import mpdev.compilerv5.util.Utils.Companion.abort
 
 class FunctionParser(private val context: CompilerContext) {
 
-    val scanner = context.scanner
-    val code = context.codeModule
-
     var funName: String = ""
     var hasReturn: Boolean = false
+
+    private val scanner = Config.scanner
+    private val code = Config.codeModule
+    private val labelHandler = Config.labelHandler
+    private val contrStructParser = Config.controlStructureParser
+    private val declarationUtils = DeclarationUtils()
 
     /**
      * parse a function declaration
@@ -26,8 +27,8 @@ class FunctionParser(private val context: CompilerContext) {
             var isPackageGlobal = false
             scanner.match()
             val functionName = scanner.match(Kwd.identifier).value
-            labelPrefix = functionName        // set label prefix and label index to function name
-            labelIndx = 0
+            labelHandler.labelPrefix = functionName        // set label prefix and label index to function name
+            labelHandler.labelIndx = 0
             funName = functionName      // set global var s that we know which function we are parsing
             scanner.match(Kwd.leftParen)
             parseFunParams(functionName)
@@ -54,7 +55,7 @@ class FunctionParser(private val context: CompilerContext) {
                 abort("line ${scanner.currentLineNumber}: identifier $functionName already declared")
             identifiersMap[functionName] = IdentifierDecl(TokType.function, funType)
             if (!isExternal) {    // external functions do not have body
-                DeclarationUtils(context).declareFun(functionName, isPackageGlobal)
+                declarationUtils.declareFun(functionName, isPackageGlobal)
                 storeParamsToStack(functionName)
                 parseFunctionBlock()
             }
@@ -62,7 +63,7 @@ class FunctionParser(private val context: CompilerContext) {
     }
 
     /** parse function parameters */
-    fun parseFunParams(functionName: String) {
+    private fun parseFunParams(functionName: String) {
         var paramCount = 0
         val paramTypesList = mutableListOf<FunctionParameter>()
         if (scanner.lookahead().encToken == Kwd.identifier) {
@@ -78,7 +79,7 @@ class FunctionParser(private val context: CompilerContext) {
     }
 
     /** parse one function parameter - returns the type for this parameter */
-    fun parseOneFunParam(): FunctionParameter {
+    private fun parseOneFunParam(): FunctionParameter {
         val paramName = scanner.match(Kwd.identifier).value
         if (identifiersMap[paramName] != null)
             abort("line ${scanner.currentLineNumber}: parameter name $paramName has already been declared")
@@ -98,7 +99,7 @@ class FunctionParser(private val context: CompilerContext) {
     }
 
     /** transfer the function parameters to stack */
-    fun storeParamsToStack(functionName: String) {
+    private fun storeParamsToStack(functionName: String) {
         val paramsList = funParamsMap[functionName] ?: listOf()
         for (i in paramsList.indices) {
             val foundOffset = code.isFunParamInStack(i)
@@ -128,9 +129,9 @@ class FunctionParser(private val context: CompilerContext) {
     }
 
     /** parse a function block */
-    fun parseFunctionBlock() {
+    private fun parseFunctionBlock() {
         hasReturn = false
-        parseBlock()
+        contrStructParser.parseBlock()
         if (!hasReturn)
             abort("line ${scanner.currentLineNumber}: function $funName has no ${scanner.decodeToken(Kwd.retToken)}")
         // clean up declarations of parameters so that the names can be reused in other functions

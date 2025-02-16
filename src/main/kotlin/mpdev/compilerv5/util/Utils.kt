@@ -1,8 +1,7 @@
 package mpdev.compilerv5.util
 
-import mpdev.compilerv3.*
-import mpdev.compilerv5.config.CompilerContext
-import mpdev.compilerv3.scanner.STR_BUF_SIZE
+import mpdev.compilerv5.CPUArch
+import mpdev.compilerv5.config.Config
 import java.lang.System.err
 import kotlin.system.exitProcess
 
@@ -42,7 +41,7 @@ class Utils {
                     when (arg) {
                         "-?", "-h", "-H" -> exit(USAGE)
                         "-debug" -> context.debugMode = true
-                        "-maxstring" -> { context.STR_BUF_SIZE = getNextArg(args, ++argIndx, "max_string").toInt(); continue }
+                        "-maxstring" -> { Config.STR_BUF_SIZE = getNextArg(args, ++argIndx, "max_string").toInt(); continue }
                         "-o", "-O" -> { context.outFile = getNextArg(args, ++argIndx, "output_file"); continue }
                         "-x86" -> context.cpuArchitecture = CPUArch.x86
                         "-arm" -> context.cpuArchitecture = CPUArch.arm

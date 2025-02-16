@@ -1,8 +1,9 @@
 package mpdev.compilerv5.parser.declarations
 
-import mpdev.compilerv3.CompilerContext
-import mpdev.compilerv3.scanner.*
-import mpdev.compilerv3.util.Utils.Companion.abort
+import mpdev.compilerv5.config.CompilerContext
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.scanner.*
+import mpdev.compilerv5.util.Utils.Companion.abort
 
 /**
  * parse variables declarations
@@ -10,10 +11,9 @@ import mpdev.compilerv3.util.Utils.Companion.abort
  */
 class VariablesParser(context: CompilerContext) {
 
-    val scanner = context.scanner
-    val code = context.codeModule
-
-    val declarationUtils = DeclarationUtils(context)
+    private val scanner = Config.scanner
+    private val code = Config.codeModule
+    private val declarationUtils = DeclarationUtils()
 
     fun parse(scope: VarScope = VarScope.global, blockName: String = "") {
         while (scanner.lookahead().encToken == Kwd.varDecl) {

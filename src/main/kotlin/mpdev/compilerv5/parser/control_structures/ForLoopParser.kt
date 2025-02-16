@@ -1,16 +1,21 @@
 package mpdev.compilerv5.parser.control_structures
 
-import mpdev.compilerv3.abort
-import mpdev.compilerv3.code
-import mpdev.compilerv3.inp
-import mpdev.compilerv3.parser.expressions.parseExpression
-import mpdev.compilerv3.scanner.*
+import mpdev.compilerv5.config.CompilerContext
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.parser.expressions.parseExpression
+import mpdev.compilerv5.scanner.*
+import mpdev.compilerv5.util.Utils.Companion.abort
 
 /**
  * parse for in a separate class/file due to increased complexity
  * <for> ::= for ( <identifier> = <expression> [ down ] to <expression> [ step <expression> ] ) <block>
  */
-class ForParser {
+class ForLoopParser(context: CompilerContext) {
+
+    private val scanner = Config.scanner
+    private val code = Config.codeModule
+    private val labelHandler = Config.labelHandler
+    private val contrStructParser = Config.controlStructureParser
 
     private var controlVarName = ""
     private var ctrlVarOffs = 0
@@ -21,37 +26,37 @@ class ForParser {
 
     /** for parser function */
     fun parseFor() {
-        inp.match()
+        scanner.match()
         parseForLine()
         presetCtrlVar()
-        val label1 = newLabel()
-        val label2 = newLabel()
-        postLabel(label1)   // actual start of the loop
+        val label1 = labelHandler.newLabel()
+        val label2 = labelHandler.newLabel()
+        labelHandler.postLabel(label1)   // actual start of the loop
         stepAndCheck()      // increase (or decrease) ctrl var and check
         code.jumpIfFalse(label2)  // if limit reached, exit
-        parseBlock(label2, label1)    // the FOR block
+        contrStructParser.parseBlock(label2, label1)    // the FOR block
         code.jump(label1) // loop back to the beginning of the loop
-        postLabel(label2)   // exit point of the loop
+        labelHandler.postLabel(label2)   // exit point of the loop
         cleanUpStack()
     }
 
     /** parse the for line */
     private fun parseForLine() {
-        inp.match(Kwd.leftParen)
+        scanner.match(Kwd.leftParen)
         parseCtrlVar()
         parseDown()
         parseTo()
         parseStep()
-        inp.match(Kwd.rightParen)
+        scanner.match(Kwd.rightParen)
     }
 
     /** control var parser */
     private fun parseCtrlVar() {
         // get control var
-        controlVarName = inp.match(Kwd.identifier).value
+        controlVarName = scanner.match(Kwd.identifier).value
         if (identifiersMap[controlVarName] != null)
-            abort("line ${inp.currentLineNumber}: identifier $controlVarName already declared")
-        inp.match(Kwd.equalsOp)
+            abort("line ${scanner.currentLineNumber}: identifier $controlVarName already declared")
+        scanner.match(Kwd.equalsOp)
         // allocate space in the stack for the ctrl var
         ctrlVarOffs = code.allocateStackVar(code.INT_SIZE)
         identifiersMap[controlVarName] = IdentifierDecl(
@@ -61,14 +66,14 @@ class ForParser {
         // set the ctrl var to FROM
         val expType = parseExpression()
         if (expType != DataType.int)
-            abort("line ${inp.currentLineNumber}: expected integer expression found $expType")
+            abort("line ${scanner.currentLineNumber}: expected integer expression found $expType")
         code.assignmentLocalVar(ctrlVarOffs)
     }
 
     /** check for down token */
     private fun parseDown() {
-        if (inp.lookahead().encToken == Kwd.downToken) {
-            inp.match()
+        if (scanner.lookahead().encToken == Kwd.downToken) {
+            scanner.match()
             downTo = true
         }
     }
@@ -76,24 +81,24 @@ class ForParser {
     /** parse to token and value */
     private fun parseTo() {
         // get TO value and store in the stack
-        inp.match(Kwd.toToken)
+        scanner.match(Kwd.toToken)
         toOffs = code.allocateStackVar(code.INT_SIZE)
         val expType = parseExpression()
         if (expType != DataType.int)
-            abort("line ${inp.currentLineNumber}: expected integer expression found $expType")
+            abort("line ${scanner.currentLineNumber}: expected integer expression found $expType")
         code.assignmentLocalVar(toOffs)
     }
 
     /** check for step token */
     private fun parseStep() {
-        if (inp.lookahead().encToken == Kwd.stepToken) {
-            inp.match()
+        if (scanner.lookahead().encToken == Kwd.stepToken) {
+            scanner.match()
             hasStep = true
             // allocate space in the stack and save step value
             stepOffs = code.allocateStackVar(code.INT_SIZE)
             val expType = parseExpression()
             if (expType != DataType.int)
-                abort("line ${inp.currentLineNumber}: expected integer expression found $expType")
+                abort("line ${scanner.currentLineNumber}: expected integer expression found $expType")
             code.assignmentLocalVar(stepOffs)
         }
     }

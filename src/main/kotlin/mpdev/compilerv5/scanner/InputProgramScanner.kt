@@ -1,7 +1,8 @@
 package mpdev.compilerv5.scanner
 
-import mpdev.compilerv3.CompilerContext
-import mpdev.compilerv3.util.Utils.Companion.abort
+import mpdev.compilerv5.config.CompilerContext
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.util.Utils.Companion.abort
 import java.io.File
 import kotlin.math.min
 
@@ -52,7 +53,7 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
             // get the first token from input
             nextToken = scan()
             // process any initial comments
-            startOfComment = context.codeModule.COMMENT
+            startOfComment = Config.codeModule.COMMENT
             getComment()
         } catch (e: Exception) {
             abort("could not open input file - $e")
@@ -83,7 +84,7 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
     /** print any comment identified in the previous call of match */
     private fun printComment() {
         if (commentString != "") {
-            context.codeModule.outputCode(commentString)
+            Config.codeModule.outputCode(commentString)
             commentString = ""
         }
     }

@@ -1,23 +1,16 @@
 package mpdev.compilerv5.scanner
 
+import mpdev.compilerv5.config.Constants.Companion.BOOLEAN_FALSE
+import mpdev.compilerv5.config.Constants.Companion.BOOLEAN_TRUE
+import mpdev.compilerv5.config.Constants.Companion.END_OF_INPUT
+import mpdev.compilerv5.config.Constants.Companion.MAIN_BLOCK
+import mpdev.compilerv5.config.Constants.Companion.NO_TOKEN
+
 ///////////////////////////////////////////////////////////
 // define all the keywords used in our programming language
 ///////////////////////////////////////////////////////////
 
-// the null char is used as end of input mark
-val nullChar = 0
-
-val NO_TOKEN = "No Token"
-val END_OF_INPUT = "End of Input"
-
-// boolean literals
-val BOOLEAN_TRUE = "true"
-val BOOLEAN_FALSE = "false"
-
-// main function name
-val MAIN_BLOCK = "main"
-
-class Token(val value: String = NO_TOKEN,
+data class Token(val value: String = NO_TOKEN,
             val encToken: Kwd = Kwd.noToken,
             val type: TokType = TokType.none
 )

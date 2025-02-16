@@ -1,12 +1,11 @@
 package mpdev.compilerv5.parser
 
-import mpdev.compilerv3.CompilerContext
-import mpdev.compilerv3.parser.control_structures.labelIndx
-import mpdev.compilerv3.parser.control_structures.labelPrefix
-import mpdev.compilerv3.parser.control_structures.parseBlock
-import mpdev.compilerv3.parser.declarations.FunctionParser
-import mpdev.compilerv3.parser.declarations.VariablesParser
-import mpdev.compilerv3.scanner.*
+import mpdev.compilerv5.config.CompilerContext
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.config.Constants.Companion.MAIN_BLOCK
+import mpdev.compilerv5.parser.declarations.FunctionParser
+import mpdev.compilerv5.parser.declarations.VariablesParser
+import mpdev.compilerv5.scanner.*
 
 /**
  * Program parsing - module 0
@@ -14,8 +13,10 @@ import mpdev.compilerv3.scanner.*
  */
 class MainProgramParser(context: CompilerContext) {
 
-    val scanner = context.scanner
-    val code = context.codeModule
+    val scanner = Config.scanner
+    val code = Config.codeModule
+    private val controlStructParser = Config.controlStructureParser
+    private val labelHandler = Config.labelHandler
 
     /** program / library flag */
     private var isLibrary = false
@@ -59,11 +60,11 @@ class MainProgramParser(context: CompilerContext) {
      */
     private fun parseMainBlock() {
         if (isLibrary) return   // no main block for libraries
-        labelPrefix = MAIN_BLOCK        // set label prefix and label index
-        labelIndx = 0
+        labelHandler.labelPrefix = MAIN_BLOCK        // set label prefix and label index for main block
+        labelHandler.labelIndx = 0
         scanner.match(Kwd.mainToken)
         code.mainInit()
-        parseBlock()
+        controlStructParser.parseBlock()
         code.mainEnd()
     }
 

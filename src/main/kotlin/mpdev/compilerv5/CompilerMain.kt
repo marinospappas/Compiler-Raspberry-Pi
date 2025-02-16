@@ -1,15 +1,7 @@
 package mpdev.compilerv5
 
-import mpdev.compilerv3.scanner.InputProgramScanner
-import mpdev.compilerv3.code_module.Arm_32Instructions
-import mpdev.compilerv3.code_module.AsmInstructions
-import mpdev.compilerv3.code_module.X86_64Instructions
 import mpdev.compilerv5.config.CompilerContext
-import mpdev.compilerv3.config.Config
-import mpdev.compilerv3.debugger.CompilerDebugger
-import mpdev.compilerv3.parser.MainProgramParser
-import mpdev.compilerv3.util.Utils.Companion.processCmdLineArgs
-import kotlin.system.measureTimeMillis
+import mpdev.compilerv5.debugger.CompilerDebugger
 
 /**
  * A Simple Compiler
@@ -22,7 +14,7 @@ enum class CPUArch {x86, arm}
 
 /** main function */
 fun main(args: Array<String>) {
-    val context = mpdev.compilerv5.config.CompilerContext()
+    val context = CompilerContext()
     val compiler = Compiler(context)
     compiler.init(args)
     if (context.debugMode) {

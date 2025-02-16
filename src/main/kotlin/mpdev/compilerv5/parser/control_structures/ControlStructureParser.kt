@@ -1,16 +1,18 @@
 package mpdev.compilerv5.parser.control_structures
 
-import mpdev.compilerv3.CompilerContext
-import mpdev.compilerv3.parser.expressions.parseAssignment
-import mpdev.compilerv3.parser.expressions.parseBooleanExpression
-import mpdev.compilerv3.parser.expressions.parseExpression
-import mpdev.compilerv3.parser.expressions.parsePtrAssignment
-import mpdev.compilerv3.parser.function_calls.parseFunctionCall
-import mpdev.compilerv3.parser.input_output.parsePrint
-import mpdev.compilerv3.parser.input_output.parsePrintLn
-import mpdev.compilerv3.parser.input_output.parseRead
-import mpdev.compilerv3.scanner.*
-import mpdev.compilerv3.util.Utils.Companion.abort
+import mpdev.compilerv5.config.CompilerContext
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.config.Constants.Companion.MAIN_BLOCK
+import mpdev.compilerv5.parser.expressions.parseAssignment
+import mpdev.compilerv5.parser.expressions.parseBooleanExpression
+import mpdev.compilerv5.parser.expressions.parseExpression
+import mpdev.compilerv5.parser.expressions.parsePtrAssignment
+import mpdev.compilerv5.parser.function_calls.parseFunctionCall
+import mpdev.compilerv5.parser.input_output.parsePrint
+import mpdev.compilerv5.parser.input_output.parsePrintLn
+import mpdev.compilerv5.parser.input_output.parseRead
+import mpdev.compilerv5.scanner.*
+import mpdev.compilerv5.util.Utils.Companion.abort
 
 /**
  * Program parsing - module 1
@@ -22,8 +24,13 @@ class ControlStructureParser(context: CompilerContext) {
         const val BLOCK_NAME = "block_"
     }
 
-    val scanner = context.scanner
-    val code = context.codeModule
+    private val scanner = Config.scanner
+    private val code = Config.codeModule
+    private val labelHandler = Config.labelHandler
+    private val variableParser = Config.variablesParser
+    private val functionParser = Config.functionParser
+    private val loopParser = Config.loopParser
+    private val forLoopParser = Config.forLoopParser
 
     // global vars
     var labelIndx: Int = 0
@@ -45,12 +52,6 @@ class ControlStructureParser(context: CompilerContext) {
         releaseLocalVars(blockName, mustRestoreSP)
         scanner.match(Kwd.endBlock)
     }
-
-    /** create a unique label*/
-    fun newLabel(): String = "${labelPrefix}_L${labelIndx++}_"
-
-    /** post a label to output */
-    fun postLabel(label: String) = code.outputLabel(label)
 
     /**
      * releaseLocalVars
@@ -81,11 +82,11 @@ class ControlStructureParser(context: CompilerContext) {
             Kwd.varDecl -> parseLocalVars(blockName)
             Kwd.startBlock -> parseBlock(breakLabel, continueLabel)
             Kwd.ifToken -> parseIf(breakLabel, continueLabel)
-            Kwd.whileToken -> parseWhile()
-            Kwd.repeatToken -> parseRepeat()
-            Kwd.forToken -> ForParser().parseFor()   // in separate module due to increased complexity
-            Kwd.breakToken -> parseBreak(breakLabel)
-            Kwd.continueToken -> parseContinue(continueLabel)
+            Kwd.whileToken -> loopParser.parseWhile()
+            Kwd.repeatToken -> loopParser.parseRepeat()
+            Kwd.forToken -> forLoopParser.parseFor()   // in separate module due to increased complexity
+            Kwd.breakToken -> loopParser.parseBreak(breakLabel)
+            Kwd.continueToken -> loopParser.parseContinue(continueLabel)
             Kwd.retToken -> parseReturn()
             Kwd.readToken -> parseRead()
             Kwd.printToken -> parsePrint()
@@ -109,7 +110,7 @@ class ControlStructureParser(context: CompilerContext) {
      * (can be anywhere in the block)
      */
     private fun parseLocalVars(blockName: String) {
-        parseVarDecl(VarScope.local, blockName)
+        variableParser.parse(VarScope.local, blockName)
     }
 
     /**
@@ -121,18 +122,18 @@ class ControlStructureParser(context: CompilerContext) {
         scanner.match(Kwd.leftParen)
         parseBooleanExpression()
         scanner.match(Kwd.rightParen)
-        val label1 = newLabel()
+        val label1 = labelHandler.newLabel()
         code.jumpIfFalse(label1)
         parseBlock(breakLabel, continueLabel)
         if (scanner.lookahead().encToken == Kwd.elseToken) {
             scanner.match()
-            val label2 = newLabel()
+            val label2 = labelHandler.newLabel()
             code.jump(label2)
-            postLabel(label1)
+            labelHandler.postLabel(label1)
             parseBlock(breakLabel, continueLabel)
-            postLabel(label2)
+            labelHandler.postLabel(label2)
         } else
-            postLabel(label1)
+            labelHandler.postLabel(label1)
     }
 
     /**
@@ -143,8 +144,8 @@ class ControlStructureParser(context: CompilerContext) {
         scanner.match()
         if (labelPrefix == MAIN_BLOCK)
             abort("line ${scanner.currentLineNumber}: return is not allowed in [main]")
-        hasReturn = true       // set the return flag for this function
-        val funType = getType(funName)
+        functionParser.hasReturn = true       // set the return flag for this function
+        val funType = getType(functionParser.funName)
         if (funType != DataType.void) {
             val expType = parseExpression()
             if (expType != funType)

@@ -1,16 +1,16 @@
 package mpdev.compilerv5.parser.declarations
 
-import mpdev.compilerv3.CompilerContext
-import mpdev.compilerv3.scanner.*
-import mpdev.compilerv3.util.Utils.Companion.abort
+import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.scanner.*
+import mpdev.compilerv5.util.Utils.Companion.abort
 
 /**
  * Support for variables and functions declarations
  */
-class DeclarationUtils(context: CompilerContext) {
+class DeclarationUtils {
 
-    private val scanner = context.scanner
-    private val code = context.codeModule
+    private val scanner = Config.scanner
+    private val code = Config.codeModule
 
     var hasReturn: Boolean = false
     var funName: String = ""
