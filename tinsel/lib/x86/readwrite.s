@@ -80,10 +80,10 @@ write_s_:
 	pushq	%rdi
 	pushq	%rsi
 
-	call	strlen_			# rdi already contains the stirng address
+	call	strlen_			# rdi already contains the string address
 	movq	%rax, %rdx		# bytes to write
 
-	movq	%rdi, %rsi		# string addess must be in rsi
+	movq	%rdi, %rsi		# string address must be in rsi
 	movq	$1, %rax		# system call 1 = write
 	movq	%rax, %rdi		# file descriptor 1
 	pushq	%r10			# save function parameter registers

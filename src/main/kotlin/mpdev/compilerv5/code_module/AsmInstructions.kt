@@ -71,8 +71,10 @@ interface AsmInstructions {
     fun isFunParamInStack(paramIndx: Int): Int { return -1 }
     /** restore the stack space used a function stack param */
     fun restoreFunStackParam(paramIndx: Int) {}
-    /** initial code for main */
+    /** global symbols */
     fun globalSymbol(name: String)
+    /** external symbols */
+    fun externalSymbol(name: String)
     /** initial code for main */
     fun mainInit()
     /** termination code for assembler */

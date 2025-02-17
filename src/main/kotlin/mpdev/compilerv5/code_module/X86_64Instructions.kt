@@ -142,7 +142,6 @@ class X86_64Instructions(context: CompilerContext): AsmInstructions {
 
     /** declare function */
     override fun declareAsmFun(name: String) {
-        //TODO: do I need to add ".extern"?
         outputCommentNl("function $name")
         outputLabel(name)
         outputCodeTab("pushq\t%rbx\t\t")
@@ -189,6 +188,10 @@ class X86_64Instructions(context: CompilerContext): AsmInstructions {
 
     override fun globalSymbol(name: String) {
         outputCodeNl(".global $name")
+    }
+
+    override fun externalSymbol(name: String) {
+        outputCodeNl(".extern $name")
     }
 
     /** initial code for main */

@@ -66,7 +66,9 @@ class FunctionDeclParser(private val context: CompilerContext) {
             if (context.identifiersMap[functionName] != null)
                 abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: identifier $functionName already declared")
             context.identifiersMap[functionName] = IdentifierDecl(TokType.function, funType)
-            if (!isExternal) {    // external functions do not have body
+            if (isExternal) {    // external functions do not have body
+                code.externalSymbol(functionName)
+            } else {
                 declarationUtils.declareFun(functionName, isPackageGlobal)
                 storeParamsToStack(functionName)
                 parseFunctionBlock()

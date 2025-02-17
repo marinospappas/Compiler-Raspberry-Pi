@@ -89,6 +89,7 @@ class DeclarationUtils(val context: CompilerContext) {
     /** declare an external variable */
     private fun declareExternalVar(name: String, type: DataType, initValue: String, length: Int) {
         context.identifiersMap[name] = IdentifierDecl(TokType.variable, type, initValue != "", length)
+        code.externalSymbol(name)
     }
 
     /** initialise a local int var */

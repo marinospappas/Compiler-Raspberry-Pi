@@ -244,6 +244,10 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
         outputCodeNl(".global $name")
     }
 
+    override fun externalSymbol(name: String) {
+        outputCodeNl(".extern $name")
+    }
+
     /** initial code for main */
     override fun mainInit() {
         outputCodeNl()

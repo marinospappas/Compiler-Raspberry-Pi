@@ -36,14 +36,8 @@ class VariablesDeclParser(val context: CompilerContext) {
         val varName = scanner.match(Kwd.identifier).value
         var varScope = scope
         when (scanner.lookahead().encToken) {     // check for "package-global" or "external" symbol
-            Kwd.global -> {
-                scanner.match(); varScope = VarScope.packageGlobal
-            }
-
-            Kwd.external -> {
-                scanner.match(); varScope = VarScope.external
-            }
-
+            Kwd.global -> { scanner.match(); varScope = VarScope.packageGlobal }
+            Kwd.external -> { scanner.match(); varScope = VarScope.external }
             else -> {}
         }
         scanner.match(Kwd.colonToken)
