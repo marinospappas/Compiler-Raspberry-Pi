@@ -20,6 +20,6 @@ fun main(args: Array<String>) {
     if (context.debugMode) {
         CompilerDebugger(context).printDebugInfo()
     } else {
-        Compiler(context).compile()
+        compiler.compile()
     }
 }

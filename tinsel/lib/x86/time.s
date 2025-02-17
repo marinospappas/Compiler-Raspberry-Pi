@@ -6,14 +6,26 @@
 # 
 # x86-64 Assembly Code - AT&T format
 # library time
-# compiled on Sat Feb 15 16:45:34 CET 2025
+# compiled on Mon Feb 17 19:36:28 CET 2025
+.data
+.align 8
+	tinsel_msg_: .string "TINSEL version 4.0 for x86-84 (Linux) February 2025 (c) M.Pappas\n"
+	newline_: .string "\n"
+.align 8
+	CLOCK_REALTIME:	.quad 0
+	tv:	.space 16
+.align 8
+	UNIT_SEC:	.quad 2
+	UNIT_MILLISEC:	.quad 1
+	UNIT_MICROSEC:	.quad 0
+	tm:	.space 80
+.align 8
+	time_epoch:	.quad 0
 
 .text
+.align 8
 
 .global getlocaltime
-.global getlocaltimestr
-.global timeout
-
 # function getlocaltime
 getlocaltime:
 	pushq	%rbx		# save "callee"-save registers

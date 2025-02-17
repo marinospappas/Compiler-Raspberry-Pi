@@ -109,7 +109,7 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
         outputCodeNl(".data")
         outputCodeNl(".align 4")
         // copyright message
-        outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 4.0 for Arm-32 (Raspberry Pi) December 2022 (c) M.Pappas\\n\"")
+        outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 4.0 for Arm-32 (Raspberry Pi) February 2025 (c) M.Pappas\\n\"")
         // newline string
         outputCodeTabNl("$NEWLINE: .asciz \"\\n\"")
         // int format for printf

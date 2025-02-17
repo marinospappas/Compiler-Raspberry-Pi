@@ -4,7 +4,7 @@
  *--
  */
 
-program full_test
+program full_test3
 
 // global vars
 var v1: int, v2: int = 25, result: int

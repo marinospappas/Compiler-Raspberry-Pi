@@ -6,6 +6,7 @@ import mpdev.compilerv5.util.Utils.Companion.processCmdLineArgs
 import kotlin.system.measureTimeMillis
 
 class Compiler(val context: CompilerContext) {
+
     /** compiler initialisation */
     fun init(args: Array<String>) {
         println("TINSEL(c) compiler v5.0 February 2025, Copyright M.Pappas")

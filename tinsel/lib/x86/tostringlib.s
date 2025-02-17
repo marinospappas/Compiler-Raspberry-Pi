@@ -1,13 +1,6 @@
 # x86-64 Assembly Code - AT&T format
 # library int2string
 # compiled on Sat Feb 15 16:47:07 CET 2025
-.data
-.align 8
-	tinsel_msg_: .string "TINSEL version 3.2 for x86-84 (Linux) November 2022 (c) M.Pappas\n"
-	newline_: .string "\n"
-.align 8
-	buffer:	.space 16
-.align 8
 
 .text
 .align 8

@@ -4,7 +4,7 @@
  *--
  */
 
-program full_test
+program full_test2
 
 // global vars
 var v1: int, v2: int = 25, result: int
@@ -25,11 +25,11 @@ fun bool_expression(a1: int, a2: int, a3: int): void {
     print "a3 is zero: "
     if (a3) { println "false" } else { println "true" }
     print "a3 is zero: "
-    if (!a3) { println "true" } else { println "false" }
+    if (not a3) { println "true" } else { println "false" }
     print "a1 not equal to a3: "
     if (a1 != a3) { println "true" } else { println  "false" }
     print "either a2 or a3 is 0 = "
-    if (!a2 or !a3) { println "true" } else { println "false" }
+    if (not a2 or not a3) { println "true" } else { println "false" }
     if (a1 > 10) {
         print "result2: a1 > 10 AND a2 < 0 && a3 >= 5 = "
         if (a2 < 0 and a3 >= 5) { println "true" } else { println "false" }

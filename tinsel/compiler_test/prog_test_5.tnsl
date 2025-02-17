@@ -4,7 +4,7 @@
  *--
  */
 
-program full_test
+program full_test5
 
 // global vars
 var v1: int, v2: int = 25, result: int
@@ -42,7 +42,7 @@ main {
     println "initial values: ", v1, ", ", v2
     println c2, ", ", c1
     println "enter two integers"
-    read v1, v2
+    readln v1, v2
     println "enter two strings"
     readln c1, c2
     global_vars()

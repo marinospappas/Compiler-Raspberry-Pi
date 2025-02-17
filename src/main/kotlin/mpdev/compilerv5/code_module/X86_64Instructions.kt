@@ -88,9 +88,10 @@ class X86_64Instructions(context: CompilerContext): AsmInstructions {
         outputCommentNl("$progOrLib $progName")
         outputCommentNl("compiled on ${Date()}")
         outputCodeNl(".data")
+        //TODO: omit the copyright message for libraries
         outputCodeNl(".align 8")
         // copyright message
-        outputCodeTabNl("tinsel_msg_: .string \"TINSEL version 3.3 for x86-84 (Linux) February 2025 (c) M.Pappas\\n\"")
+        outputCodeTabNl("tinsel_msg_: .string \"TINSEL version 4.0 for x86-84 (Linux) February 2025 (c) M.Pappas\\n\"")
         // newline string
         outputCodeTabNl("newline_: .string \"\\n\"")
         outputCodeNl(".align 8")
@@ -98,6 +99,7 @@ class X86_64Instructions(context: CompilerContext): AsmInstructions {
 
     /** declare int variable (64bit) */
     override fun declareInt(varName: String, initValue: String) {
+        //TODO: do I need to add ".extern" for external variables?
         if (initValue == "")
             outputCodeTabNl("$varName:\t.quad 0")       // uninitialised global int vars default to 0
         else
@@ -140,6 +142,7 @@ class X86_64Instructions(context: CompilerContext): AsmInstructions {
 
     /** declare function */
     override fun declareAsmFun(name: String) {
+        //TODO: do I need to add ".extern"?
         outputCommentNl("function $name")
         outputLabel(name)
         outputCodeTab("pushq\t%rbx\t\t")
