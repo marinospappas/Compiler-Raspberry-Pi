@@ -8,7 +8,13 @@ import kotlin.system.exitProcess
 class Utils {
 
     companion object {
-        private const val USAGE = "usage: CompilerMain [-debug] [-maxstring nnnn] [-x86 | -arm] [-o output_file] input_file"
+        private const val USAGE = "usage: \nCompilerMain \n" +
+                "    [-debug] activates debug output \n" +
+                "    [-maxstring nnnn] defines maximum allowed size for strings (default 1024) \n" +
+                "    [-x86 | -arm] selects output mode (default x86) \n" +
+                "    [-start] generates _start entrypoint when no C library is to be used (default false)\n" +
+                "    [-o output_file_name] \n" +
+                "    input_file_name"
 
         /** report an error */
         fun error(errMsg: String) {
@@ -45,6 +51,7 @@ class Utils {
                         "-o", "-O" -> { context.outFile = getNextArg(args, ++argIndx, "output_file"); continue }
                         "-x86" -> context.cpuArchitecture = CPUArch.x86
                         "-arm" -> context.cpuArchitecture = CPUArch.arm
+                        "-start" -> context.implementStart = true
                         else -> exit("invalid option [$arg]\n$USAGE")
                     }
                 else

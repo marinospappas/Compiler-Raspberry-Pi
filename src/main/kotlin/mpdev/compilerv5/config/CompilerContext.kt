@@ -9,7 +9,8 @@ data class CompilerContext(
     var inFile: String = "",                        // the input and output files
     var outFile: String = "",
     var cpuArchitecture: CPUArch = CPUArch.x86,     // the target cpu architecture
-    var stringBufferSize: Int = 1024                    // the buffer size for string operations
+    var stringBufferSize: Int = 1024,               // the buffer size for string operations
+    var implementStart: Boolean = false             // implement _start entry point (when no C lib is used)
 ) {
     // the identifiers space map
     val identifiersMap = mutableMapOf<String, IdentifierDecl>()

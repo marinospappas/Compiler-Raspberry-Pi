@@ -7,8 +7,6 @@ import mpdev.compilerv5.config.Constants.Companion.MAIN_BLOCK
 import mpdev.compilerv5.parser.control_structures.ControlStructureParser
 import mpdev.compilerv5.parser.declarations.FunctionDeclParser
 import mpdev.compilerv5.parser.declarations.VariablesDeclParser
-import mpdev.compilerv5.parser.expressions.BooleanExpressionParser
-import mpdev.compilerv5.parser.function_calls.FunctionCallParser
 import mpdev.compilerv5.parser.labels.LabelHandler
 import mpdev.compilerv5.scanner.*
 
@@ -45,7 +43,9 @@ class MainProgramParser(val context: CompilerContext) {
         parseProgHeader()
         if (scanner.lookahead().encToken == Kwd.varDecl)
             variablesDeclParser.parse()
-        code.funInit()
+        code.textInit()
+        if (!isLibrary && context.implementStart)
+            code.startFunction()
         if (scanner.lookahead().encToken == Kwd.funDecl)
             functionsParser.parse()
         parseMainBlock()

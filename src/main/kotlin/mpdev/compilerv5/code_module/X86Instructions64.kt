@@ -33,7 +33,7 @@ import java.util.Date
  * %rbx,%rbp,%r12-r15: callee save registers
  */
 
-class X8664Instructions(context: CompilerContext): AsmInstructions {
+class X86Instructions64(context: CompilerContext): AsmInstructions {
 
     // identifier of the output code style
     override val CODE_ID = "x86-64 Assembly Code - AT&T format"
@@ -77,7 +77,7 @@ class X8664Instructions(context: CompilerContext): AsmInstructions {
 
     /** program initialisation code for assembler */
     override fun progInit(progStr: String, progName: String) {
-        startOfOutput("$progStr $progName")
+        outputHeader("$progStr $progName")
         // copyright message var
         outputCodeTabNl("tinsel_msg_: .string \"$TINSEL_MSG\"")
         // newline string var
@@ -87,12 +87,12 @@ class X8664Instructions(context: CompilerContext): AsmInstructions {
 
     /** library initialisation code for assembler */
     override fun libInit(libStr: String, libName: String) {
-        startOfOutput("$libStr $libName")
+        outputHeader("$libStr $libName")
         // copyright message as comment
         outputCommentNl(TINSEL_MSG)
     }
 
-    private fun startOfOutput(header: String) {
+    private fun outputHeader(header: String) {
         outputCommentNl(CODE_ID)
         outputCommentNl(header)
         outputCommentNl("compiled on ${Date()}")
@@ -102,7 +102,6 @@ class X8664Instructions(context: CompilerContext): AsmInstructions {
 
     /** declare int variable (64bit) */
     override fun declareInt(varName: String, initValue: String) {
-        //TODO: do I need to add ".extern" for external variables?
         if (initValue == "")
             outputCodeTabNl("$varName:\t.quad 0")       // uninitialised global int vars default to 0
         else
@@ -136,8 +135,8 @@ class X8664Instructions(context: CompilerContext): AsmInstructions {
         outputCodeNl(".align 8")
     }
 
-    /** initial code for functions */
-    override fun funInit() {
+    /** initial code for text section - functions */
+    override fun textInit() {
         outputCodeNl()
         outputCodeNl(".text")
         outputCodeNl(".align 8")
@@ -197,23 +196,26 @@ class X8664Instructions(context: CompilerContext): AsmInstructions {
         outputCodeNl(".extern $name")
     }
 
-    // TODO: might want to implement _start as follows
-    // TODO: for x86 there might be a switch to use start or not (depending on whether the C lib is used)
-    // (this is in order to have the program linked on its own without the C library)
-    // .text
-    //    .globl _start
-    //str : .asciz "abcd\n"
-    //_start:
-    //    xor %ebp, %ebp #basePointer == 0
-    //    mov (%rsp), %edi #argc from stack
-    //    lea 8(%rsp), %rsi #pointer to argv
-    //    lea 16(%rsp,%rdi,8), %rdx #pointer to envp
-    //    xor %eax, %eax
-    //    call main
-    //    mov %eax, %edi
-    //    xor %eax, %eax
-    //    call _exit
-    // in this case the exit from nain remains as ret and the exit sycall goes above
+    override fun startFunction() {
+        outputCodeNl()
+        globalSymbol("_start")
+        outputCommentNl("program entrypoint")
+        outputLabel("_start")
+        outputCodeTabNl("xorq\t%rbp, %rbp")
+        //TODO: might also want to add
+        //    mov (%rsp), %edi #argc from stack
+        //    lea 8(%rsp), %rsi #pointer to argv
+        //    lea 16(%rsp,%rdi,8), %rdx #pointer to envp
+        //    xor %eax, %eax
+        outputCodeTabNl("call\tmain")
+        outputCodeTab("movq\t$60, %rax\t\t")
+        outputCommentNl("exit system call")
+        outputCodeTab("xorq\t%rdi, %rdi\t\t")
+        outputCommentNl("exit code 0")
+        outputCodeTabNl("syscall")
+        outputCodeNl()
+    }
+
     /** initial code for main */
     override fun mainInit() {
         outputCodeNl()
@@ -238,11 +240,6 @@ class X8664Instructions(context: CompilerContext): AsmInstructions {
         outputCodeTab("popq\t%rbx\t\t")
         outputCommentNl("restore \"callee\"-save registers")
         outputCommentNl("exit system call")
-        //TODO: here we can also call the linux exit system call as follows
-        // this is if we want our program to be linked on its own without the C library
-        // 	    movq	$60, %rax		# exit system call
-        //	    xorq	%rdi, %rdi		# exit code 0
-        //	    syscall
         outputCodeTab("xorq\t%rax, %rax\t\t")
         outputCommentNl("exit code 0")
         outputCodeTabNl("ret")
@@ -679,9 +676,9 @@ class X8664Instructions(context: CompilerContext): AsmInstructions {
     }
 
     /** end of program */
-    override fun progEnd(endString: String) {
+    override fun progEnd(endStr: String) {
         outputCodeNl()
-        outputCommentNl(endString)
+        outputCommentNl(endStr)
     }
 
     ////////// string operations ///////////////////////

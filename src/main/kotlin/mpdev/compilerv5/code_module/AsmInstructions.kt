@@ -64,8 +64,8 @@ interface AsmInstructions {
     fun declareIntArray(varName: String, length: String, initValues: String)
     /** declare byte array */
     fun declareByteArray(varName: String, length: String, initValues: String)
-    /** initial code for functions */
-    fun funInit()
+    /** initial code for .text section (functions) */
+    fun textInit()
     /** declare function */
     fun declareAsmFun(name: String)
     /** transfer a function parameter to stack variable */
@@ -88,6 +88,8 @@ interface AsmInstructions {
     fun globalSymbol(name: String)
     /** external symbols */
     fun externalSymbol(name: String)
+    /** the entry point of the program: _start */
+    fun startFunction()
     /** initial code for main */
     fun mainInit()
     /** termination code for assembler */
@@ -223,7 +225,7 @@ interface AsmInstructions {
     fun readIntLocal(stackOffset: Int)
 
     /** end of program */
-    fun progEnd(libOrProg: String)
+    fun progEnd(endStr: String)
 
     ////////// string operations ///////////////////////
     /** declare string global variable */

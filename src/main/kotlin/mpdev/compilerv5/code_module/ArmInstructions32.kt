@@ -35,7 +35,7 @@ import java.util.Date
  * r4-r11: callee save registers
  */
 
-class Arm32Instructions(val context: CompilerContext): AsmInstructions {
+class ArmInstructions32(val context: CompilerContext): AsmInstructions {
 
     // identifier of the output code style
     override val CODE_ID = "Arm-32 Assembly Code - Raspberry Pi"
@@ -170,7 +170,7 @@ class Arm32Instructions(val context: CompilerContext): AsmInstructions {
     }
 
     /** initial code for functions */
-    override fun funInit() {
+    override fun textInit() {
         outputCodeNl()
         outputCodeNl(".text")
         outputCodeNl(".align 4")
@@ -258,6 +258,10 @@ class Arm32Instructions(val context: CompilerContext): AsmInstructions {
 
     override fun externalSymbol(name: String) {
         outputCodeNl(".extern $name")
+    }
+
+    override fun startFunction() {
+        TODO("Not yet implemented")
     }
 
     /** initial code for main */
@@ -365,9 +369,9 @@ class Arm32Instructions(val context: CompilerContext): AsmInstructions {
     }
 
     /** end of program */
-    override fun progEnd(libOrProg: String) {
+    override fun progEnd(endStr: String) {
         outputCodeNl()
-        outputCommentNl("end $libOrProg")
+        outputCommentNl("end $endStr")
     }
 
     /////////////////////////// integer assignments and arithmetic //////////////////////////////7
