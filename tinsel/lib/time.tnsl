@@ -16,45 +16,28 @@ var UNIT_SEC: int = 2,
 var tm: bytearray(80)
 var time_epoch: int
 
-fun clock_gettime(clock: int, time_now: intarray) @external:void
-fun time(time_t: memptr) @external:void
-fun ctime(time_t: memptr) @external:string
-fun localtime_r(timep: memptr, result: bytearray) @external:void
-
-//
-// get local time
-// returns local time in a byte array parameter
-// format h:m:s d.m.y
-//
-fun getlocaltime(cur_time: bytearray) @global:void {
-    time(addr(time_epoch))
-    localtime_r(addr(time_epoch), tm)
-    cur_time\0\ = tm\8\
-    cur_time\1\ = tm\4\
-    cur_time\2\ = tm\0\
-    cur_time\3\ = tm\12\
-    cur_time\4\ = tm\16\ + 1
-    cur_time\5\ = tm\20\
-    return
-}
+fun clock_gettime_tnsl(clock: int, time_now: intarray) @external:void
+fun sleep_tnsl(sleep_sec: int, sleep_nanosec: int) @external:void
 
 // timeout for secs
 fun timeout_sec(duration: int) :void {
+    var sleep_nanosec: int
     var start_time: int,
         start_nsec: int,
         time_now: int,
         nsec_now: int,
         sec_difference: int,
         nsec_difference: int
-    clock_gettime(CLOCK_REALTIME, tv)
+
+    sleep_nanosec = duration * 10000000    // the 1% of the duration converted to nanosec
+    if (sleep_nanosec > 100000000) {
+        sleep_nanosec = 100000000
+    }
+    clock_gettime_tnsl(CLOCK_REALTIME, tv)
     start_time = tv\0\
     start_nsec = tv\1\
     while (1) {
-
-        //TODO: introduce system call sleep to free up the cpu (let it cool down)
-        // same in the other timeout_xxx functions
-
-        clock_gettime(CLOCK_REALTIME, tv)
+        clock_gettime_tnsl(CLOCK_REALTIME, tv)
         time_now = tv\0\
         nsec_now = tv\1\
         sec_difference = time_now - start_time
@@ -64,18 +47,22 @@ fun timeout_sec(duration: int) :void {
                 return
             }
         }
+        sleep_tnsl(0, sleep_nanosec)
     }
 }
 
 // timeout for 0 - 999 millisecs
 fun timeout_millisec(duration: int) :void {
+    var sleep_nanosec: int
     var start_msec: int
     var msec_now: int
     var msec_difference: int
-    clock_gettime(CLOCK_REALTIME, tv)
+
+    sleep_nanosec = duration * 10000    // the 1% of the duration converted to nanosec
+    clock_gettime_tnsl(CLOCK_REALTIME, tv)
     start_msec = tv\1\ / 1000000
     while (1) {
-        clock_gettime(CLOCK_REALTIME, tv)
+        clock_gettime_tnsl(CLOCK_REALTIME, tv)
         msec_now = tv\1\ / 1000000
         msec_difference = msec_now - start_msec
         if (msec_difference < 0) {
@@ -84,18 +71,22 @@ fun timeout_millisec(duration: int) :void {
 	    if (msec_difference >= duration) {
             return
         }
+        sleep_tnsl(0, sleep_nanosec)
     }
 }
 
 // timeout for 0 - 999,999 microsecs
 fun timeout_microsec(duration: int) :void {
+    var sleep_nanosec: int
     var start_usec: int
     var usec_now: int
     var usec_difference: int
-    clock_gettime(CLOCK_REALTIME, tv)
+
+    sleep_nanosec = duration * 10    // the 1% of the duration converted to nanosec
+    clock_gettime_tnsl(CLOCK_REALTIME, tv)
     start_usec = tv\1\ / 1000
     while (1) {
-        clock_gettime(CLOCK_REALTIME, tv)
+        clock_gettime_tnsl(CLOCK_REALTIME, tv)
         usec_now = tv\1\ / 1000
         usec_difference = usec_now - start_usec
         if (usec_difference < 0) {
@@ -104,6 +95,7 @@ fun timeout_microsec(duration: int) :void {
 	    if (usec_difference >= duration) {
             return
         }
+        sleep_tnsl(0, sleep_nanosec)
     }
 }
 
@@ -135,14 +127,6 @@ fun timeout(duration: int, unit: int) @global:void {
     }
     timeout_sec(duration)
     return
-}
-
-//
-// getlocaltimestr
-// returns the local time as string
-fun getlocaltimestr() @global:string {
-    time(addr(time_epoch))
-    return ctime(addr(time_epoch))
 }
 
 endlibrary

@@ -1,0 +1,48 @@
+/*--
+  -- Time Module
+  -- Version 1, October 2022
+  -- Various time related functions (local time)
+  -- Recuires libc
+  -- Marinos Pappas
+ */
+library time
+
+var CLOCK_REALTIME: int = 0
+var tv: intarray(2)
+
+var tm: bytearray(80)
+var time_now: int
+
+fun clock_gettime_tnsl(clock: int, time_spec: intarray) @external:void
+fun ctime(time_t: memptr) @external:string
+fun localtime_r(timep: memptr, result: bytearray) @external:void
+
+//
+// get local time
+// returns local time in a byte array parameter
+// format h:m:s d.m.y
+//
+fun getlocaltime(cur_time: bytearray) @global:void {
+    clock_gettime_tnsl(CLOCK_REALTIME, tv)
+    time_now = tv\0\
+    localtime_r(addr(time_now), tm)
+    cur_time\0\ = tm\8\
+    cur_time\1\ = tm\4\
+    cur_time\2\ = tm\0\
+    cur_time\3\ = tm\12\
+    cur_time\4\ = tm\16\ + 1
+    cur_time\5\ = tm\20\
+    return
+}
+
+//
+// getlocaltimestr
+// returns the local time as string
+//
+fun getlocaltimestr() @global:string {
+    clock_gettime_tnsl(CLOCK_REALTIME, tv)
+    time_now = tv\0\
+    return ctime(addr(time_now))
+}
+
+endlibrary

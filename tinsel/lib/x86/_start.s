@@ -1,7 +1,8 @@
 
-# own implemenation of _start for x86 64
-.extern _bss_start
-.extern _bss_end
+# own implementation of _start for x86 64
+.extern __bss_start
+.extern _end
+.extern __libc_init_first
 .global _start
 _start:
         # set frame
@@ -12,8 +13,8 @@ _start:
         pushq   %rdi
         pushq   %rsi
         xorq	%rcx, %rcx
-        lea	_bss_start(%rip), %rdi
-        lea	_bss_end(%rip), %rsi
+        movq	__bss_start(%rip), %rdi
+        movq	_end(%rip), %rsi
         subq    %rsi, %rdi      # size of bss in %rsi
 zero_bss_next:
         cmpq	%rcx, %rsi	    # check for end of bss
@@ -27,11 +28,14 @@ zero_bss_end:
         popq    %rdi
         popq    %rcx
 
+        # initialise libc
+        call    __libc_init_first
+
         # call main
         movq    $0, %rdi        # argc currently 0
         movq    $0, %rsi        # argv currently null
         movq    $0, %rdx        # envp currently null
-        xorq    %eax, %eax
+        xorq    %rax, %rax
         call    main
 
         # call exit 0
