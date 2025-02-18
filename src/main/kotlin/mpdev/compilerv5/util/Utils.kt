@@ -1,6 +1,7 @@
 package mpdev.compilerv5.util
 
 import mpdev.compilerv5.CPUArch
+import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import java.lang.System.err
 import kotlin.system.exitProcess
@@ -39,7 +40,8 @@ class Utils {
                 exit("missing argument(s) $argName, $USAGE")
             return args[index]
         }
-        fun processCmdLineArgs(args: Array<String>, context: mpdev.compilerv5.config.CompilerContext) {
+
+        fun processCmdLineArgs(args: Array<String>, context: CompilerContext) {
             var argIndx = -1
             while (++argIndx < args.size) {
                 val arg = getNextArg(args, argIndx)

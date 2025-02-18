@@ -1,6 +1,7 @@
 package mpdev.compilerv5.config
 
 import mpdev.compilerv5.CPUArch
+import mpdev.compilerv5.parser.declarations.FunctionParameter
 import mpdev.compilerv5.scanner.DataType
 import mpdev.compilerv5.scanner.IdentifierDecl
 
@@ -25,6 +26,3 @@ data class CompilerContext(
     val stringConstants = mutableMapOf<String, String>()
     var stringCnstIndx = 0
 }
-
-/** the function parameter class */
-class FunctionParameter(var name: String, var type: DataType)
