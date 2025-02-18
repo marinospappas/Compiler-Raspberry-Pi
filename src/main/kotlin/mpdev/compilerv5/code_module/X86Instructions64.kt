@@ -33,7 +33,7 @@ import java.util.Date
  * %rbx,%rbp,%r12-r15: callee save registers
  */
 
-class X86Instructions64(context: CompilerContext): AsmInstructions {
+class X86Instructions64(val context: CompilerContext): AsmInstructions {
 
     // identifier of the output code style
     override val CODE_ID = "x86-64 Assembly Code - AT&T format"
@@ -96,6 +96,7 @@ class X86Instructions64(context: CompilerContext): AsmInstructions {
         outputCommentNl(CODE_ID)
         outputCommentNl(header)
         outputCommentNl("compiled on ${Date()}")
+        //TODO: add .bss section for uninitialised variables
         outputCodeNl(".data")
         outputCodeNl(".align 8")
     }
@@ -197,23 +198,8 @@ class X86Instructions64(context: CompilerContext): AsmInstructions {
     }
 
     override fun startFunction() {
-        outputCodeNl()
-        globalSymbol("_start")
-        outputCommentNl("program entrypoint")
-        outputLabel("_start")
-        outputCodeTabNl("xorq\t%rbp, %rbp")
-        //TODO: might also want to add
-        //    mov (%rsp), %edi #argc from stack
-        //    lea 8(%rsp), %rsi #pointer to argv
-        //    lea 16(%rsp,%rdi,8), %rdx #pointer to envp
-        //    xor %eax, %eax
-        outputCodeTabNl("call\tmain")
-        outputCodeTab("movq\t$60, %rax\t\t")
-        outputCommentNl("exit system call")
-        outputCodeTab("xorq\t%rdi, %rdi\t\t")
-        outputCommentNl("exit code 0")
-        outputCodeTabNl("syscall")
-        outputCodeNl()
+        val startSrc = File(context.startFunSrc).readText()
+        outputCode(startSrc)
     }
 
     /** initial code for main */

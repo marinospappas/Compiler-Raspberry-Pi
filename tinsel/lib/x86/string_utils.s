@@ -50,7 +50,7 @@ strcpy_:
 
 strcpy_next:
 	cmpb	$0, (%rsi, %rcx)	# check for end of string
-	je	strcpy_ret
+	je	    strcpy_ret
 
 	movb	(%rsi, %rcx), %al	# get char from source
 	movb	%al, (%rdi, %rcx)	# copy to destination

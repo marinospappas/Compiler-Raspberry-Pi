@@ -31,7 +31,7 @@ sys_sleep:
 
 	# timespec struct in stack
 	movq	%rdi, -16(%rbp)     # seconds
-	movq	%rdi, -8(%rbp)      # nanoseconds
+	movq	%rsi, -8(%rbp)      # nanoseconds
 
     movq    $162, %rax          # nanosleep system call
     lea     -16(%rbp), %rdi     # address of timespec

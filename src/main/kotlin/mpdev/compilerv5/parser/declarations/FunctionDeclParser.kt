@@ -4,7 +4,6 @@ package mpdev.compilerv5.parser.declarations
 import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
-import mpdev.compilerv5.config.FunctionParameter
 import mpdev.compilerv5.parser.control_structures.ControlStructureParser
 import mpdev.compilerv5.parser.labels.LabelHandler
 import mpdev.compilerv5.scanner.*

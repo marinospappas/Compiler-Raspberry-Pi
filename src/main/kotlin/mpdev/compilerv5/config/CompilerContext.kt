@@ -11,7 +11,8 @@ data class CompilerContext(
     var outFile: String = "",
     var cpuArchitecture: CPUArch = CPUArch.x86,     // the target cpu architecture
     var stringBufferSize: Int = 1024,               // the buffer size for string operations
-    var implementStart: Boolean = false             // implement _start entry point (when no C lib is used)
+    var implementStart: Boolean = false,             // implement _start entry point (when no C lib is used)
+    var startFunSrc: String = "./tinsel/lib/x86/_start.s"   // file containing the source for the _start code
 ) {
     // the identifiers space map
     val identifiersMap = mutableMapOf<String, IdentifierDecl>()
