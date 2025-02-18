@@ -10,7 +10,8 @@ main {
     while (true) {
         mytime = getlocaltimestr()
 	    println mytime
-	    timeout(1000,1)
+	    timeout(500,1)
+	    timeout(500,1)
     }
 }
 

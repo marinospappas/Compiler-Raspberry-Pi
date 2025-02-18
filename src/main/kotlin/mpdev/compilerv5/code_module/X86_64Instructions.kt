@@ -194,6 +194,23 @@ class X86_64Instructions(context: CompilerContext): AsmInstructions {
         outputCodeNl(".extern $name")
     }
 
+    // TODO: might want to implement _start as follows
+    // TODO: for x86 there might be a switch to use start or not (depending on whether the C lib is used)
+    // (this is in order to have the program linked on its own without the C library)
+    // .text
+    //    .globl _start
+    //str : .asciz "abcd\n"
+    //_start:
+    //    xor %ebp, %ebp #basePointer == 0
+    //    mov (%rsp), %edi #argc from stack
+    //    lea 8(%rsp), %rsi #pointer to argv
+    //    lea 16(%rsp,%rdi,8), %rdx #pointer to envp
+    //    xor %eax, %eax
+    //    call main
+    //    mov %eax, %edi
+    //    xor %eax, %eax
+    //    call _exit
+    // in this case the exit from nain remains as ret and the exit sycall goes above
     /** initial code for main */
     override fun mainInit() {
         outputCodeNl()
@@ -218,6 +235,11 @@ class X86_64Instructions(context: CompilerContext): AsmInstructions {
         outputCodeTab("popq\t%rbx\t\t")
         outputCommentNl("restore \"callee\"-save registers")
         outputCommentNl("exit system call")
+        //TODO: here we can also call the linux exit system call as follows
+        // this is if we want our program to be linked on its own without the C library
+        // 	    movq	$60, %rax		# exit system call
+        //	    xorq	%rdi, %rdi		# exit code 0
+        //	    syscall
         outputCodeTab("xorq\t%rax, %rax\t\t")
         outputCommentNl("exit code 0")
         outputCodeTabNl("ret")
@@ -654,9 +676,9 @@ class X86_64Instructions(context: CompilerContext): AsmInstructions {
     }
 
     /** end of program */
-    override fun progEnd(libOrProg: String) {
+    override fun progEnd(endString: String) {
         outputCodeNl()
-        outputCommentNl("end $libOrProg")
+        outputCommentNl(endString)
     }
 
     ////////// string operations ///////////////////////
