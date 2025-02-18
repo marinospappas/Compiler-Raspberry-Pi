@@ -63,7 +63,10 @@ class MainProgramParser(val context: CompilerContext) {
             Kwd.startOfLibrary -> isLibrary = true
             else -> scanner.expected("program or library")
         }
-        code.progInit(scanner.match().value, scanner.match(Kwd.identifier).value)
+        if (isLibrary)
+            code.libInit(scanner.match().value, scanner.match(Kwd.identifier).value)
+        else
+            code.progInit(scanner.match().value, scanner.match(Kwd.identifier).value)
     }
 
     /**

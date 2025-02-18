@@ -1,5 +1,6 @@
 package mpdev.compilerv5
 
+import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.util.Utils.Companion.processCmdLineArgs
@@ -20,7 +21,7 @@ class Compiler(val context: CompilerContext) {
         val elapsedTime = measureTimeMillis {
             Config.programParser.parse()
         }
-        println("Successful compilation, ${context.inFile}: ${Config.scanner.currentLineNumber-1} source lines, ${context.outFile}: ${Config.codeModule.outputLines} assembly lines")
+        println("Successful compilation, ${context.inFile}: ${Config.scanner.currentLineNumber-1} source lines, ${context.outFile}: ${AsmInstructions.outputLines} assembly lines")
         // -1 is needed as an extra new line was added when the input was read
         println("Completed in: $elapsedTime milliseconds")
     }

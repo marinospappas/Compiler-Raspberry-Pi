@@ -1,11 +1,16 @@
 package mpdev.compilerv5.code_module
 
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.DEF_INT_FMT
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.MAIN_ENTRYPOINT
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.MAIN_EXITPOINT
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.STRING_BUFFER
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.TINSEL_MSG
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.outStream
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import java.io.File
 import java.io.PrintStream
 import java.lang.System.err
-import java.lang.System.out
 import java.util.Date
 
 /**
@@ -30,24 +35,16 @@ import java.util.Date
  * r4-r11: callee save registers
  */
 
-class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
+class Arm32Instructions(val context: CompilerContext): AsmInstructions {
 
-    private val CODE_ID = "Arm-32 Assembly Code - Raspberry Pi"
+    // identifier of the output code style
+    override val CODE_ID = "Arm-32 Assembly Code - Raspberry Pi"
+    // start of comment
     override val COMMENT = "@"
-    override var outputLines: Int = 0
-    override var outStream: PrintStream = out
-
-    private val MAIN_ENTRYPOINT = "main"
-    private val MAIN_EXITPOINT = "${MAIN_ENTRYPOINT}_exit_"
-
-    private val STRING_BUFFER = "string_buffer_"
-
     // the offset from frame pointer for the next local variable (in the stack)
     override var stackVarOffset = -4
-
     // architecture word size
-    val WORD_SIZE = 4  // 32-bit architecture
-
+    override val WORD_SIZE = 4  // 32-bit architecture
     // sizes of various types
     override val INT_SIZE = WORD_SIZE   // 32-bit integers
     override val BYTE_SIZE = 1
@@ -55,18 +52,8 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
 
     // global vars list - need for entering the global var addresses in the .text section
     private val globalVarsList = mutableListOf<String>()
-    private val GLOBAL_VARS_ADDR_SUFFIX = "_addr"
-
-    // various string and word constants
-    val TINSEL_MSG = "tinsel_msg"
-    val NEWLINE = "newline"
-    override val DEF_INT_FMT = "def_int_fmt"
-    override val INT_FMT = "int_fmt"
-    val CONST_ALL_1S = "const_all_1s"
-
     // need a map of int constants due to limitation in loading const value to register
-    val intConstants = mutableMapOf<String,String>()
-    val INT_CONST_NAME = "INTCONST_"
+    private val intConstants = mutableMapOf<String, String>()
 
     /** initialisation code - class InputProgramScanner */
     init {
@@ -95,10 +82,10 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
 
     /////////////////////////// initialisation and termination //////////////////////////////7
 
-    /** initialisation code for assembler */
-    override fun progInit(progOrLib: String, progName: String) {
+    /** program initialisation code for assembler */
+    override fun progInit(progStr: String, progName: String) {
         outputCommentNl(CODE_ID)
-        outputCommentNl("$progOrLib $progName")
+        outputCommentNl("$progStr $progName")
         outputCommentNl("compiled on ${Date()}")
         outputCodeNl("")
         outputCommentNl("define the Raspberry Pi CPU")
@@ -109,9 +96,34 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
         outputCodeNl(".data")
         outputCodeNl(".align 4")
         // copyright message
-        outputCodeTabNl("$TINSEL_MSG: .asciz \"TINSEL version 4.0 for Arm-32 (Raspberry Pi) February 2025 (c) M.Pappas\\n\"")
+        outputCodeTabNl("${TINSEL_MSG_VAR}: .asciz \"$TINSEL_MSG\"")
         // newline string
-        outputCodeTabNl("$NEWLINE: .asciz \"\\n\"")
+        outputCodeTabNl("${NEWLINE_VAR}: .asciz \"\\n\"")
+        // int format for printf
+        outputCodeTabNl("$DEF_INT_FMT: .asciz \"%d\"")
+        // all 1s constant
+        outputCodeTabNl("$CONST_ALL_1S: .word 0xFFFFFFFF")
+        outputCodeNl(".align 4")
+    }
+
+    /** program initialisation code for assembler */
+    override fun libInit(libStr: String, libName: String) {
+        //TODO: complete the below
+        outputCommentNl(CODE_ID)
+        outputCommentNl("$libStr $libName")
+        outputCommentNl("compiled on ${Date()}")
+        outputCodeNl("")
+        outputCommentNl("define the Raspberry Pi CPU")
+        outputCodeNl(".cpu\tcortex-a53")
+        outputCodeNl(".fpu\tneon-fp-armv8")
+        outputCodeNl(".syntax\tunified")
+        outputCodeNl("")
+        outputCodeNl(".data")
+        outputCodeNl(".align 4")
+        // copyright message
+        outputCodeTabNl("${TINSEL_MSG_VAR}: .asciz \"$TINSEL_MSG\"")
+        // newline string
+        outputCodeTabNl("${NEWLINE_VAR}: .asciz \"\\n\"")
         // int format for printf
         outputCodeTabNl("$DEF_INT_FMT: .asciz \"%d\"")
         // all 1s constant
@@ -180,10 +192,10 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
     override fun isFunParamInStack(paramIndx: Int): Int {
         val reg = funInpParamsCpuRegisters[paramIndx]
         val regParts = reg.split(":")
-        if (regParts.size == 1) // parameter is in register
-            return -1
+        return if (regParts.size == 1) // parameter is in register
+            -1
         else
-            return regParts[2].toInt()
+            regParts[2].toInt()
     }
 
     /** transfer a function parameter to stack variable */
@@ -261,7 +273,7 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
         outputCommentNl("also save r4 and r5 (used in pointer and array assignment)")
         newStackFrame()
         outputCommentNl("print hello message")
-        outputCodeTabNl("ldr\tr0, ${TINSEL_MSG}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("ldr\tr0, ${TINSEL_MSG_VAR}${GLOBAL_VARS_ADDR_SUFFIX}")
         outputCodeTabNl("bl\tprintf")
         outputCodeNl()
     }
@@ -290,7 +302,7 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
     private fun setGlobalVarAddresses() {
         //TODO: this has to be done after each function for those references used in that function
         val globalVarNamesList = globalVarsList + context.stringConstants.keys +
-                listOf(TINSEL_MSG, NEWLINE, DEF_INT_FMT, CONST_ALL_1S, STRING_BUFFER)
+                listOf(TINSEL_MSG, NEWLINE_VAR, DEF_INT_FMT, CONST_ALL_1S, STRING_BUFFER)
         outputCodeNl("")
         outputCodeNl(".align 4")
         outputCommentNl("global var addresses go here")
@@ -332,18 +344,17 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
 
     /** initialise an int stack var */
     override fun initStackVarInt(stackOffset : Int, initValue: String) {
-        val value: Int
-        if (initValue.startsWith("0x"))
-            value = initValue.substring(2).toInt(16)
+        val value: Int = if (initValue.startsWith("0x"))
+            initValue.substring(2).toInt(16)
         else if (initValue.startsWith("0b"))
-            value = initValue.substring(2).toInt(2)
+            initValue.substring(2).toInt(2)
         else
-            value = initValue.toInt()
+            initValue.toInt()
         if (value in 0..255)
             outputCodeTabNl("mov\tr3, #${initValue}")
         else {
             val intConstantAddr = createIntConst(initValue)
-            outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
+            outputCodeTabNl("ldr\tr3, $intConstantAddr")
         }
         outputCodeTabNl("str\tr3, [fp, #${stackOffset}]")
     }
@@ -363,18 +374,17 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
 
     /** set accumulator to a value */
     override fun setAccumulator(value: String) {
-        val intValue: Int
-        if (value.startsWith("0x"))
-            intValue = value.substring(2).toInt(16)
+        val intValue: Int = if (value.startsWith("0x"))
+            value.substring(2).toInt(16)
         else if (value.startsWith("0b"))
-            intValue = value.substring(2).toInt(2)
+            value.substring(2).toInt(2)
         else
-            intValue = value.toInt()
+            value.toInt()
         if (intValue in 0..255)
             outputCodeTabNl("movs\tr3, #${value}")
         else {
             val intConstantAddr = createIntConst(value)
-            outputCodeTabNl("ldr\tr3, ${intConstantAddr}")
+            outputCodeTabNl("ldr\tr3, $intConstantAddr")
         }
         outputCodeTabNl("tst\tr3, r3")    // also set flags - Z flag set = FALSE
     }
@@ -722,7 +732,7 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
 
     /** print a newline */
     override fun printNewline() {
-        outputCodeTabNl("ldr\tr0, ${NEWLINE}${GLOBAL_VARS_ADDR_SUFFIX}")
+        outputCodeTabNl("ldr\tr0, ${NEWLINE_VAR}${GLOBAL_VARS_ADDR_SUFFIX}")
         outputCodeTabNl("bl\tprintf")
     }
 
@@ -902,5 +912,13 @@ class Arm_32Instructions(val context: CompilerContext): AsmInstructions {
 
     /** dummy instruction */
     override fun dummyInstr(cmd: String) = outputCodeTabNl(cmd)
+
+    companion object {
+        private const val INT_CONST_NAME = "INTCONST_"
+        private const val GLOBAL_VARS_ADDR_SUFFIX = "_addr"
+        private const val CONST_ALL_1S = "const_all_1s"
+        private const val TINSEL_MSG_VAR = "tinsel_msg"
+        private const val NEWLINE_VAR = "newline"
+    }
 
 }

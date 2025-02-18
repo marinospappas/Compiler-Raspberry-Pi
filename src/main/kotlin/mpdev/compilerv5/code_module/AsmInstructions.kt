@@ -1,27 +1,38 @@
 package mpdev.compilerv5.code_module
 
 import java.io.PrintStream
+import java.lang.System.out
 
 /**
  * assembly code module
  * defines the functions needed to generate assembly code
  */
 interface AsmInstructions {
+
+    companion object {
+        val TINSEL_MSG = "TINSEL version 4.0 for x86-84 (Linux) February 2025 (c) M.Pappas\\n"
+        val MAIN_ENTRYPOINT = "main"
+        val MAIN_EXITPOINT = "${MAIN_ENTRYPOINT}_exit_"
+        val STRING_BUFFER = "string_buffer_"
+        val DEF_INT_FMT = "def_int_fmt"
+        val INT_FMT = "int_fmt"
+        var outStream: PrintStream = out
+        var outputLines: Int = 0
+    }
+
+    val CODE_ID: String
+
     val COMMENT: String
     var stackVarOffset: Int
-    var outStream: PrintStream
-    var outputLines: Int
 
     val funInpParamsCpuRegisters: Array<String>
     val funTempParamsCpuRegisters: Array<String>
     val MAX_FUN_PARAMS: Int
 
     val INT_SIZE: Int
+    val WORD_SIZE: Int
     val BYTE_SIZE: Int
     val PTR_SIZE: Int
-
-    val DEF_INT_FMT: String
-    val INT_FMT: String
 
     /** output code */
     fun outputCode(s: String) {
@@ -41,8 +52,10 @@ interface AsmInstructions {
     /** output a label */
     fun outputLabel(s: String) = outputCodeNl("$s:")
 
-    /** initialisation code for assembler */
-    fun progInit(progOrLib: String, progName: String)
+    /** program initialisation code for assembler */
+    fun progInit(progStr: String, progName: String)
+    /** program initialisation code for assembler */
+    fun libInit(libStr: String, libName: String)
     /** declare int variable */
     fun declareInt(varName: String, initValue: String)
     /** declare byte variable */

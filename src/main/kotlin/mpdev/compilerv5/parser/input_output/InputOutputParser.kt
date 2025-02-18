@@ -82,7 +82,7 @@ class InputOutputParser(val context: CompilerContext) {
 
     private fun printExpressions() {
         do {
-            var decFmt = code.DEF_INT_FMT
+            var decFmt = AsmInstructions.DEF_INT_FMT
             if (scanner.lookahead().encToken == Kwd.commaToken)
                 scanner.match() // skip the comma
             val exprType = booleanExprParser.parse()
@@ -99,7 +99,7 @@ class InputOutputParser(val context: CompilerContext) {
         } while (scanner.lookahead().encToken == Kwd.commaToken)
     }
 
-    fun getPrintFormat(): String {
+    private fun getPrintFormat(): String {
         var fmt = ""
         var fmtLen = ""
         var fmtType = ""
@@ -117,7 +117,7 @@ class InputOutputParser(val context: CompilerContext) {
         context.stringConstants.forEach { (k, v) -> if (v == fmt) fmtStringName = k }
         if (fmtStringName == "") {  // if not found
             // save the string in the map of constant strings
-            fmtStringName = "${code.INT_FMT}_${fmt.substring(1)}"
+            fmtStringName = "${AsmInstructions.INT_FMT}_${fmt.substring(1)}"
             context.stringConstants[fmtStringName] = fmt
         }
         return fmtStringName

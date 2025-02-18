@@ -1,8 +1,8 @@
 /*--
- *-- Time Module
- *-- Version 1, October 2022
- *-- Various time related functions
- *-- Marinos Pappas
+  -- Time Module
+  -- Version 1, October 2022
+  -- Various time related functions
+  -- Marinos Pappas
  */
 library time
 

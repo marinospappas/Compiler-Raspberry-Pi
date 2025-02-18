@@ -1,10 +1,9 @@
 package mpdev.compilerv5.config
 
 import mpdev.compilerv5.CPUArch
-import mpdev.compilerv5.code_module.Arm_32Instructions
+import mpdev.compilerv5.code_module.Arm32Instructions
 import mpdev.compilerv5.code_module.AsmInstructions
-import mpdev.compilerv5.code_module.X86_64Instructions
-import mpdev.compilerv5.debugger.CompilerDebugger
+import mpdev.compilerv5.code_module.X8664Instructions
 import mpdev.compilerv5.parser.MainProgramParser
 import mpdev.compilerv5.parser.control_structures.ControlStructureParser
 import mpdev.compilerv5.parser.control_structures.ForLoopParser
@@ -46,8 +45,8 @@ class Config {
 
         fun setCompilerModules(context: CompilerContext) {
             codeModule = when (context.cpuArchitecture) {
-                CPUArch.x86 -> X86_64Instructions(context)
-                CPUArch.arm -> Arm_32Instructions(context)
+                CPUArch.x86 -> X8664Instructions(context)
+                CPUArch.arm -> Arm32Instructions(context)
             }
             scanner = InputProgramScanner(context)
             programParser = MainProgramParser(context)

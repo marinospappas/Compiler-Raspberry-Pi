@@ -1,11 +1,15 @@
 package mpdev.compilerv5.code_module
 
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.MAIN_ENTRYPOINT
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.MAIN_EXITPOINT
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.STRING_BUFFER
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.TINSEL_MSG
+import mpdev.compilerv5.code_module.AsmInstructions.Companion.outStream
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import java.io.File
 import java.io.PrintStream
 import java.lang.System.err
-import java.lang.System.out
 import java.util.Date
 
 /**
@@ -29,34 +33,23 @@ import java.util.Date
  * %rbx,%rbp,%r12-r15: callee save registers
  */
 
-class X86_64Instructions(context: CompilerContext): AsmInstructions {
+class X8664Instructions(context: CompilerContext): AsmInstructions {
 
-    private val CODE_ID = "x86-64 Assembly Code - AT&T format"
+    // identifier of the output code style
+    override val CODE_ID = "x86-64 Assembly Code - AT&T format"
+    // start of comment
     override val COMMENT = "#"
-    override var outputLines: Int = 0
-    override var outStream: PrintStream = out
-
-    private val MAIN_ENTRYPOINT = "main"
-    private val MAIN_EXITPOINT = "${MAIN_ENTRYPOINT}_exit_"
-
-    private val STRING_BUFFER = "string_buffer_"
-
     // the offset from base pointer for the next local variable (in the stack)
     override var stackVarOffset = 0
-
-    // flag to include the string buffer in the assembly code
-    var includeStringBuffer = false
-
     // architecture word size.
-    val WORD_SIZE = 8  // 64-bit architecture
-
+    override val WORD_SIZE = 8  // 64-bit architecture
     // sizes of various types
     override val INT_SIZE = WORD_SIZE    // 64-bit integers
     override val BYTE_SIZE = 1
     override val PTR_SIZE = WORD_SIZE    // pointer 64 bit
 
-    override val DEF_INT_FMT = "def_int_fmt"
-    override val INT_FMT = "int_fmt"
+    // flag to include the string buffer in the assembly code
+    private var includeStringBuffer = false
 
     /** initialisation code - class InputProgramScanner */
     init {
@@ -82,18 +75,28 @@ class X86_64Instructions(context: CompilerContext): AsmInstructions {
 
     override fun outputComment(s: String) = outputCode("$COMMENT $s")
 
-    /** initialisation code for assembler */
-    override fun progInit(progOrLib: String, progName: String) {
+    /** program initialisation code for assembler */
+    override fun progInit(progStr: String, progName: String) {
+        startOfOutput("$progStr $progName")
+        // copyright message var
+        outputCodeTabNl("tinsel_msg_: .string \"$TINSEL_MSG\"")
+        // newline string var
+        outputCodeTabNl("newline_: .string \"\\n\"")
+        outputCodeNl(".align 8")
+    }
+
+    /** library initialisation code for assembler */
+    override fun libInit(libStr: String, libName: String) {
+        startOfOutput("$libStr $libName")
+        // copyright message as comment
+        outputCommentNl(TINSEL_MSG)
+    }
+
+    private fun startOfOutput(header: String) {
         outputCommentNl(CODE_ID)
-        outputCommentNl("$progOrLib $progName")
+        outputCommentNl(header)
         outputCommentNl("compiled on ${Date()}")
         outputCodeNl(".data")
-        //TODO: omit the copyright message for libraries
-        outputCodeNl(".align 8")
-        // copyright message
-        outputCodeTabNl("tinsel_msg_: .string \"TINSEL version 4.0 for x86-84 (Linux) February 2025 (c) M.Pappas\\n\"")
-        // newline string
-        outputCodeTabNl("newline_: .string \"\\n\"")
         outputCodeNl(".align 8")
     }
 
