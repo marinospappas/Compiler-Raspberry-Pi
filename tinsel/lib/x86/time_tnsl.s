@@ -9,7 +9,8 @@
 	.align 8
 
 .text
-.global sys_sleep
+.global sleep_tnsl
+.global clock_gettime_tnsl
 
 #############################################
 # sleep_tnsl
@@ -35,7 +36,7 @@ sleep_tnsl:
 	movq	%rdi, -16(%rbp)     # seconds
 	movq	%rsi, -8(%rbp)      # nanoseconds
 
-    movq    $162, %rax          # nanosleep system call
+    movq    $35, %rax           # nanosleep system call
     lea     -16(%rbp), %rdi     # address of timespec
     xor     %rsi, %rsi
     syscall
@@ -54,13 +55,13 @@ sleep_tnsl:
 # returns:
 #   rax:    always 0
 #
-sleep_tnsl:
+clock_gettime_tnsl:
 	pushq	%rbx		# save "callee"-save registers
 	pushq	%rbp		# new stack frame
 	movq	%rsp, %rbp
 	subq	$16, %rsp
 
-    movq    $208, %rax   # clock_gettime system call
+    movq    $228, %rax   # clock_gettime system call
     syscall
 
     movq	%rbp, %rsp   # restore stack frame
