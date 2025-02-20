@@ -8,17 +8,15 @@ var now: bytearray(10)
 
 fun getlocaltimestr() @external:string
 fun sleep(duration: int, units: int) @external:void
-fun clock_gettime(clock: int, time_spec: intarray) @external:void
+fun gettime() @external:intpair
 
 /* main          */
 main {
     while (true) {
         mytime = getlocaltimestr()
 	    print mytime
-	    clock_gettime(0, time_s)
-	    secs = time_s\0\
-	    nanosecs = time_s\1\
-	    println "secs: ", secs, " nano_secs: ", nanosecs
+	    time_s$ = gettime()
+	    println "secs: ", time_s\0\, " nano_secs: ", time_s\1\
 	    sleep(1, UNIT_SEC)
     }
 }

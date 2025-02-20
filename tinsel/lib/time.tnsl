@@ -51,7 +51,7 @@ fun sleep(duration: int, unit: int) @global:void {
 //
 // gettime function
 // accepts: pointer to struct timespec
-fun gettime(time_now: intarray) @global:void {
+fun gettime__(time_now: intarray) @global:void {
     clock_gettime(CLOCK_REALTIME, time_now)
     return
 }

@@ -10,7 +10,7 @@
 
 .text
 .global sleep_nanosec
-###.global clock_gettime
+.global gettime
 
 #############################################
 # sleep_nanosec
@@ -50,19 +50,26 @@ sleep_nanosec:
 # clock_gettime
 # returns the clock time by calling the linux clock_gettime system call
 # params:
-#   rdi:    the clock id (0 for CLOCK_REALTIME)
-#   rsi:    the address of the timespec struct
+#   none
 # returns:
-#   rax:    always 0
+#   rax:    seconds since epoch
+#   rdx:    nanoseconds in the second
 #
-clock_gettime:
+gettime:
 	pushq	%rbx		# save "callee"-save registers
 	pushq	%rbp		# new stack frame
 	movq	%rsp, %rbp
 	subq	$16, %rsp
 
+	# timespec struct in stack
+    movq    $0, %rdi     # clock_realtime
+    lea     -16(%rbp), %rsi     # address of timespec
     movq    $228, %rax   # clock_gettime system call
     syscall
+
+    # return values
+	movq	-16(%rbp), %rax     # seconds
+	movq	-8(%rbp), %rdx      # nanoseconds
 
     movq	%rbp, %rsp   # restore stack frame
 	popq	%rbp

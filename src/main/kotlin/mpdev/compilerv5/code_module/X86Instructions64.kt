@@ -547,7 +547,7 @@ class X86Instructions64(val context: CompilerContext): AsmInstructions {
         outputCodeTabNl("lea\t${identifier}(%rip), %rbx")  // array start address in %rbx
         outputCodeTabNl("movq\t%rax, (%rbx)")  // save array element 0
         outputCodeTabNl("movq\t$1, %r10")  // set index to 1
-        outputCodeTabNl("movq\t%rdx, (%bcx, %r10, $INT_SIZE)")  // save array element 1
+        outputCodeTabNl("movq\t%rdx, (%rbx, %r10, $INT_SIZE)")  // save array element 1
     }
 
     /** convert accumulator to byte */
