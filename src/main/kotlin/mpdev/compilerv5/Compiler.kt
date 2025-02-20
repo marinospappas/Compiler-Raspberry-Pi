@@ -12,7 +12,8 @@ class Compiler(val context: CompilerContext) {
     fun init(args: Array<String>) {
         println("TINSEL(c) compiler v5.0 February 2025, Copyright M.Pappas")
         processCmdLineArgs(args, context)
-        println("Target architecture: ${if (context.cpuArchitecture == CPUArch.x86) "x86-64" else "Arm-32"}\n")
+        println("Target architecture: ${if (context.cpuArchitecture == CPUArch.x86) "x86-64" else "Arm-32"}")
+        println("Compiling tinsel pgm ${context.inFile} to asm ${context.outFile}\n")
         Config.setCompilerModules(context)
     }
 

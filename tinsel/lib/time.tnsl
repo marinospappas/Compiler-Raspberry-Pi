@@ -1,131 +1,58 @@
 /*--
   -- Time Module
-  -- Version 1, October 2022
+  -- Version 2, February 2025
   -- Various time related functions
   -- Marinos Pappas
  */
 library time
 
 var CLOCK_REALTIME: int = 0
-var tv: intarray(2)
 
-var UNIT_SEC: int = 2,
-    UNIT_MILLISEC: int = 1,
-    UNIT_MICROSEC: int = 0
+var UNIT_SEC @global:int = 2,
+    UNIT_MILLISEC @global:int = 1,
+    UNIT_MICROSEC @global:int = 0
 
 var tm: bytearray(80)
 var time_epoch: int
 
-fun clock_gettime_tnsl(clock: int, time_now: intarray) @external:void
-fun sleep_tnsl(sleep_sec: int, sleep_nanosec: int) @external:void
-
-// timeout for secs
-fun timeout_sec(duration: int) :void {
-    var sleep_nanosec: int
-    var start_time: int,
-        start_nsec: int,
-        time_now: int,
-        nsec_now: int,
-        sec_difference: int,
-        nsec_difference: int
-
-    sleep_nanosec = duration * 10000000    // the 1% of the duration converted to nanosec
-    if (sleep_nanosec > 100000000) {
-        sleep_nanosec = 100000000
-    }
-    clock_gettime_tnsl(CLOCK_REALTIME, tv)
-    start_time = tv\0\
-    start_nsec = tv\1\
-    while (1) {
-        clock_gettime_tnsl(CLOCK_REALTIME, tv)
-        time_now = tv\0\
-        nsec_now = tv\1\
-        sec_difference = time_now - start_time
-        nsec_difference = nsec_now - start_nsec
-        if (sec_difference >= duration) {
-            if (nsec_difference > 0) {
-                return
-            }
-        }
-        sleep_tnsl(0, sleep_nanosec)
-    }
-}
-
-// timeout for 0 - 999 millisecs
-fun timeout_millisec(duration: int) :void {
-    var sleep_nanosec: int
-    var start_msec: int
-    var msec_now: int
-    var msec_difference: int
-
-    sleep_nanosec = duration * 10000    // the 1% of the duration converted to nanosec
-    clock_gettime_tnsl(CLOCK_REALTIME, tv)
-    start_msec = tv\1\ / 1000000
-    while (1) {
-        clock_gettime_tnsl(CLOCK_REALTIME, tv)
-        msec_now = tv\1\ / 1000000
-        msec_difference = msec_now - start_msec
-        if (msec_difference < 0) {
-		    msec_difference = msec_difference + 1000
-		}
-	    if (msec_difference >= duration) {
-            return
-        }
-        sleep_tnsl(0, sleep_nanosec)
-    }
-}
-
-// timeout for 0 - 999,999 microsecs
-fun timeout_microsec(duration: int) :void {
-    var sleep_nanosec: int
-    var start_usec: int
-    var usec_now: int
-    var usec_difference: int
-
-    sleep_nanosec = duration * 10    // the 1% of the duration converted to nanosec
-    clock_gettime_tnsl(CLOCK_REALTIME, tv)
-    start_usec = tv\1\ / 1000
-    while (1) {
-        clock_gettime_tnsl(CLOCK_REALTIME, tv)
-        usec_now = tv\1\ / 1000
-        usec_difference = usec_now - start_usec
-        if (usec_difference < 0) {
-		    usec_difference = usec_difference + 1000000
-		}
-	    if (usec_difference >= duration) {
-            return
-        }
-        sleep_tnsl(0, sleep_nanosec)
-    }
-}
+fun sleep_nanosec(sleep_sec: int, sleep_nanosec: int) @external:void
+fun clock_gettime(clock: int, time_now: intarray) @external:void
 
 //
-// timeout function
-// accepts: duration of timeout
+// sleep function
+// accepts: duration of sleep
 //          units: 1=millisec, 0=microsec, or sec (default)
-fun timeout(duration: int, unit: int) @global:void {
+fun sleep(duration: int, unit: int) @global:void {
     if (duration < 0) { return }
     if (unit == UNIT_MILLISEC) {
         if (duration > 999) {
-            timeout_sec(duration / 1000)
-            timeout_millisec(duration % 1000)
+            sleep_nanosec(duration / 1000, 0)
+            sleep_nanosec(0, (duration % 1000) * 1000000)
         }
         else {
-            timeout_millisec(duration % 1000)
+            sleep_nanosec(0, duration * 1000000)
         }
         return
     }
     if (unit == UNIT_MICROSEC) {
         if (duration > 999999) {
-            timeout_sec(duration / 1000000)
-            timeout_microsec(duration % 1000000)
+            sleep_nanosec(duration / 1000000, 0)
+            sleep_nanosec(0, (duration % 1000000) * 1000)
         }
         else {
-            timeout_microsec(duration)
+            sleep_nanosec(0, duration * 1000)
         }
         return
     }
-    timeout_sec(duration)
+    sleep_nanosec(duration, 0)
+    return
+}
+
+//
+// gettime function
+// accepts: pointer to struct timespec
+fun gettime(time_now: intarray) @global:void {
+    clock_gettime(CLOCK_REALTIME, time_now)
     return
 }
 

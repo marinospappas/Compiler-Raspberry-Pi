@@ -9,11 +9,11 @@
 	.align 8
 
 .text
-.global sleep_tnsl
-.global clock_gettime_tnsl
+.global sleep_nanosec
+###.global clock_gettime
 
 #############################################
-# sleep_tnsl
+# sleep_nanosec
 # sleep for a number of nanosecs or secs
 #     by calling the linux nanosleep system call
 # uses  struct timespec {
@@ -26,7 +26,7 @@
 # returns:
 #   rax:    always 0
 #
-sleep_tnsl:
+sleep_nanosec:
 	pushq	%rbx		# save "callee"-save registers
 	pushq	%rbp		# new stack frame
 	movq	%rsp, %rbp
@@ -47,7 +47,7 @@ sleep_tnsl:
 	ret
 
 ######################################################################
-# clock_gettime_tnsl
+# clock_gettime
 # returns the clock time by calling the linux clock_gettime system call
 # params:
 #   rdi:    the clock id (0 for CLOCK_REALTIME)
@@ -55,7 +55,7 @@ sleep_tnsl:
 # returns:
 #   rax:    always 0
 #
-clock_gettime_tnsl:
+clock_gettime:
 	pushq	%rbx		# save "callee"-save registers
 	pushq	%rbp		# new stack frame
 	movq	%rsp, %rbp
