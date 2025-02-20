@@ -23,6 +23,7 @@ import java.util.Date
  * %rcx: pointer value or Array index when a pointer or array value is retrieved to the accumulator
  *       second operand for shift operation
  * %rdx: used in divide and modulo
+ *       function return - 2nd value (if applicable)
  * %rdi,%rsi,%rdx,%rcx,%r8,%r9: input parameters to a function (up to 6)
  * %r10: Pointer value or Array index temporary hold for assignment
  *      (pointer or array var will be set to the accumulator value)
