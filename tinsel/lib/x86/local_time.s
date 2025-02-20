@@ -7,7 +7,7 @@
 # 
 # x86-64 Assembly Code - AT&T format
 # library time
-# compiled on Thu Feb 20 08:25:24 CET 2025
+# compiled on Thu Feb 20 22:26:21 CET 2025
 .data
 .align 8
 # TINSEL version 4.0 for x86-84 (Linux) February 2025 (c) M.Pappas\n
@@ -20,7 +20,7 @@
 
 .text
 .align 8
-.extern clock_gettime
+.extern gettime
 .extern ctime
 .extern localtime_r
 .extern sleep_nanosec
@@ -34,16 +34,13 @@ getlocaltime:
 	subq	$8, %rsp
 	movq	%rdi, -8(%rbp)
 # parameter cur_time offset from frame -8
-	movq	CLOCK_REALTIME(%rip), %rax
-	testq	%rax, %rax
-	pushq	%rbx	# save temp param register %rbx to stack
-	movq	%rax, %rbx
-	lea	tv(%rip), %rax
+	movq	%rax, %r10
 # 	set input parameters
-	movq	%rax, %rsi
-	movq	%rbx, %rdi
-	call	clock_gettime
-	popq	%rbx	# restore temp param register %rbx from stack
+	call	gettime
+	lea	tv(%rip), %rbx
+	movq	%rax, (%rbx)
+	movq	$1, %r10
+	movq	%rdx, (%rbx, %r10, 8)
 	movq	$0, %rax
 	testq	%rax, %rax
 	movq	%rax, %rcx
@@ -148,16 +145,13 @@ getlocaltimestr:
 	pushq	%rbx		# save "callee"-save registers
 	pushq	%rbp		# new stack frame
 	movq	%rsp, %rbp
-	movq	CLOCK_REALTIME(%rip), %rax
-	testq	%rax, %rax
-	pushq	%rbx	# save temp param register %rbx to stack
-	movq	%rax, %rbx
-	lea	tv(%rip), %rax
+	movq	%rax, %r10
 # 	set input parameters
-	movq	%rax, %rsi
-	movq	%rbx, %rdi
-	call	clock_gettime
-	popq	%rbx	# restore temp param register %rbx from stack
+	call	gettime
+	lea	tv(%rip), %rbx
+	movq	%rax, (%rbx)
+	movq	$1, %r10
+	movq	%rdx, (%rbx, %r10, 8)
 	movq	$0, %rax
 	testq	%rax, %rax
 	movq	%rax, %rcx
@@ -191,16 +185,13 @@ wait_until_sec_change:
 	movq	$10, %rax
 	testq	%rax, %rax
 	movq	%rax, -8(%rbp)
-	movq	CLOCK_REALTIME(%rip), %rax
-	testq	%rax, %rax
-	pushq	%rbx	# save temp param register %rbx to stack
-	movq	%rax, %rbx
-	lea	tv(%rip), %rax
+	movq	%rax, %r10
 # 	set input parameters
-	movq	%rax, %rsi
-	movq	%rbx, %rdi
-	call	clock_gettime
-	popq	%rbx	# restore temp param register %rbx from stack
+	call	gettime
+	lea	tv(%rip), %rbx
+	movq	%rax, (%rbx)
+	movq	$1, %r10
+	movq	%rdx, (%rbx, %r10, 8)
 	movq	$1, %rax
 	testq	%rax, %rax
 	movq	%rax, %rcx
@@ -219,16 +210,13 @@ wait_until_sec_change_L0_:
 	movq	$1, %rax
 	testq	%rax, %rax
 	jz	wait_until_sec_change_L1_
-	movq	CLOCK_REALTIME(%rip), %rax
-	testq	%rax, %rax
-	pushq	%rbx	# save temp param register %rbx to stack
-	movq	%rax, %rbx
-	lea	tv(%rip), %rax
+	movq	%rax, %r10
 # 	set input parameters
-	movq	%rax, %rsi
-	movq	%rbx, %rdi
-	call	clock_gettime
-	popq	%rbx	# restore temp param register %rbx from stack
+	call	gettime
+	lea	tv(%rip), %rbx
+	movq	%rax, (%rbx)
+	movq	$1, %r10
+	movq	%rdx, (%rbx, %r10, 8)
 	movq	$1, %rax
 	testq	%rax, %rax
 	movq	%rax, %rcx

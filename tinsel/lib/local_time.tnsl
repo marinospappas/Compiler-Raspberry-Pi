@@ -13,7 +13,7 @@ var tv: intarray(2)
 var tm: bytearray(80)
 var time_now: int
 
-fun clock_gettime(clock: int, time_spec: intarray) @external:void
+fun gettime() @external:intpair
 fun ctime(time_t: memptr) @external:string
 fun localtime_r(timep: memptr, result: bytearray) @external:void
 fun sleep_nanosec(sec: int, nanosec: int) @external:void
@@ -24,7 +24,7 @@ fun sleep_nanosec(sec: int, nanosec: int) @external:void
 // format h:m:s d.m.y
 //
 fun getlocaltime(cur_time: bytearray) @global:void {
-    clock_gettime(CLOCK_REALTIME, tv)
+    tv$ = gettime()
     time_now = tv\0\
     localtime_r(addr(time_now), tm)
     cur_time\0\ = tm\8\
@@ -41,7 +41,7 @@ fun getlocaltime(cur_time: bytearray) @global:void {
 // returns the local time as string
 //
 fun getlocaltimestr() @global:string {
-    clock_gettime(CLOCK_REALTIME, tv)
+    tv$ = gettime()
     time_now = tv\0\
     return ctime(addr(time_now))
 }
@@ -54,10 +54,10 @@ fun wait_until_sec_change() @global:void {
     var usec_difference: int
 
     nanosecs = 10    // the 1% of the duration converted to nanosec
-    clock_gettime(CLOCK_REALTIME, tv)
+    tv$ = gettime()
     start_usec = tv\1\ / 1000
     while (1) {
-        clock_gettime(CLOCK_REALTIME, tv)
+    tv$ = gettime()
         usec_now = tv\1\ / 1000
         usec_difference = usec_now - start_usec
         if (usec_difference < 0) {
