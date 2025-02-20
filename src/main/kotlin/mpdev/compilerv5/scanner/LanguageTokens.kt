@@ -31,8 +31,10 @@ enum class Kwd {
     isGreaterOrEq, isLessOrEq,
 
     intType, stringType, memPtrType, intArrayType, byteType, byteArrayType, voidType,
+    intPairType,    // this is only valid as function return type
 
     arrayIndx,
+    assignPair,     // special token to indicate assignment from int pair to array elements
 
     startBlock, endBlock,
     commaToken, semiColonToken, colonToken,
@@ -118,6 +120,9 @@ fun initKeywords() {
         Token("intarray",     Kwd.intArrayType,       TokType.varType)
     )
     languageTokens.add(
+        Token("intpair",     Kwd.intPairType,       TokType.varType)
+    )
+    languageTokens.add(
         Token("int",     Kwd.intType,       TokType.varType)
     )
     languageTokens.add(
@@ -153,6 +158,9 @@ fun initKeywords() {
     )
     languageTokens.add(
         Token("\\",        Kwd.arrayIndx,     TokType.none)
+    )
+    languageTokens.add(
+        Token("$",        Kwd.assignPair,     TokType.none)
     )
 
     languageTokens.add(

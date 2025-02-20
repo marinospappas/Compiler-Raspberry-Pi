@@ -620,6 +620,11 @@ class ArmInstructions32(val context: CompilerContext): AsmInstructions {
         outputCodeTabNl("strb\tr3, [r2, r4]")    // index already in r4
     }
 
+    /** set 2 int array elements to pair */
+    override fun assignmentPairToArray(identifier: String) {
+        TODO("not yet done")
+    }
+
     /** convert accumulator to byte */
     override fun convertToByte() {
         outputCodeTabNl("ands\tr3, #0xFF")

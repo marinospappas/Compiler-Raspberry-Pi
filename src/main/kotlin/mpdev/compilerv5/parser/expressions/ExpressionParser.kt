@@ -45,9 +45,12 @@ class ExpressionParser(val context: CompilerContext) {
     fun parseAssignment() {
         val identName: String = scanner.match(Kwd.identifier).value
         checkCanAssign(identName)
-        val typeVar = scannerUtil.getType(identName)
+        val typeVar = context.getType(identName)
         if (setOf(DataType.intarray, DataType.bytearray).contains(typeVar)) {
-            parseArrayIndex()
+            if (scanner.lookahead().encToken == Kwd.assignPair)
+                scanner.match()
+            else
+                parseArrayIndex()
             code.saveAccToTempAssigmentReg()
         }
         scanner.match(Kwd.equalsOp)
@@ -56,7 +59,10 @@ class ExpressionParser(val context: CompilerContext) {
         when (typeVar) {
             DataType.int, DataType.memptr -> numAssgnmtParser.parseNumAssignment(identName)
             DataType.byte -> numAssgnmtParser.parseByteNumAssignment(identName)
-            DataType.intarray -> numAssgnmtParser.parseArrayAssignment(identName)
+            DataType.intarray -> {
+                if (typeExp == DataType.intpair) numAssgnmtParser.parsePairAssignment(identName)
+                else numAssgnmtParser.parseArrayAssignment(identName)
+            }
             DataType.bytearray -> numAssgnmtParser.parseByteArrayAssignment(identName)
             DataType.string -> strAssgnmtParser.parseStringAssignment(identName)
             else -> {}
@@ -79,7 +85,7 @@ class ExpressionParser(val context: CompilerContext) {
 
     /** check if variable can be assigned a value */
     private fun checkCanAssign(identName: String) {
-        if (!scannerUtil.getCanAssign(identName))
+        if (!context.getCanAssign(identName))
             abort("line ${scanner.currentLineNumber}: variable/parameter $identName cannot be assigned a value")
     }
 
@@ -303,7 +309,7 @@ class ExpressionParser(val context: CompilerContext) {
      * returns the data type of the variable
      */
     private fun parseVariable(): DataType {
-        return when (scannerUtil.getType(scanner.lookahead().value)) {
+        return when (context.getType(scanner.lookahead().value)) {
             DataType.int -> numAssgnmtParser.parseNumVariable(DataType.int)
             DataType.byte -> numAssgnmtParser.parseNumByteVariable()
             DataType.memptr -> numAssgnmtParser.parseNumVariable(DataType.memptr)

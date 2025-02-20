@@ -37,7 +37,7 @@ class InputOutputParser(val context: CompilerContext) {
                 abort("line ${scanner.currentLineNumber}: identifier ${varToken.value} is not a variable")
             val identName = varToken.value
             val strLen = context.identifiersMap[identName]?.size!!
-            when (scannerUtil.getType(identName)) {
+            when (context.getType(identName)) {
                 DataType.int -> parseReadInt(identName)
                 DataType.string -> parseReadString(identName, strLen)
                 else -> {}

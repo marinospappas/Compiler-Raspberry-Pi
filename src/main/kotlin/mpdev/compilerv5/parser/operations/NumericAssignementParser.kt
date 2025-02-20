@@ -92,4 +92,10 @@ class NumericAssignementParser(val context: CompilerContext) {
             code.setAccumulatorToByteArrayVar(arrayName)
         return DataType.int
     }
+
+    /** process assignment from intpair to intarray var */
+    fun parsePairAssignment(varName: String) {
+        // TODO: also check for local var
+        code.assignmentPairToArray(varName)
+    }
 }

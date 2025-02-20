@@ -1,0 +1,16 @@
+program testpair
+
+var a: intarray(2)
+
+fun y() @external:intpair
+
+fun x(): intpair {
+    return y()
+}
+
+main {
+    a$ = x()
+    print a\0\, a\1\
+}
+
+endprogram

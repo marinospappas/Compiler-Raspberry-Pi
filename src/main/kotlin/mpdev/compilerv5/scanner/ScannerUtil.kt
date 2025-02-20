@@ -7,12 +7,6 @@ import mpdev.compilerv5.util.Utils.Companion.abort
 
 class ScannerUtil(val context: CompilerContext) {
 
-    /** return the type of var/fun */
-    fun getType(identifier: String): DataType = context.identifiersMap[identifier]?.type?: DataType.none
-
-    /** return the canAssign flag */
-    fun getCanAssign(identifier: String): Boolean = context.identifiersMap[identifier]?.canAssign?:false
-
     /**
      * check for compatible data types for the specific operation
      * if the specific operation is not defined in the compatibility map
@@ -79,6 +73,9 @@ class ScannerUtil(val context: CompilerContext) {
             TypesAndOpsCombi(DataType.memptr, DataType.memptr, COMPARE_GT) to true,
             TypesAndOpsCombi(DataType.memptr, DataType.memptr, COMPARE_LE) to true,
             TypesAndOpsCombi(DataType.memptr, DataType.memptr, COMPARE_GE) to true,
+            // special case for functions that return intpair - this can only be assigned to intarray
+            TypesAndOpsCombi(DataType.intarray, DataType.intpair, ASSIGN) to true,
+            TypesAndOpsCombi(DataType.int, DataType.intpair, ASSIGN) to true, // TODO - this needs fixing (temp hack)
             // all other combinations forbidden unless set here
         )
     }

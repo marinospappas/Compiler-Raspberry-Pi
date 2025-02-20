@@ -161,11 +161,11 @@ class ControlStructureParser(val context: CompilerContext) {
         if (labelHandler.labelPrefix == MAIN_BLOCK)
             abort("line ${scanner.currentLineNumber}: return is not allowed in [main]")
         functionParser.hasReturn = true       // set the return flag for this function
-        val funType = scannerUtil.getType(functionParser.funName)
+        val funType = context.getType(functionParser.funName)
         if (funType != DataType.void) {
             val expType = expressionParser.parseExpression()
             if (expType != funType)
-                abort("line ${scanner.currentLineNumber}: $funType function cannot return $expType")
+                abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: $funType function cannot return $expType")
         }
         code.returnFromCall()
         mustRestoreSP = false

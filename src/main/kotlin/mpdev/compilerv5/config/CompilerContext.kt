@@ -26,4 +26,10 @@ data class CompilerContext(
     // the string constants (will be included in the output file at the end of the compilation)
     val stringConstants = mutableMapOf<String, String>()
     var stringCnstIndx = 0
+
+    /** return the type of var/fun */
+    fun getType(identifier: String): DataType = identifiersMap[identifier]?.type?: DataType.none
+
+    /** return the canAssign flag */
+    fun getCanAssign(identifier: String): Boolean = identifiersMap[identifier]?.canAssign?:false
 }

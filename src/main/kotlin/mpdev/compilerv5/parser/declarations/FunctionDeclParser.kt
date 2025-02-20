@@ -55,6 +55,7 @@ class FunctionDeclParser(private val context: CompilerContext) {
                 Kwd.intType -> funType = DataType.int
                 Kwd.byteType -> funType = DataType.byte
                 Kwd.intArrayType -> funType = DataType.intarray
+                Kwd.intPairType -> funType = DataType.intpair
                 Kwd.byteArrayType -> funType = DataType.bytearray
                 Kwd.memPtrType -> funType = DataType.memptr
                 Kwd.stringType -> funType = DataType.string

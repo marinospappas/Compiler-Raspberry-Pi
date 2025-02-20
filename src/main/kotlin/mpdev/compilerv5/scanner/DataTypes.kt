@@ -3,7 +3,7 @@ package mpdev.compilerv5.scanner
 //TODO: implement sizeof
 
 /** our variable types */
-enum class DataType { int, string, memptr, intarray, byte, bytearray, void, none }
+enum class DataType { int, string, memptr, intarray, byte, bytearray, void, none, intpair }
 
 /** our variable scope
  *  packageGlobal: scope across program and all libraries in the package

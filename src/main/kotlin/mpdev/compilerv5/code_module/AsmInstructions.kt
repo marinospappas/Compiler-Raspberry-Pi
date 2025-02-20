@@ -187,6 +187,8 @@ interface AsmInstructions {
     fun arrayByteAssignment(identifier: String)
     /** set byte stack array element to accumulator */
     fun assignmentLocalByteArrayVar(offset: Int)
+    /** set 2 int array elements to pair */
+    fun assignmentPairToArray(identifier: String)
     /** convert accumulator to byte */
     fun convertToByte()
 

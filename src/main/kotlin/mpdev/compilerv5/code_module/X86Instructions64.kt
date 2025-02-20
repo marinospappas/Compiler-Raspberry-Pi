@@ -493,7 +493,7 @@ class X86Instructions64(val context: CompilerContext): AsmInstructions {
 
     /** set int array element to accumulator */
     override fun arrayAssignment(identifier: String) {
-        // index already in %rcx
+        // index already saved in %r10
         outputCodeTabNl("movq\t%rax, %rbx")     // save value in %rbx
         outputCodeTabNl("lea\t${identifier}(%rip), %rax")  // array start address in %rax
         outputCodeTabNl("movq\t%rbx, (%rax, %r10, $INT_SIZE)")  // save array element
@@ -501,7 +501,7 @@ class X86Instructions64(val context: CompilerContext): AsmInstructions {
 
     /** set int stack array element to accumulator */
     override fun assignmentLocalArrayVar(offset: Int) {
-        // index already in %rcx
+        // index already saved in %r10
         outputCodeTabNl("movq\t%rax, %rbx")     // save value in %rbx
         outputCodeTab("movq\t")
         if (offset != 0)
@@ -523,7 +523,7 @@ class X86Instructions64(val context: CompilerContext): AsmInstructions {
 
     /** set byte array element to accumulator */
     override fun arrayByteAssignment(identifier: String) {
-        // index already in %rcx
+        // index already saved in %r10
         outputCodeTabNl("movb\t%al, %bl")     // save value in %rbx
         outputCodeTabNl("lea\t${identifier}(%rip), %rax")  // array start address in %rax
         outputCodeTabNl("movb\t%bl, (%rax, %r10, 1)")  // save array element
@@ -531,13 +531,22 @@ class X86Instructions64(val context: CompilerContext): AsmInstructions {
 
     /** set byte stack array element to accumulator */
     override fun assignmentLocalByteArrayVar(offset: Int) {
-        // index already in %rcx
+        // index already saved in %r10
         outputCodeTabNl("movb\t%al, %bl")     // save value in %rbx
         outputCodeTab("movq\t")
         if (offset != 0)
             outputCode("$offset")
         outputCodeNl("(%rbp), %rax")            // array start address in %rax
         outputCodeTabNl("movb\t%bl, (%rax, %r10, 1)")  // save array element
+    }
+
+    /** set 2 int array elements to pair */
+    override fun assignmentPairToArray(identifier: String) {
+        // pair of ints already in %rax, %rdx
+        outputCodeTabNl("lea\t${identifier}(%rip), %rbx")  // array start address in %rbx
+        outputCodeTabNl("movq\t%rax, (%rbx)")  // save array element 0
+        outputCodeTabNl("movq\t$1, %r10")  // set index to 1
+        outputCodeTabNl("movq\t%rdx, (%bcx, %r10, $INT_SIZE)")  // save array element 1
     }
 
     /** convert accumulator to byte */

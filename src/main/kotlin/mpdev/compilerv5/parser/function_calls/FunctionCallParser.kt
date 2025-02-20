@@ -17,13 +17,11 @@ class FunctionCallParser(val context: CompilerContext) {
     private lateinit var scanner: InputProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var booleanExprParser: BooleanExpressionParser
-    private lateinit var scannerUtil: ScannerUtil
 
     fun initialise() {
         scanner = Config.scanner
         code = Config.codeModule
         booleanExprParser = Config.booleanExpressionParser
-        scannerUtil = ScannerUtil(context)
     }
 
     fun parse(): DataType {
@@ -35,7 +33,7 @@ class FunctionCallParser(val context: CompilerContext) {
         code.callFunction(funcName)
         restoreFunctionStackParams(funcName)
         restoreParamRegisters(funcName)
-        return scannerUtil.getType(funcName)
+        return context.getType(funcName)
     }
 
     /**
