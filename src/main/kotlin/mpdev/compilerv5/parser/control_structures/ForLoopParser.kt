@@ -7,7 +7,6 @@ import mpdev.compilerv5.parser.expressions.ExpressionParser
 import mpdev.compilerv5.parser.labels.LabelHandler
 import mpdev.compilerv5.scanner.*
 import mpdev.compilerv5.util.Utils.Companion.abort
-import javax.naming.ldap.Control
 
 /**
  * parse for in a separate class/file due to increased complexity
@@ -15,7 +14,7 @@ import javax.naming.ldap.Control
  */
 class ForLoopParser(val context: CompilerContext) {
 
-    private lateinit var scanner: InputProgramScanner
+    private lateinit var scanner: ProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var labelHandler: LabelHandler
     private lateinit var contrStructParser: ControlStructureParser

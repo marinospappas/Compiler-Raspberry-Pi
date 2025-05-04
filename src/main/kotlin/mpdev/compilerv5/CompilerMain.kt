@@ -1,6 +1,7 @@
 package mpdev.compilerv5
 
 import mpdev.compilerv5.config.CompilerContext
+import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.debugger.CompilerDebugger
 
 /**
@@ -17,9 +18,5 @@ fun main(args: Array<String>) {
     val context = CompilerContext()
     val compiler = Compiler(context)
     compiler.init(args)
-    if (context.debugMode) {
-        CompilerDebugger(context).printDebugInfo()
-    } else {
-        compiler.compile()
-    }
+    compiler.compile()
 }

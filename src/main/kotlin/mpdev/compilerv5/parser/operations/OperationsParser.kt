@@ -8,7 +8,7 @@ import mpdev.compilerv5.scanner.Operation.*
 
 class OperationsParser(val context: CompilerContext) {
 
-    private lateinit var inp: InputProgramScanner
+    private lateinit var inp: ProgramScanner
     private lateinit var exprParser: ExpressionParser
     private lateinit var opsNumeric: OpsNumeric
     private lateinit var opsStrings: OpsStrings

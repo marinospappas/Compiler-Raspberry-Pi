@@ -10,18 +10,15 @@ class CompilerDebugger(val context: CompilerContext) {
 
     /** analyse tokens - debug mode */
     fun printDebugInfo() {
+        val tokenizer = Config.tokenizer
         val scanner = Config.scanner
         println("environment")
         System.getenv().forEach { (k, v) -> println("$k-> [$v]") }
         println("\nstarting debug run")
-        var t: Token
-        while(true) {
-            t = scanner.match()
-            println("${scanner.debugGetLineInfo()}, ${scanner.debugGetNextChar()}, ${scanner.debugGetCursor()} "+
-                    "| current token: [${t.encToken} ${t.type} ${t.value}] " +
+        context.tokenizedProgram.forEach {
+            println("${tokenizer.debugGetLineInfo()}, ${tokenizer.debugGetNextChar()}, ${tokenizer.debugGetCursor()} "+
+                    "| current token: [${it.encToken} ${it.type} ${it.value}] " +
                     "| next token: [${scanner.lookahead().encToken} ${scanner.lookahead().type} ${scanner.lookahead().value}] |")
-            if (t.encToken == Kwd.endOfInput)
-                break
         }
         exit("end of debug run")
     }

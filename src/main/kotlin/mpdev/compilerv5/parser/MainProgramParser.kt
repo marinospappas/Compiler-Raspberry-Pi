@@ -16,7 +16,7 @@ import mpdev.compilerv5.scanner.*
  */
 class MainProgramParser(val context: CompilerContext) {
 
-    private lateinit var scanner: InputProgramScanner
+    private lateinit var scanner: ProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var controlStructParser: ControlStructureParser
     private lateinit var labelHandler: LabelHandler

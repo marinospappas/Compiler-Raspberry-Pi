@@ -12,7 +12,7 @@ import mpdev.compilerv5.util.Utils.Companion.abort
  */
 class VariablesDeclParser(val context: CompilerContext) {
 
-    private lateinit var scanner: InputProgramScanner
+    private lateinit var scanner: ProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var declarationUtils: DeclarationUtils
 

@@ -135,7 +135,7 @@ main {
         dd = mytime\3\
         MM = mytime\4\
         yyyy = mytime\5\+1900
-        if (hour >= 22 or hour <= 8) {
+        if (hour <= 22 or hour >= 8) {
             if (ss == 15 or ss == 45) {
                 show_date(dd, MM, yyyy)
                 continue

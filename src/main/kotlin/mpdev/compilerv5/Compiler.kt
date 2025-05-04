@@ -3,6 +3,7 @@ package mpdev.compilerv5
 import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
+import mpdev.compilerv5.debugger.CompilerDebugger
 import mpdev.compilerv5.util.Utils.Companion.processCmdLineArgs
 import kotlin.system.measureTimeMillis
 
@@ -19,6 +20,11 @@ class Compiler(val context: CompilerContext) {
 
     /** the actual compiler */
     fun compile() {
+        Config.tokenizer.tokenize()
+        if (context.debugMode) {
+            CompilerDebugger(context).printDebugInfo()
+            return
+        }
         val elapsedTime = measureTimeMillis {
             Config.programParser.parse()
         }

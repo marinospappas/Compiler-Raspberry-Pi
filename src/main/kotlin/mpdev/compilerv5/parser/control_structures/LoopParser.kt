@@ -5,13 +5,13 @@ import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.parser.expressions.BooleanExpressionParser
 import mpdev.compilerv5.parser.labels.LabelHandler
-import mpdev.compilerv5.scanner.InputProgramScanner
+import mpdev.compilerv5.scanner.ProgramScanner
 import mpdev.compilerv5.scanner.Kwd
 import mpdev.compilerv5.util.Utils.Companion.abort
 
 class LoopParser(val context: CompilerContext) {
 
-    private lateinit var scanner: InputProgramScanner
+    private lateinit var scanner: ProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var labelHandler: LabelHandler
     private lateinit var contrStructParser: ControlStructureParser

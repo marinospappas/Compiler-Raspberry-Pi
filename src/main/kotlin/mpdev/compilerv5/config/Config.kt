@@ -18,7 +18,8 @@ import mpdev.compilerv5.parser.labels.LabelHandler
 import mpdev.compilerv5.parser.operations.NumericAssignementParser
 import mpdev.compilerv5.parser.operations.OperationsParser
 import mpdev.compilerv5.parser.operations.StringAssignmentParser
-import mpdev.compilerv5.scanner.InputProgramScanner
+import mpdev.compilerv5.scanner.ProgramScanner
+import mpdev.compilerv5.scanner.Tokenizer
 
 class Config {
 
@@ -26,7 +27,8 @@ class Config {
 
         var STR_BUF_SIZE = 1024
 
-        lateinit var scanner: InputProgramScanner
+        lateinit var tokenizer: Tokenizer
+        lateinit var scanner: ProgramScanner
         lateinit var codeModule: AsmInstructions
         lateinit var programParser: MainProgramParser
         lateinit var controlStructureParser: ControlStructureParser
@@ -48,7 +50,8 @@ class Config {
                 CPUArch.x86 -> X86Instructions64(context)
                 CPUArch.arm -> ArmInstructions32(context)
             }
-            scanner = InputProgramScanner(context)
+            tokenizer = Tokenizer(context)
+            scanner = ProgramScanner(context)
             programParser = MainProgramParser(context)
             controlStructureParser = ControlStructureParser(context)
             variablesDeclParser = VariablesDeclParser(context)
@@ -64,6 +67,7 @@ class Config {
             inputOutputParser = InputOutputParser(context)
             labelHandler = LabelHandler()
 
+            tokenizer.initialise()
             scanner.initialise()
             programParser.initialise()
             controlStructureParser.initialise()

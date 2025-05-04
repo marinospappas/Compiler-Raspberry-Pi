@@ -14,7 +14,7 @@ class FunctionDeclParser(private val context: CompilerContext) {
     var funName: String = ""
     var hasReturn: Boolean = false
 
-    private lateinit var scanner: InputProgramScanner
+    private lateinit var scanner: ProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var labelHandler: LabelHandler
     private lateinit var contrStructParser: ControlStructureParser

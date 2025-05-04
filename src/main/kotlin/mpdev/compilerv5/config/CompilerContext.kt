@@ -4,6 +4,7 @@ import mpdev.compilerv5.CPUArch
 import mpdev.compilerv5.parser.declarations.FunctionParameter
 import mpdev.compilerv5.scanner.DataType
 import mpdev.compilerv5.scanner.IdentifierDecl
+import mpdev.compilerv5.scanner.Token
 
 data class CompilerContext(
     var debugMode: Boolean = false,                 // debug flag set by cmd line options
@@ -14,6 +15,9 @@ data class CompilerContext(
     var implementStart: Boolean = false,             // implement _start entry point (when no C lib is used)
     var startFunSrc: String = "./tinsel/lib/x86/_start.s"   // file containing the source for the _start code
 ) {
+    // the input program tokenized
+    val tokenizedProgram = mutableListOf<Token>()
+
     // the identifiers space map
     val identifiersMap = mutableMapOf<String, IdentifierDecl>()
 

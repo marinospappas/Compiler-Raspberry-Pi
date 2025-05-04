@@ -24,7 +24,7 @@ class ControlStructureParser(val context: CompilerContext) {
         const val BLOCK_NAME = "block_"
     }
 
-    private lateinit var scanner: InputProgramScanner
+    private lateinit var scanner: ProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var labelHandler: LabelHandler
     private lateinit var variableParser: VariablesDeclParser

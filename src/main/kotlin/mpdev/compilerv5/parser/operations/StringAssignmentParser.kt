@@ -8,7 +8,7 @@ import mpdev.compilerv5.scanner.*
 
 class StringAssignmentParser(val context: CompilerContext) {
 
-    private lateinit var scanner: InputProgramScanner
+    private lateinit var scanner: ProgramScanner
     private lateinit var code: AsmInstructions
 
     fun initialise() {

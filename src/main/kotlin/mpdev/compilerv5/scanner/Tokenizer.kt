@@ -14,7 +14,7 @@ import kotlin.math.min
  * Performs the lexical scanner functions
  * Processes the char-by-char input and returns the tokens from the input stream
  */
-class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
+class Tokenizer(val context: CompilerContext = CompilerContext()) {
 
     // the input program as string
     private var inputProgram: String = ""
@@ -63,48 +63,24 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
     }
 
     /**
-     * get the next token from the input stream and advance the cursor
-     * match this token against a specific given token 'x'
-     * also produces a match if called with no token or if token is "any"
-     * finally it processes any comments in the code
-     * returns the token object that has been matched
-     * also sets the current line number at the beginning as the lineNumber
-     * was pointing to the line of the nextToken at the end of the previous match call
-     * it is called by all the parser functions
+     * convert the input characters to a list of compiler-recognised Tokens
      */
-    fun match(keyWord: Kwd = Kwd.any): Token {
-        currentLineNumber = lineNumber
-        printComment()  // any comments found in the previous call must be printed in the output code now
-        if (keyWord != Kwd.any && nextToken.encToken != keyWord)    // check keyword to match
-            expected(decodeToken(keyWord))
-        val thisToken = nextToken
-        nextToken = scan()  // advance to next token
-        getComment()    // process any comments
-        return thisToken
-    }
-
-    /** print any comment identified in the previous call of match */
-    private fun printComment() {
-        if (commentString != "") {
-            Config.codeModule.outputCode(commentString)
-            commentString = ""
+    fun tokenize() {
+        val tokenList = context.tokenizedProgram
+        while(true) {
+            val t = scan().also { tokenList.add(it) }
+            if (t.encToken == Kwd.endOfInput)
+                break
         }
+        tokenList.add(Token("EOF", Kwd.endOfProgram, TokType.endOfPRogram))
     }
 
     /**
-     * lookahead function
-     * returns next token without advancing the cursor
-     * sets current line number as well (same as match)
+     * scan input for the next token and advance the "cursor"
      */
-    fun lookahead(): Token {
-        currentLineNumber = lineNumber
-        return nextToken
-    }
-
-    /** get the next token and advance the "cursor" */
     private fun scan(): Token {
         skipWhite()
-        if (checkEndofInput())
+        if (checkEndOfInput())
             return Token(END_OF_INPUT, Kwd.endOfInput, TokType.none)
         if (checkNumeric())
             return Token(getNumber(), Kwd.number, TokType.none)
@@ -118,7 +94,7 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
     }
 
     /** check if we have reached the end of input */
-    private fun checkEndofInput(): Boolean = nextChar == endOfInput
+    private fun checkEndOfInput(): Boolean = nextChar == endOfInput
 
     /** check for a numeric token */
     private fun checkNumeric(): Boolean = isNumeric(nextChar)
@@ -133,11 +109,11 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
     private fun keywordOrFunctionOrVariable(name: String): Token {
         val indx = isKeyword(name)
         return if (indx >= 0)
-                    languageTokens[indx]  // keyword found
-                else {
-                    // function, variable or other identifier found (determined by Token type)
-                    Token(name, Kwd.identifier, context.identifiersMap[name]?.fv ?: TokType.none)
-                }
+            languageTokens[indx]  // keyword found
+        else {
+            // function, variable or other identifier found (determined by Token type)
+            Token(name, Kwd.identifier, context.identifiersMap[name]?.fv ?: TokType.none)
+        }
     }
 
     /** check for a special sequence (operator or other special token) */
@@ -299,7 +275,7 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
                 Kwd.blockCommentOut -> getCommentBlock(true)
                 Kwd.inlineComment -> getCommentInline()
                 Kwd.inlineCommentOut -> getCommentInline(true)
-                else -> expected("start of comment")
+                else -> getInvalidToken()
             }
     }
 
@@ -315,9 +291,8 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
         }
         localCommentString += '\n'
         nextToken = scan()      // nextToken now points to endComment or endOfInput
-        if (nextToken.encToken == Kwd.endOfInput)
-            expected(endComment)
-        nextToken = scan()      // nextToken now points to the next token after the comment
+        if (nextToken.encToken != Kwd.endOfInput)
+            nextToken = scan()      // nextToken now points to the next token after the comment
         if (printToOut)
             commentString += localCommentString
     }
@@ -398,18 +373,6 @@ class InputProgramScanner(val context: CompilerContext = CompilerContext()) {
             if (languageTokens[i].encToken == token)
                 return languageTokens[i].value
         return "*******"
-    }
-
-    /** report what was expected and abort */
-    fun expected(expMsg: String) {
-        val tokType =
-            if (nextToken.encToken == Kwd.number || nextToken.encToken == Kwd.identifier
-                || nextToken.encToken == Kwd.string || nextToken.encToken == Kwd.booleanLit
-            )
-                "${nextToken.encToken} "
-            else
-                ""
-        abort("(${this.javaClass.simpleName}) line $currentLineNumber: expected [$expMsg] found $tokType[${nextToken.value}]")
     }
 
     /** debug functions */

@@ -30,7 +30,7 @@ import mpdev.compilerv5.scanner.Operation.*
  */
 class BooleanExpressionParser(val context: CompilerContext) {
 
-    private lateinit var scanner: InputProgramScanner
+    private lateinit var scanner: ProgramScanner
     private lateinit var code: AsmInstructions
     private lateinit var exprParser: ExpressionParser
     private lateinit var scannerUtil: ScannerUtil

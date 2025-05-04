@@ -4,12 +4,12 @@ import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.scanner.DataType
-import mpdev.compilerv5.scanner.InputProgramScanner
+import mpdev.compilerv5.scanner.ProgramScanner
 import mpdev.compilerv5.scanner.Kwd
 
 class NumericAssignementParser(val context: CompilerContext) {
 
-    private lateinit var scanner: InputProgramScanner
+    private lateinit var scanner: ProgramScanner
     private lateinit var code: AsmInstructions
 
     fun initialise() {
