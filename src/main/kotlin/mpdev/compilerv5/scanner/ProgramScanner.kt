@@ -58,7 +58,6 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
             expected(decodeToken(keyWord))
         val thisToken = nextToken
         nextToken = advanceToken()  // advance to next token
-        // todo: getComment()    // process any comments
         return thisToken
     }
 
