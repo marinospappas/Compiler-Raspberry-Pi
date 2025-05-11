@@ -30,10 +30,6 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     // input program line number (the line where the nextToken is)
     private var lineNumber = 1
 
-    // any comments are kept here so that they can be transferred to the output
-    private var commentString = ""
-    private lateinit var startOfComment: String
-
     fun initialise() {
         try {
             // read the whole program into a string
@@ -44,11 +40,6 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
             initOperators()
             // set the lookahead character to the first input char and skip any white spaces
             nextChar = inputProgram[0]
-            // get the first token from input
-            //nextToken = scan()
-            // process any initial comments
-            startOfComment = Config.codeModule.COMMENT
-            //getComment()
         } catch (e: Exception) {
             abort("could not open input file - $e")
         }
@@ -258,6 +249,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
         }
     }
 
+    //todo: move processing of comments to the right place - scanner or parser
     /*********
     /** get a comment */
     private fun getComment() {
@@ -354,13 +346,5 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
         }
         getNextChar()
         return true
-    }
-
-    /** decode an encoded token to token name */
-    fun decodeToken(token: Kwd): String {
-        for (i in languageTokens.indices)
-            if (languageTokens[i].encToken == token)
-                return languageTokens[i].value
-        return "*******"
     }
 }
