@@ -34,6 +34,14 @@ class ScannerUtil(val context: CompilerContext) {
         }
     }
 
+    /**
+     * returns TokType variable or function for an identifier
+     */
+    fun isVarOrFun(token: Token): TokType {
+        return context.identifiersMap[token.value]?.funOrVar
+            ?: TokType.varType. also{ abort("line ${token.lineNumber}: undeclared identifier [${token.value}]") }
+    }
+
     companion object {
         val typesCompatibility = mapOf(
             // int with int allowed for all operations

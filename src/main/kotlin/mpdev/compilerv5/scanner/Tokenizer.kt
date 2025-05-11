@@ -93,7 +93,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
             Token.of(languageTokens[indx], lineNumber)  // keyword found
         else {
             // function, variable or other identifier found (determined by Token type)
-            Token(name, Kwd.identifier, context.identifiersMap[name]?.fv ?: TokType.none, lineNumber)
+            Token(name, Kwd.identifier, TokType.none, lineNumber)
         }
     }
 

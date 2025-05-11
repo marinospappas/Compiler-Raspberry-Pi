@@ -1,6 +1,5 @@
 package mpdev.compilerv5.parser.expressions
 
-import mpdev.compilerv3._legacy.chapter_xa_01.identifiersMap
 import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
@@ -207,7 +206,8 @@ class ExpressionParser(val context: CompilerContext) {
      */
     private fun parseIdentifier(): DataType {
         //todo: investigate disconnect between currentToken.type and identifiersMap[scanner.lookahead().value].type
-        when (scanner.lookahead().type) {
+        val identifierType = scannerUtil.isVarOrFun(scanner.lookahead())
+        when (identifierType) {
             TokType.variable -> return parseVariable()
             TokType.function -> return funCallParser.parse()
             else -> abort("line ${scanner.currentToken().lineNumber}: undeclared identifier [${scanner.lookahead().value}]")

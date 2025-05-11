@@ -13,7 +13,7 @@ enum class DataType { int, string, memptr, intarray, byte, bytearray, void, none
 enum class VarScope { packageGlobal, global, local, external }
 
 /** the declaration space (variables and functions) */
-class IdentifierDecl(var fv: TokType, var type: DataType, var initialised: Boolean = false, var size: Int = 0,
+class IdentifierDecl(var funOrVar: TokType, var type: DataType, var initialised: Boolean = false, var size: Int = 0,
                      var isStackVar: Boolean = false, var stackOffset: Int = 0, var canAssign: Boolean = true)
 
 // definitions of operations

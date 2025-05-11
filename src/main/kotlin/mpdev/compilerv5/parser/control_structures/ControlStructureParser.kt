@@ -109,8 +109,9 @@ class ControlStructureParser(val context: CompilerContext) {
             Kwd.printToken -> inputOutputParser.parsePrint()
             Kwd.printLnToken -> inputOutputParser.parsePrintLn()
             Kwd.identifier -> {
-                if (scanner.lookahead().type == TokType.variable) expressionParser.parseAssignment()
-                else if (scanner.lookahead().type == TokType.function) functionCallParser.parse()
+                val identifierType = scannerUtil.isVarOrFun(scanner.lookahead())
+                if (identifierType == TokType.variable) expressionParser.parseAssignment()
+                else if (identifierType == TokType.function) functionCallParser.parse()
                 else abort("(${this.javaClass.simpleName}) line ${scanner.lookahead().lineNumber}: identifier ${scanner.lookahead().value} not declared")
             }
             Kwd.ptrOpen -> expressionParser.parsePtrAssignment()
