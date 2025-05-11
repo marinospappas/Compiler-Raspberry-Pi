@@ -1,5 +1,6 @@
 package mpdev.compilerv5.scanner
 
+import mpdev.compilerv3._legacy.chapter_xa_01.inp
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.util.Utils.Companion.abort
@@ -66,18 +67,19 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
      */
     private fun advanceToken(): Token {
         //todo: comment skipping (and printing if necessary) must be done here
-        return if (cursor >= inputProgram.lastIndex)
-            Token("EOF", Kwd.endOfProgram, TokType.endOfPRogram)
-        else
-            inputProgram[++cursor]
+        while (++cursor < inputProgram.lastIndex) {
+            if (inputProgram[cursor].type == TokType.commentStart) {
+                printComment(inputProgram[cursor].value)
+            } else {
+                return inputProgram[cursor]
+            }
+        }
+        return Token("EOF", Kwd.endOfInput, TokType.endOfInput)
     }
 
     /** print any comment identified in the previous call of match */
-    private fun printComment() {
-        if (commentString != "") {
-            Config.codeModule.outputCode(commentString)
-            commentString = ""
-        }
+    private fun printComment(comment: String) {
+        Config.codeModule.outputCode(comment)
     }
 
     /**
