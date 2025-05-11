@@ -41,7 +41,7 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
             startOfComment = Config.codeModule.COMMENT
             // todo: getComment()
         } catch (e: Exception) {
-            abort("could not open input file - $e")
+            abort("could not initialise program scanner - $e")
         }
     }
 
@@ -70,7 +70,7 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
      * advance the cursor to the next token from the list
      */
     fun advanceToken(): Token {
-        return if (cursor == inputProgram.lastIndex)
+        return if (cursor >= inputProgram.lastIndex)
             Token("EOF", Kwd.endOfProgram, TokType.endOfPRogram)
         else
             inputProgram[++cursor]

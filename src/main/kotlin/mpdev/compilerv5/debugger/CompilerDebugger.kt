@@ -11,14 +11,14 @@ class CompilerDebugger(val context: CompilerContext) {
     /** analyse tokens - debug mode */
     fun printDebugInfo() {
         val tokenizer = Config.tokenizer
-        val scanner = Config.scanner
         println("environment")
         System.getenv().forEach { (k, v) -> println("$k-> [$v]") }
         println("\nstarting debug run")
-        context.tokenizedProgram.forEach {
-            println("${tokenizer.debugGetLineInfo()}, ${tokenizer.debugGetNextChar()}, ${tokenizer.debugGetCursor()} "+
-                    "| current token: [${it.encToken} ${it.type} ${it.value}] " +
-                    "| next token: [${scanner.lookahead().encToken} ${scanner.lookahead().type} ${scanner.lookahead().value}] |")
+        val inputProgram = context.tokenizedProgram
+        for (indx in inputProgram.indices) {
+            println("line number: ${inputProgram[indx].lineNumber} "+
+                    "| current token: [${inputProgram[indx].encToken} ${inputProgram[indx].type} ${inputProgram[indx].value}] " +
+                    "| next token: [${inputProgram[indx+1].encToken} ${inputProgram[indx+1].type} ${inputProgram[indx+1].value}] |")
         }
         exit("end of debug run")
     }

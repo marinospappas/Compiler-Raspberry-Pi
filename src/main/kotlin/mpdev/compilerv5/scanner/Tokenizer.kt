@@ -16,6 +16,8 @@ import kotlin.math.min
  */
 class Tokenizer(val context: CompilerContext = CompilerContext()) {
 
+    //todo: fix lineNumber and set it in each token produced
+
     // the input program as string
     private var inputProgram: String = ""
     private var cursor = 0
@@ -26,9 +28,6 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     // the next character from input
     // this is our lookahead character
     private var nextChar: Char = ' '
-
-    // the next token is here so that we can look ahead
-    private var nextToken: Token = Token()
 
     // input program line number (the line where the nextToken is)
     private var lineNumber = 1
@@ -53,10 +52,10 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
             // initialise current line
             currentLineNumber = lineNumber
             // get the first token from input
-            nextToken = scan()
+            //nextToken = scan()
             // process any initial comments
             startOfComment = Config.codeModule.COMMENT
-            getComment()
+            //getComment()
         } catch (e: Exception) {
             abort("could not open input file - $e")
         }
@@ -81,13 +80,13 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     private fun scan(): Token {
         skipWhite()
         if (checkEndOfInput())
-            return Token(END_OF_INPUT, Kwd.endOfInput, TokType.none)
+            return Token(END_OF_INPUT, Kwd.endOfInput, TokType.none, currentLineNumber)
         if (checkNumeric())
-            return Token(getNumber(), Kwd.number, TokType.none)
+            return Token(getNumber(), Kwd.number, TokType.none, currentLineNumber)
         if (checkAlpha())
             return keywordOrFunctionOrVariable(getName())
         if (checkQuote())
-            return Token(getString(), Kwd.string, TokType.none)
+            return Token(getString(), Kwd.string, TokType.none, currentLineNumber)
         if (checkSpecialToken())
             return getSpecialToken()
         return getInvalidToken()
@@ -112,7 +111,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
             languageTokens[indx]  // keyword found
         else {
             // function, variable or other identifier found (determined by Token type)
-            Token(name, Kwd.identifier, context.identifiersMap[name]?.fv ?: TokType.none)
+            Token(name, Kwd.identifier, context.identifiersMap[name]?.fv ?: TokType.none, currentLineNumber)
         }
     }
 
@@ -133,7 +132,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     private fun getInvalidToken(): Token {
         val thisChar = nextChar
         getNextChar()
-        return Token(thisChar.toString(), Kwd.invalid, TokType.invalid)
+        return Token(thisChar.toString(), Kwd.invalid, TokType.invalid, currentLineNumber)
     }
 
     /** check if a specific name is a keyword */
@@ -165,7 +164,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     /** get a special sequence from input (keyword or operator  */
     private fun getSpecSeq(indx: Int): Token {
         if (indx >= languageTokens.size)
-            return Token(NO_TOKEN, Kwd.noToken, TokType.none)
+            return Token(NO_TOKEN, Kwd.noToken, TokType.none, currentLineNumber)
         val t = languageTokens[indx]
         cursor = min(cursor+t.value.length, inputProgram.length)
         nextChar = inputProgram[cursor]
@@ -267,6 +266,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
         }
     }
 
+    /*********
     /** get a comment */
     private fun getComment() {
         while (nextToken.type == TokType.commentStart)
@@ -309,6 +309,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
         if (printToOut)
             commentString += localCommentString
     }
+    ********/
 
     /** check for an alpha char */
     private fun isAlpha(c: Char): Boolean = c.uppercaseChar() in 'A'..'Z'
@@ -336,10 +337,6 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
 
     /** check for quote */
     private fun isQuote(c: Char): Boolean = c == '"'
-
-    /** check for end of program - called by parseBlock */
-    fun isEndOfProgram(): Boolean = nextToken.encToken == Kwd.endOfProgram ||
-        nextToken.encToken == Kwd.endOfInput
 
     /** check for a binary number - starting with 0b */
     fun isBinaryNumber(): Boolean {
@@ -374,10 +371,4 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
                 return languageTokens[i].value
         return "*******"
     }
-
-    /** debug functions */
-    fun debugGetNextChar() = "nextChar: [" +
-            (if(nextChar<' ' ) "\\"+nextChar.code.toByte() else nextChar.toString()) + "]"
-    fun debugGetLineInfo() = "curline: $currentLineNumber, line: $lineNumber"
-    fun debugGetCursor() = "cursor: $cursor"
 }

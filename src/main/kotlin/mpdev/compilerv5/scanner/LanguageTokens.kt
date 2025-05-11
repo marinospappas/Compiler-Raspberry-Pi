@@ -12,7 +12,8 @@ import mpdev.compilerv5.config.Constants.Companion.NO_TOKEN
 
 data class Token(val value: String = NO_TOKEN,
             val encToken: Kwd = Kwd.noToken,
-            val type: TokType = TokType.none
+            val type: TokType = TokType.none,
+            val lineNumber: Int = 0
 )
 
 var languageTokens = mutableListOf<Token>()
