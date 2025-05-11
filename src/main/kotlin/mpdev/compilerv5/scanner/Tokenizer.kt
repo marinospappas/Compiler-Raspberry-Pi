@@ -16,8 +16,6 @@ import kotlin.math.min
  */
 class Tokenizer(val context: CompilerContext = CompilerContext()) {
 
-    //todo: fix lineNumber and set it in each token produced
-
     // the input program as string
     private var inputProgram: String = ""
     private var cursor = 0
@@ -31,9 +29,6 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
 
     // input program line number (the line where the nextToken is)
     private var lineNumber = 1
-
-    // the current token's line number
-    var currentLineNumber = 0
 
     // any comments are kept here so that they can be transferred to the output
     private var commentString = ""
@@ -49,8 +44,6 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
             initOperators()
             // set the lookahead character to the first input char and skip any white spaces
             nextChar = inputProgram[0]
-            // initialise current line
-            currentLineNumber = lineNumber
             // get the first token from input
             //nextToken = scan()
             // process any initial comments
@@ -71,7 +64,6 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
             if (t.encToken == Kwd.endOfInput)
                 break
         }
-        tokenList.add(Token("EOF", Kwd.endOfProgram, TokType.endOfPRogram))
     }
 
     /**
@@ -80,13 +72,13 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     private fun scan(): Token {
         skipWhite()
         if (checkEndOfInput())
-            return Token(END_OF_INPUT, Kwd.endOfInput, TokType.none, currentLineNumber)
+            return Token(END_OF_INPUT, Kwd.endOfInput, TokType.none, lineNumber)
         if (checkNumeric())
-            return Token(getNumber(), Kwd.number, TokType.none, currentLineNumber)
+            return Token(getNumber(), Kwd.number, TokType.none, lineNumber)
         if (checkAlpha())
             return keywordOrFunctionOrVariable(getName())
         if (checkQuote())
-            return Token(getString(), Kwd.string, TokType.none, currentLineNumber)
+            return Token(getString(), Kwd.string, TokType.none, lineNumber)
         if (checkSpecialToken())
             return getSpecialToken()
         return getInvalidToken()
@@ -108,10 +100,10 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     private fun keywordOrFunctionOrVariable(name: String): Token {
         val indx = isKeyword(name)
         return if (indx >= 0)
-            languageTokens[indx]  // keyword found
+            Token.of(languageTokens[indx], lineNumber)  // keyword found
         else {
             // function, variable or other identifier found (determined by Token type)
-            Token(name, Kwd.identifier, context.identifiersMap[name]?.fv ?: TokType.none, currentLineNumber)
+            Token(name, Kwd.identifier, context.identifiersMap[name]?.fv ?: TokType.none, lineNumber)
         }
     }
 
@@ -132,7 +124,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     private fun getInvalidToken(): Token {
         val thisChar = nextChar
         getNextChar()
-        return Token(thisChar.toString(), Kwd.invalid, TokType.invalid, currentLineNumber)
+        return Token(thisChar.toString(), Kwd.invalid, TokType.invalid, lineNumber)
     }
 
     /** check if a specific name is a keyword */
@@ -164,8 +156,8 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     /** get a special sequence from input (keyword or operator  */
     private fun getSpecSeq(indx: Int): Token {
         if (indx >= languageTokens.size)
-            return Token(NO_TOKEN, Kwd.noToken, TokType.none, currentLineNumber)
-        val t = languageTokens[indx]
+            return Token(NO_TOKEN, Kwd.noToken, TokType.none, lineNumber)
+        val t = Token.of(languageTokens[indx], lineNumber)
         cursor = min(cursor+t.value.length, inputProgram.length)
         nextChar = inputProgram[cursor]
         return t

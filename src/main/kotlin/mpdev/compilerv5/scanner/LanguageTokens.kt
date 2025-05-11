@@ -13,8 +13,12 @@ import mpdev.compilerv5.config.Constants.Companion.NO_TOKEN
 data class Token(val value: String = NO_TOKEN,
             val encToken: Kwd = Kwd.noToken,
             val type: TokType = TokType.none,
-            val lineNumber: Int = 0
-)
+            var lineNumber: Int = 0
+) {
+    companion object {
+        fun of(t: Token, lineNumber: Int) = Token(t.value, t.encToken, t.type, lineNumber)
+    }
+}
 
 var languageTokens = mutableListOf<Token>()
 

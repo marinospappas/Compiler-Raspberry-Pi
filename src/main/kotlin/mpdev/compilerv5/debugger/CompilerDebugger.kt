@@ -18,7 +18,8 @@ class CompilerDebugger(val context: CompilerContext) {
         for (indx in inputProgram.indices) {
             println("line number: ${inputProgram[indx].lineNumber} "+
                     "| current token: [${inputProgram[indx].encToken} ${inputProgram[indx].type} ${inputProgram[indx].value}] " +
-                    "| next token: [${inputProgram[indx+1].encToken} ${inputProgram[indx+1].type} ${inputProgram[indx+1].value}] |")
+                    if (indx < inputProgram.lastIndex) "| next token: [${inputProgram[indx+1].encToken} ${inputProgram[indx+1].type} ${inputProgram[indx+1].value}] |"
+                    else "")
         }
         exit("end of debug run")
     }
