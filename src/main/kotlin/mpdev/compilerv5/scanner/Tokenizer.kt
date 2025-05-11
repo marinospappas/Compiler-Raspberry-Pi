@@ -1,7 +1,6 @@
 package mpdev.compilerv5.scanner
 
 import mpdev.compilerv5.config.CompilerContext
-import mpdev.compilerv5.config.Config
 import mpdev.compilerv5.config.Constants.Companion.END_OF_INPUT
 import mpdev.compilerv5.config.Constants.Companion.NO_TOKEN
 import mpdev.compilerv5.config.Constants.Companion.NULL_CHAR
