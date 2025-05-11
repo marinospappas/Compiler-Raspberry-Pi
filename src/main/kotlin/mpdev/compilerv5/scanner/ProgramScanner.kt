@@ -40,8 +40,8 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
      * token matching is initialised here by setting nextToken to the first token of the input program
      */
     fun initialiseTokenMatching() {
-        if (!inputProgram.isEmpty())
-            nextToken = inputProgram.first()
+        if (inputProgram.isNotEmpty())
+            nextToken = inputProgram.first()   //todo: skip (and print) any initial comments
     }
 
     /**
@@ -54,7 +54,6 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
      * it is called by all the parser functions
      */
     fun match(keyWord: Kwd = Kwd.any): Token {
-        printComment()  // any comments found in the previous call must be printed in the output code now
         if (keyWord != Kwd.any && nextToken.encToken != keyWord)    // check keyword to match
             expected(decodeToken(keyWord))
         val thisToken = nextToken
@@ -67,6 +66,7 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
      * advance the cursor to the next token from the list
      */
     private fun advanceToken(): Token {
+        //todo: comment skipping (and printing if necessary) must be done here
         return if (cursor >= inputProgram.lastIndex)
             Token("EOF", Kwd.endOfProgram, TokType.endOfPRogram)
         else

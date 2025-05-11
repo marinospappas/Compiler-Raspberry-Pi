@@ -75,7 +75,7 @@ enum class TokType {
     boolOrOps, boolAndOps, relOps,
     endOfBlock, endOfPRogram, endOfInput,
     function, variable,
-    commentStart,
+    commentStart, comment, commentOut,
     varType,
     invalid, none
 }

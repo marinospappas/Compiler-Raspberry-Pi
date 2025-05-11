@@ -1,5 +1,7 @@
 program testpair
 
+//
+
 var a: intarray(2)
 
 fun y() @external:intpair

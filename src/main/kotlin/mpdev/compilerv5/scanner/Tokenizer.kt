@@ -29,6 +29,9 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     // input program line number (the line where the nextToken is)
     private var lineNumber = 1
 
+    // scanner for comments
+    val commentScanner = CommentScanner()
+
     fun initialise() {
         try {
             // read the whole program into a string
@@ -63,6 +66,8 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
         skipWhite()
         if (checkEndOfInput())
             return Token(END_OF_INPUT, Kwd.endOfInput, TokType.none, lineNumber)
+        if (checkComment())
+            return getComment()
         if (checkNumeric())
             return Token(getNumber(), Kwd.number, TokType.none, lineNumber)
         if (checkAlpha())
@@ -76,6 +81,12 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
 
     /** check if we have reached the end of input */
     private fun checkEndOfInput(): Boolean = nextChar == endOfInput
+
+    /** check if comment follows */
+    //todo: implement the below
+    private fun checkComment(): Boolean {
+        return "${nextChar}${inputProgram[cursor+2]}" == Kwd.inlineComment.name
+    }
 
     /** check for a numeric token */
     private fun checkNumeric(): Boolean = isNumeric(nextChar)
@@ -99,6 +110,13 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
 
     /** check for a special sequence (operator or other special token) */
     private fun checkSpecialToken(): Boolean = specSeqPresent() >= 0
+
+    /** check for comment */
+    private fun getComment(): Token {
+        //todo: implement this - ensure the actual comment is stored in the Token.value
+        cursor += 2
+        return Token("comment parsing not yet implemented", Kwd.inlineCommentOut, TokType.commentOut)
+    }
 
     /** get the special sequence */
     private fun getSpecialToken(): Token {
@@ -248,52 +266,6 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
         }
     }
 
-    //todo: move processing of comments to the right place - scanner or parser
-    /*********
-    /** get a comment */
-    private fun getComment() {
-        while (nextToken.type == TokType.commentStart)
-            when (nextToken.encToken) {
-                Kwd.blockComment -> getCommentBlock()
-                Kwd.blockCommentOut -> getCommentBlock(true)
-                Kwd.inlineComment -> getCommentInline()
-                Kwd.inlineCommentOut -> getCommentInline(true)
-                else -> getInvalidToken()
-            }
-    }
-
-    /** get a block comment */
-    private fun getCommentBlock(printToOut: Boolean = false) {
-        var localCommentString = startOfComment
-        val endComment: String = decodeToken(Kwd.commentEnd)
-        while (!inputProgram.substring(cursor).startsWith(endComment) && nextChar != endOfInput) {
-            localCommentString += nextChar
-            if (nextChar == '\n')
-                localCommentString += startOfComment
-            getNextChar()
-        }
-        localCommentString += '\n'
-        nextToken = scan()      // nextToken now points to endComment or endOfInput
-        if (nextToken.encToken != Kwd.endOfInput)
-            nextToken = scan()      // nextToken now points to the next token after the comment
-        if (printToOut)
-            commentString += localCommentString
-    }
-
-    /** get an in-line comment */
-    private fun getCommentInline(printToOut: Boolean = false) {
-        var localCommentString = startOfComment
-        while (nextChar != '\n' && nextChar != endOfInput) {
-            localCommentString += nextChar
-            getNextChar()
-        }
-        localCommentString += '\n'
-        nextToken = scan()
-        if (printToOut)
-            commentString += localCommentString
-    }
-    ********/
-
     /** check for an alpha char */
     private fun isAlpha(c: Char): Boolean = c.uppercaseChar() in 'A'..'Z'
 
@@ -322,7 +294,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     private fun isQuote(c: Char): Boolean = c == '"'
 
     /** check for a binary number - starting with 0b */
-    fun isBinaryNumber(): Boolean {
+    private fun isBinaryNumber(): Boolean {
         if (nextChar != '0')
             return false
         getNextChar()
@@ -335,7 +307,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     }
 
     /** check for a hex number - starting with 0x */
-    fun isHexNumber(): Boolean {
+    private fun isHexNumber(): Boolean {
         if (nextChar != '0')
             return false
         getNextChar()
