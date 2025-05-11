@@ -90,7 +90,7 @@ class VariablesDeclParser(val context: CompilerContext) {
                 scanner.match(Kwd.rightParen)
             }
         if (initValue == "" && varLength == 0)
-            abort("line ${scanner.currentLineNumber}: string variable $varName has neither initial value nor length set")
+            abort("line ${scanner.currentToken().lineNumber}: string variable $varName has neither initial value nor length set")
         declarationUtils.declareVar(varName, DataType.string, initValue, varLength, scope)
     }
 

@@ -26,7 +26,7 @@ class ScannerUtil(val context: CompilerContext) {
         if (!typesAreCompatible)
             typesAreCompatible = typesCompatibility[TypesAndOpsCombi(t1, t2, ALL_OPS)] ?: false
         if (!typesAreCompatible) {
-            var message = "line ${scanner.currentLineNumber}: $operation $t1 "
+            var message = "line ${scanner.currentToken().lineNumber}: $operation $t1 "
             if (t2 != DataType.none)
                 message += "with $t2 "
             message += "not supported"

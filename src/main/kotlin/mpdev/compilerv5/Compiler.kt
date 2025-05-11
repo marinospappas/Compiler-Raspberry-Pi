@@ -21,6 +21,7 @@ class Compiler(val context: CompilerContext) {
     /** the actual compiler */
     fun compile() {
         Config.tokenizer.tokenize()
+        Config.scanner.initialiseTokenMatching()    // this has to be initialised after the tokenisation of the program
         if (context.debugMode) {
             CompilerDebugger(context).printDebugInfo()
             return
@@ -28,7 +29,7 @@ class Compiler(val context: CompilerContext) {
         val elapsedTime = measureTimeMillis {
             Config.programParser.parse()
         }
-        println("Successful compilation, ${context.inFile}: ${Config.scanner.currentLineNumber-1} source lines, ${context.outFile}: ${AsmInstructions.outputLines} assembly lines")
+        println("Successful compilation, ${context.inFile}: ${context.tokenizedProgram.last().lineNumber} source lines, ${context.outFile}: ${AsmInstructions.outputLines} assembly lines")
         // -1 is needed as an extra new line was added when the input was read
         println("Completed in: $elapsedTime milliseconds")
     }

@@ -32,9 +32,9 @@ class InputOutputParser(val context: CompilerContext) {
             scanner.match()
             varToken = scanner.match(Kwd.identifier)
             if (varToken.type == TokType.none)
-                abort("line ${scanner.currentLineNumber}: identifier ${varToken.value} not declared")
+                abort("line ${scanner.currentToken().lineNumber}: identifier ${varToken.value} not declared")
             if (varToken.type != TokType.variable)
-                abort("line ${scanner.currentLineNumber}: identifier ${varToken.value} is not a variable")
+                abort("line ${scanner.currentToken().lineNumber}: identifier ${varToken.value} is not a variable")
             val identName = varToken.value
             val strLen = context.identifiersMap[identName]?.size!!
             when (context.getType(identName)) {

@@ -47,7 +47,7 @@ class FunctionCallParser(val context: CompilerContext) {
                 scanner.match(Kwd.commaToken)
             val paramExprType = booleanExprParser.parse()
             if (paramExprType != paramTypeList[i].type)
-                abort("line ${scanner.currentLineNumber}: parameter #${i + 1} must be type ${paramTypeList[i].type}, found $paramExprType")
+                abort("line ${scanner.currentToken().lineNumber}: parameter #${i + 1} must be type ${paramTypeList[i].type}, found $paramExprType")
             // all params but the last one are saved to temp registers
             // the last param remains in the accumulator
             if (i < paramTypeList.size - 1)

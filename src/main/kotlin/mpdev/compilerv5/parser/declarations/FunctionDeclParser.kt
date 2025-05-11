@@ -64,7 +64,7 @@ class FunctionDeclParser(private val context: CompilerContext) {
             }
             scanner.match()
             if (context.identifiersMap[functionName] != null)
-                abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: identifier $functionName already declared")
+                abort("(${this.javaClass.simpleName}) line ${scanner.currentToken().lineNumber}: identifier $functionName already declared")
             context.identifiersMap[functionName] = IdentifierDecl(TokType.function, funType)
             if (isExternal) {    // external functions do not have body
                 code.externalSymbol(functionName)
@@ -83,7 +83,7 @@ class FunctionDeclParser(private val context: CompilerContext) {
         if (scanner.lookahead().encToken == Kwd.identifier) {
             do {
                 if (paramCount++ >= code.MAX_FUN_PARAMS)
-                    abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: a function can have only up to ${code.MAX_FUN_PARAMS} parameters maximum")
+                    abort("(${this.javaClass.simpleName}) line ${scanner.currentToken().lineNumber}: a function can have only up to ${code.MAX_FUN_PARAMS} parameters maximum")
                 if (scanner.lookahead().encToken == Kwd.commaToken)
                     scanner.match()
                 paramTypesList.add(parseOneFunParam())
@@ -96,7 +96,7 @@ class FunctionDeclParser(private val context: CompilerContext) {
     private fun parseOneFunParam(): FunctionParameter {
         val paramName = scanner.match(Kwd.identifier).value
         if (context.identifiersMap[paramName] != null)
-            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: parameter name $paramName has already been declared")
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentToken().lineNumber}: parameter name $paramName has already been declared")
         scanner.match(Kwd.colonToken)
         var paramType = DataType.none
         when (scanner.lookahead().encToken) {
@@ -147,7 +147,7 @@ class FunctionDeclParser(private val context: CompilerContext) {
         hasReturn = false
         contrStructParser.parseBlock()
         if (!hasReturn)
-            abort("line ${scanner.currentLineNumber}: function $funName has no ${scanner.decodeToken(Kwd.retToken)}")
+            abort("line ${scanner.currentToken().lineNumber}: function $funName has no ${scanner.decodeToken(Kwd.retToken)}")
         // clean up declarations of parameters so that the names can be reused in other functions
         context.funParamsMap[funName]?.forEach { context.identifiersMap.remove(it.name) }
     }

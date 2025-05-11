@@ -111,7 +111,7 @@ class ControlStructureParser(val context: CompilerContext) {
             Kwd.identifier -> {
                 if (scanner.lookahead().type == TokType.variable) expressionParser.parseAssignment()
                 else if (scanner.lookahead().type == TokType.function) functionCallParser.parse()
-                else abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: identifier ${scanner.lookahead().value} not declared")
+                else abort("(${this.javaClass.simpleName}) line ${scanner.lookahead().lineNumber}: identifier ${scanner.lookahead().value} not declared")
             }
             Kwd.ptrOpen -> expressionParser.parsePtrAssignment()
             Kwd.exitToken -> parseExit()
@@ -159,13 +159,13 @@ class ControlStructureParser(val context: CompilerContext) {
     private fun parseReturn() {
         scanner.match()
         if (labelHandler.labelPrefix == MAIN_BLOCK)
-            abort("line ${scanner.currentLineNumber}: return is not allowed in [main]")
+            abort("line ${scanner.currentToken().lineNumber}: return is not allowed in [main]")
         functionParser.hasReturn = true       // set the return flag for this function
         val funType = context.getType(functionParser.funName)
         if (funType != DataType.void) {
             val expType = expressionParser.parseExpression()
             if (expType != funType)
-                abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: $funType function cannot return $expType")
+                abort("(${this.javaClass.simpleName}) line ${scanner.currentToken().lineNumber}: $funType function cannot return $expType")
         }
         code.returnFromCall()
         mustRestoreSP = false

@@ -1,5 +1,6 @@
 package mpdev.compilerv5.parser.expressions
 
+import mpdev.compilerv3._legacy.chapter_xa_01.identifiersMap
 import mpdev.compilerv5.code_module.AsmInstructions
 import mpdev.compilerv5.config.CompilerContext
 import mpdev.compilerv5.config.Config
@@ -86,7 +87,7 @@ class ExpressionParser(val context: CompilerContext) {
     /** check if variable can be assigned a value */
     private fun checkCanAssign(identName: String) {
         if (!context.getCanAssign(identName))
-            abort("line ${scanner.currentLineNumber}: variable/parameter $identName cannot be assigned a value")
+            abort("line ${scanner.currentToken().lineNumber}: variable/parameter $identName cannot be assigned a value")
     }
 
     /**
@@ -194,7 +195,7 @@ class ExpressionParser(val context: CompilerContext) {
         scanner.match()
         val expType = parseExpression()
         if (expType == DataType.string)
-            abort("line ${scanner.currentLineNumber}: parenthesis not allowed in string expressions")
+            abort("line ${scanner.currentToken().lineNumber}: parenthesis not allowed in string expressions")
         scanner.match(Kwd.rightParen)
         return expType
     }
@@ -205,10 +206,11 @@ class ExpressionParser(val context: CompilerContext) {
      * returns the data type of the identifier
      */
     private fun parseIdentifier(): DataType {
+        //todo: investigate disconnect between currentToken.type and identifiersMap[scanner.lookahead().value].type
         when (scanner.lookahead().type) {
             TokType.variable -> return parseVariable()
             TokType.function -> return funCallParser.parse()
-            else -> abort("line ${scanner.currentLineNumber}: undeclared identifier [${scanner.lookahead().value}]")
+            else -> abort("line ${scanner.currentToken().lineNumber}: undeclared identifier [${scanner.lookahead().value}]")
         }
         return DataType.void    // dummy instruction
     }
@@ -223,7 +225,7 @@ class ExpressionParser(val context: CompilerContext) {
         val nextToken = scanner.match(Kwd.identifier)
         val varName = nextToken.value
         if (nextToken.type != TokType.variable)
-            abort("line ${scanner.currentLineNumber}: expected variable name, found ${varName}")
+            abort("line ${scanner.currentToken().lineNumber}: expected variable name, found ${varName}")
         if (context.identifiersMap[varName]?.isStackVar == true)
             context.identifiersMap[varName]?.stackOffset?.let { code.setAccumulatorToLocalVarAddress(it) }
         else
@@ -248,7 +250,7 @@ class ExpressionParser(val context: CompilerContext) {
         scanner.match()
         val expType = parseExpression()
         if (expType != DataType.memptr)
-            abort("line ${scanner.currentLineNumber}: expected pointer expression, found ${expType}")
+            abort("line ${scanner.currentToken().lineNumber}: expected pointer expression, found ${expType}")
         scanner.match(Kwd.ptrClose)
         return if (expType == DataType.memptr) DataType.int else DataType.none
     }
@@ -261,7 +263,7 @@ class ExpressionParser(val context: CompilerContext) {
         scanner.match(Kwd.arrayIndx)
         val expType = parseExpression()
         if (expType != DataType.int)
-            abort("line ${scanner.currentLineNumber}: expected int array index, found ${expType}")
+            abort("line ${scanner.currentToken().lineNumber}: expected int array index, found ${expType}")
         scanner.match(Kwd.arrayIndx)
     }
 

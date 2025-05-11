@@ -21,7 +21,7 @@ class DeclarationUtils(val context: CompilerContext) {
     fun declareVar(name: String, type: DataType, initValue: String, size: Int, scope: VarScope) {
         // check for duplicate var declaration
         if (context.identifiersMap[name] != null)
-            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: identifier $name already declared")
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentToken().lineNumber}: identifier $name already declared")
         when (scope) {
             VarScope.packageGlobal -> declarePackageGlobalVar(name, type, initValue, size)
             VarScope.global -> declareGlobalVar(name, type, initValue, size)
@@ -102,7 +102,7 @@ class DeclarationUtils(val context: CompilerContext) {
     /** initialise a local string var */
     private fun initLocalStringVar(name: String, stackOffset: Int, initValue: String, length: Int) {
         if (initValue.isEmpty() && length == 0)
-            abort("line ${scanner.currentLineNumber}: local variable $name is not initialised")
+            abort("line ${scanner.currentToken().lineNumber}: local variable $name is not initialised")
         var constStringAddress = ""
         // check for the constant string init value
         context.stringConstants.forEach { (k, v) -> if (v == initValue) constStringAddress = k }

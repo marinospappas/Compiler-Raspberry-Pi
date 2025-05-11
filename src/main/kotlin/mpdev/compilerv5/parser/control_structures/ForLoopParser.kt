@@ -66,7 +66,7 @@ class ForLoopParser(val context: CompilerContext) {
         // get control var
         controlVarName = scanner.match(Kwd.identifier).value
         if (context.identifiersMap[controlVarName] != null)
-            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: identifier $controlVarName already declared")
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentToken().lineNumber}: identifier $controlVarName already declared")
         scanner.match(Kwd.equalsOp)
         // allocate space in the stack for the ctrl var
         ctrlVarOffs = code.allocateStackVar(code.INT_SIZE)
@@ -77,7 +77,7 @@ class ForLoopParser(val context: CompilerContext) {
         // set the ctrl var to FROM
         val expType = exprParser.parseExpression()
         if (expType != DataType.int)
-            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: expected integer expression found $expType")
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentToken().lineNumber}: expected integer expression found $expType")
         code.assignmentLocalVar(ctrlVarOffs)
     }
 
@@ -96,7 +96,7 @@ class ForLoopParser(val context: CompilerContext) {
         toOffs = code.allocateStackVar(code.INT_SIZE)
         val expType = exprParser.parseExpression()
         if (expType != DataType.int)
-            abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: expected integer expression found $expType")
+            abort("(${this.javaClass.simpleName}) line ${scanner.currentToken().lineNumber}: expected integer expression found $expType")
         code.assignmentLocalVar(toOffs)
     }
 
@@ -109,7 +109,7 @@ class ForLoopParser(val context: CompilerContext) {
             stepOffs = code.allocateStackVar(code.INT_SIZE)
             val expType = exprParser.parseExpression()
             if (expType != DataType.int)
-                abort("(${this.javaClass.simpleName}) line ${scanner.currentLineNumber}: expected integer expression found $expType")
+                abort("(${this.javaClass.simpleName}) line ${scanner.currentToken().lineNumber}: expected integer expression found $expType")
             code.assignmentLocalVar(stepOffs)
         }
     }

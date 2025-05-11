@@ -18,12 +18,6 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
     // the next token is here so that we can look ahead
     private var nextToken: Token = Token()
 
-    // input program line number (the line where the nextToken is)
-    private var lineNumber = 1
-
-    // the current token's line number
-    var currentLineNumber = 0
-
     // any comments are kept here so that they can be transferred to the output
     private var commentString = ""
     private lateinit var startOfComment: String
@@ -33,16 +27,21 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
             // read the whole program into a string
             // add a newline at the end to deal with end of input easier
             inputProgram = context.tokenizedProgram
-            // initialise current line
-            currentLineNumber = lineNumber
             // get the first token from input
-            nextToken = advanceToken()
+            //nextToken = advanceToken()
             // process any initial comments
             startOfComment = Config.codeModule.COMMENT
-            // todo: getComment()
         } catch (e: Exception) {
             abort("could not initialise program scanner - $e")
         }
+    }
+
+    /**
+     * token matching is initialised here by setting nextToken to the first token of the input program
+     */
+    fun initialiseTokenMatching() {
+        if (!inputProgram.isEmpty())
+            nextToken = inputProgram.first()
     }
 
     /**
@@ -51,12 +50,10 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
      * also produces a match if called with no token or if token is "any"
      * finally it processes any comments in the code
      * returns the token object that has been matched
-     * also sets the current line number at the beginning as the lineNumber
      * was pointing to the line of the nextToken at the end of the previous match call
      * it is called by all the parser functions
      */
     fun match(keyWord: Kwd = Kwd.any): Token {
-        currentLineNumber = lineNumber
         printComment()  // any comments found in the previous call must be printed in the output code now
         if (keyWord != Kwd.any && nextToken.encToken != keyWord)    // check keyword to match
             expected(decodeToken(keyWord))
@@ -69,7 +66,7 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
     /**
      * advance the cursor to the next token from the list
      */
-    fun advanceToken(): Token {
+    private fun advanceToken(): Token {
         return if (cursor >= inputProgram.lastIndex)
             Token("EOF", Kwd.endOfProgram, TokType.endOfPRogram)
         else
@@ -85,12 +82,18 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
     }
 
     /**
+     * currentToken function
+     * returns current token without advancing the cursor
+     */
+    fun currentToken(): Token {
+        return inputProgram[cursor]
+    }
+
+    /**
      * lookahead function
      * returns next token without advancing the cursor
-     * sets current line number as well (same as match)
      */
     fun lookahead(): Token {
-        currentLineNumber = lineNumber
         return nextToken
     }
 
@@ -114,6 +117,6 @@ class ProgramScanner(val context: CompilerContext = CompilerContext()) {
                 "${nextToken.encToken} "
             else
                 ""
-        abort("(${this.javaClass.simpleName}) line $currentLineNumber: expected [$expMsg] found $tokType[${nextToken.value}]")
+        abort("(${this.javaClass.simpleName}) line ${nextToken.lineNumber}: expected [$expMsg] found $tokType[${nextToken.value}]")
     }
 }
