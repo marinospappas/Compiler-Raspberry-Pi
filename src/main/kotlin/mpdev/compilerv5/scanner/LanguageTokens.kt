@@ -10,7 +10,7 @@ import mpdev.compilerv5.config.Constants.Companion.NO_TOKEN
 // define all the keywords used in our programming language
 ///////////////////////////////////////////////////////////
 
-data class Token(val value: String = NO_TOKEN,
+data class Token(var value: String = NO_TOKEN,
             val encToken: Kwd = Kwd.noToken,
             val type: TokType = TokType.none,
             var lineNumber: Int = 0
@@ -258,6 +258,8 @@ fun initKeywords() {
         Token("String",   Kwd.string,         TokType.none)
     )
 }
+
+val commaTokens = languageTokens.filter { t -> setOf(Kwd.inlineComment, Kwd.inlineCommentOut, Kwd.blockComment, Kwd.blockCommentOut).contains(t.encToken) }
 
 ///////////////////////////
 // define all the operators

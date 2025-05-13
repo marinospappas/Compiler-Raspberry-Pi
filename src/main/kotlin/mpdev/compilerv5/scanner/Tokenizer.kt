@@ -84,9 +84,7 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
 
     /** check if comment follows */
     //todo: implement the below
-    private fun checkComment(): Boolean {
-        return "${nextChar}${inputProgram[cursor+2]}" == Kwd.inlineComment.name
-    }
+    private fun checkComment(): Boolean = commentPresent() != Token()
 
     /** check for a numeric token */
     private fun checkNumeric(): Boolean = isNumeric(nextChar)
@@ -114,8 +112,13 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
     /** check for comment */
     private fun getComment(): Token {
         //todo: implement this - ensure the actual comment is stored in the Token.value
-        cursor += 2
-        return Token("comment parsing not yet implemented", Kwd.inlineCommentOut, TokType.commentOut)
+        val commentToken = commentPresent()
+        if (commentToken == Token())
+            abort("line: $lineNumber: error retrieving comment token")
+        cursor = min(cursor + commentToken.value.length, inputProgram.length)
+        val newCursor = commentScanner.getComment(commentToken, inputProgram, cursor)
+        cursor = min(newCursor, inputProgram.length)
+        return commentToken
     }
 
     /** get the special sequence */
@@ -144,6 +147,20 @@ class Tokenizer(val context: CompilerContext = CompilerContext()) {
                 return i
         }
         return -1
+    }
+
+    /**
+     * check the beginning of the remaining input for comment
+     * returns the actual start of comment token if found or null if not
+     */
+    private fun commentPresent(): Token {
+        if (cursor >= inputProgram.length)         // check for end of input
+            return Token()
+        for (t in commaTokens) {
+            if (inputProgram.substring(cursor).startsWith(t.value))  // check for keyword match
+                return t
+        }
+        return Token()
     }
 
     /**
